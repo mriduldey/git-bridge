@@ -2025,6 +2025,41 @@ Deliver a production-ready provider-agnostic Git SDK with:
 
 ---
 
+---
+
+# Engineering Milestones
+
+This section defines the major engineering checkpoints for GitBridge.
+
+Unlike the public roadmap, these milestones represent internal execution goals. They do not imply release dates and may be refined as implementation progresses without changing the accepted architecture.
+
+| Milestone | Objective | Exit Criteria |
+|------------|-----------|---------------|
+| **M1 — Repository Bootstrap** | Establish the engineering foundation | Workspace, CI, linting, formatting, testing, and build pipeline operational |
+| **M2 — Foundation Packages** | Complete foundational packages | `@gitbridge/shared`, `@gitbridge/contracts`, `@gitbridge/errors`, and `@gitbridge/diagnostics` implemented and validated |
+| **M3 — Runtime Infrastructure** | Implement runtime infrastructure | Authentication, transport, and cache packages complete with unit tests and architecture validation |
+| **M4 — Core Runtime** | Complete the runtime engine | `@gitbridge/core` operational with repository lifecycle, provider registry, and mock provider support |
+| **M5 — GitHub Provider** | Deliver the first production provider | `@gitbridge/provider-github` passes the Provider Contract Test Kit and supports the planned repository operations |
+| **M6 — Public SDK** | Stabilize the public developer experience | `gitbridge` package published internally, Quick Start examples compile, public APIs reviewed |
+| **M7 — Testing & Documentation** | Finalize project quality | Contract tests, benchmarks, documentation, API reference, and examples complete |
+| **M8 — Developer Preview (v0.1)** | First public preview | All quality gates satisfied, release artifacts generated, documentation published |
+
+## Milestone Principles
+
+Every milestone must satisfy the following requirements before completion:
+
+- Repository builds successfully.
+- CI passes on supported platforms.
+- Architecture Tests remain green.
+- No unresolved critical defects.
+- Documentation is updated for affected public APIs.
+- Examples continue to compile.
+- Existing functionality remains backward compatible within the current version.
+
+Milestones are cumulative: each milestone builds upon the previous one and leaves the repository in a releasable state.
+
+The detailed implementation sequence for individual packages is defined in **PACKAGE_IMPLEMENTATION_ORDER.md**, while long-term product evolution is described in **ROADMAP.md**.
+
 # 18. Final Recommendation
 
 ## Recommended First Engineering Task
