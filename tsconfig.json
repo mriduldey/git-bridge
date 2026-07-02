@@ -3,5 +3,11 @@
   "compilerOptions": {
     "noEmit": true
   },
-  "include": ["eslint.config.mjs", "prettier.config.mjs", "scripts/**/*.mjs", "vitest.config.mjs"]
+  "include": [
+    "eslint.config.mjs",
+    "packages/**/*.ts",
+    "prettier.config.mjs",
+    "scripts/**/*.mjs",
+    "vitest.config.mjs"
+  ]
 }
