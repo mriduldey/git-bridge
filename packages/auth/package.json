@@ -1,0 +1,57 @@
+{
+  "name": "@gitbridge/auth",
+  "version": "0.0.0",
+  "description": "Provider-neutral authentication primitives for GitBridge.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./auth-config": {
+      "types": "./dist/auth-config.d.ts",
+      "default": "./dist/auth-config.js"
+    },
+    "./auth-context": {
+      "types": "./dist/auth-context.d.ts",
+      "default": "./dist/auth-context.js"
+    },
+    "./auth-kind": {
+      "types": "./dist/auth-kind.d.ts",
+      "default": "./dist/auth-kind.js"
+    },
+    "./credentials": {
+      "types": "./dist/credentials.d.ts",
+      "default": "./dist/credentials.js"
+    },
+    "./factory": {
+      "types": "./dist/factory.d.ts",
+      "default": "./dist/factory.js"
+    },
+    "./guards": {
+      "types": "./dist/guards.d.ts",
+      "default": "./dist/guards.js"
+    },
+    "./redaction": {
+      "types": "./dist/redaction.d.ts",
+      "default": "./dist/redaction.js"
+    }
+  },
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run --config vitest.config.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@gitbridge/contracts": "workspace:*",
+    "@gitbridge/errors": "workspace:*",
+    "@gitbridge/shared": "workspace:*"
+  }
+}
