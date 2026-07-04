@@ -45,6 +45,18 @@ importers:
         specifier: workspace:*
         version: link:../shared
 
+  packages/cache:
+    dependencies:
+      '@gitbridge/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@gitbridge/errors':
+        specifier: workspace:*
+        version: link:../errors
+      '@gitbridge/shared':
+        specifier: workspace:*
+        version: link:../shared
+
   packages/contracts: {}
 
   packages/errors: {}
