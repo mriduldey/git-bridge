@@ -1,0 +1,29 @@
+{
+  "name": "@gitbridge/transport",
+  "version": "0.0.0",
+  "description": "Provider-neutral transport pipeline and middleware for GitBridge.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run --config vitest.config.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@gitbridge/contracts": "workspace:*",
+    "@gitbridge/errors": "workspace:*",
+    "@gitbridge/shared": "workspace:*"
+  }
+}

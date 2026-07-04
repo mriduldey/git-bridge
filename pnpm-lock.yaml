@@ -51,6 +51,18 @@ importers:
 
   packages/shared: {}
 
+  packages/transport:
+    dependencies:
+      '@gitbridge/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@gitbridge/errors':
+        specifier: workspace:*
+        version: link:../errors
+      '@gitbridge/shared':
+        specifier: workspace:*
+        version: link:../shared
+
 packages:
 
   '@babel/runtime@7.29.7':
