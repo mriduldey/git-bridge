@@ -5,13 +5,7 @@ import type {
   TransportRequest,
   TransportResponse
 } from "@gitbridge/contracts";
-import {
-  CancellationError,
-  GitBridgeError,
-  NetworkError,
-  TimeoutError,
-  TransportError
-} from "@gitbridge/errors";
+import { CancellationError, GitBridgeError, TimeoutError, TransportError } from "@gitbridge/errors";
 import { deepFreeze, sleep } from "@gitbridge/shared";
 
 export type {
@@ -357,10 +351,6 @@ export function mapTransportError(error: unknown): GitBridgeError {
     return createCancellationError(error);
   }
 
-  if (isNetworkLikeError(error)) {
-    return new NetworkError("Transport network failure", { cause: error });
-  }
-
   return new TransportError("Transport execution failed", { cause: error });
 }
 
@@ -567,10 +557,6 @@ function isAbortError(error: unknown): boolean {
     (error instanceof DOMException && error.name === "AbortError") ||
     (error instanceof Error && error.name === "AbortError")
   );
-}
-
-function isNetworkLikeError(error: unknown): boolean {
-  return error instanceof TypeError || (error instanceof Error && "code" in error);
 }
 
 function createDefaultRequestId(): string {

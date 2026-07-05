@@ -1,7 +1,6 @@
 import { describe, expectTypeOf, it } from "vitest";
 import type {
   Awaitable,
-  Brand,
   DeepPartial,
   DeepReadonly,
   Maybe,
@@ -15,9 +14,8 @@ import type {
 
 describe("types", () => {
   it("models approved utility types", () => {
-    type Id = Brand<string, "Id">;
     type Model = {
-      readonly id: Id;
+      readonly id: string;
       readonly nested: {
         readonly count: number;
         readonly tags: readonly string[];
@@ -38,7 +36,7 @@ describe("types", () => {
       readonly b: number;
     }>();
     expectTypeOf<DeepPartial<Model>>().toEqualTypeOf<{
-      readonly id?: Id;
+      readonly id?: string;
       readonly nested?: {
         readonly count?: number;
         readonly tags?: readonly string[];

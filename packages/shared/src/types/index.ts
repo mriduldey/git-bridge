@@ -1,16 +1,7 @@
-declare const brandSymbol: unique symbol;
-
 /**
  * A value that may be returned directly or through a Promise.
  */
 export type Awaitable<T> = T | Promise<T>;
-
-/**
- * Creates a nominally distinct type from a structural TypeScript type.
- */
-export type Brand<T, Name extends string> = T & {
-  readonly [brandSymbol]: Name;
-};
 
 /**
  * Recursively makes every property optional.

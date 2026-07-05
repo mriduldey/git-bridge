@@ -1,19 +1,17 @@
 import { describe, expect, expectTypeOf, it } from "vitest";
 import {
   AuthenticationError,
+  AuthorizationError,
   CancellationError,
   CapabilityNotSupportedError,
   ConfigurationError,
   ConflictError,
   ErrorCodes,
   GitBridgeError,
-  NetworkError,
   NotFoundError,
-  PermissionDeniedError,
   ProviderError,
   RateLimitError,
   RepositoryError,
-  StreamingError,
   TimeoutError,
   TransportError,
   UnexpectedError,
@@ -85,22 +83,6 @@ const cases: readonly Case[] = [
     severity: "info"
   },
   {
-    category: "transport",
-    code: ErrorCodes.Network,
-    constructor: NetworkError,
-    parent: TransportError,
-    retryability: "Maybe",
-    severity: "warning"
-  },
-  {
-    category: "transport",
-    code: ErrorCodes.Streaming,
-    constructor: StreamingError,
-    parent: TransportError,
-    retryability: "Maybe",
-    severity: "warning"
-  },
-  {
     category: "authentication",
     code: ErrorCodes.Authentication,
     constructor: AuthenticationError,
@@ -132,8 +114,8 @@ const cases: readonly Case[] = [
   },
   {
     category: "provider",
-    code: ErrorCodes.PermissionDenied,
-    constructor: PermissionDeniedError,
+    code: ErrorCodes.Authorization,
+    constructor: AuthorizationError,
     parent: ProviderError,
     retryability: "Never",
     severity: "error"
@@ -229,11 +211,9 @@ describe("GitBridge error hierarchy", () => {
   it("exposes the approved nested hierarchy", () => {
     expect(new TimeoutError("timeout")).toBeInstanceOf(TransportError);
     expect(new CancellationError("cancelled")).toBeInstanceOf(TransportError);
-    expect(new NetworkError("network")).toBeInstanceOf(TransportError);
-    expect(new StreamingError("streaming")).toBeInstanceOf(TransportError);
     expect(new RateLimitError("rate limit")).toBeInstanceOf(ProviderError);
     expect(new CapabilityNotSupportedError("capability")).toBeInstanceOf(ProviderError);
-    expect(new PermissionDeniedError("permission")).toBeInstanceOf(ProviderError);
+    expect(new AuthorizationError("permission")).toBeInstanceOf(ProviderError);
     expect(new ConflictError("conflict")).toBeInstanceOf(ProviderError);
     expect(new NotFoundError("missing")).toBeInstanceOf(ProviderError);
   });
@@ -313,12 +293,12 @@ describe("GitBridge error behavior", () => {
   });
 
   it("allows retryability and severity overrides without changing stable code or category", () => {
-    const error = new NetworkError("network failed", {
+    const error = new TransportError("network failed", {
       retryability: "Always",
       severity: "critical"
     });
 
-    expect(error.code).toBe(ErrorCodes.Network);
+    expect(error.code).toBe(ErrorCodes.Transport);
     expect(error.category).toBe("transport");
     expect(error.retryability).toBe("Always");
     expect(error.severity).toBe("critical");

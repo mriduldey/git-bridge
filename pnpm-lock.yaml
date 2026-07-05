@@ -61,6 +61,18 @@ importers:
 
   packages/errors: {}
 
+  packages/observability:
+    dependencies:
+      '@gitbridge/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@gitbridge/errors':
+        specifier: workspace:*
+        version: link:../errors
+      '@gitbridge/shared':
+        specifier: workspace:*
+        version: link:../shared
+
   packages/shared: {}
 
   packages/transport:

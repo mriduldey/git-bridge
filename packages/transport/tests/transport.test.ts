@@ -1,4 +1,4 @@
-import { CancellationError, NetworkError, TimeoutError, TransportError } from "@gitbridge/errors";
+import { CancellationError, TimeoutError, TransportError } from "@gitbridge/errors";
 import { describe, expect, expectTypeOf, it, vi } from "vitest";
 
 import {
@@ -118,7 +118,7 @@ describe("retry middleware", () => {
     const transport = {
       execute: vi
         .fn()
-        .mockRejectedValueOnce(new NetworkError("network"))
+        .mockRejectedValueOnce(new TransportError("network", { retryability: "Maybe" }))
         .mockResolvedValueOnce(createTransportResponse({ status: 200 }))
     };
 
@@ -132,12 +132,14 @@ describe("retry middleware", () => {
   });
 
   it("preserves the final mapped error when retries are exhausted", async () => {
-    const final = new NetworkError("still down");
+    const final = new TransportError("still down", { retryability: "Maybe" });
     const transport = {
       execute: vi.fn().mockRejectedValue(new TypeError("fetch failed"))
     };
 
-    transport.execute.mockRejectedValueOnce(new NetworkError("down")).mockRejectedValueOnce(final);
+    transport.execute
+      .mockRejectedValueOnce(new TransportError("down", { retryability: "Maybe" }))
+      .mockRejectedValueOnce(final);
 
     await expect(
       createTransportPipeline({
@@ -150,7 +152,7 @@ describe("retry middleware", () => {
 
   it("does not retry unsafe requests unless marked idempotent", async () => {
     const transport = {
-      execute: vi.fn().mockRejectedValue(new NetworkError("network"))
+      execute: vi.fn().mockRejectedValue(new TransportError("network", { retryability: "Maybe" }))
     };
 
     await expect(
@@ -158,7 +160,7 @@ describe("retry middleware", () => {
         middleware: [createRetryMiddleware({ maxAttempts: 3 })],
         transport
       }).execute({ method: "write", target: "memory://repo/file" })
-    ).rejects.toBeInstanceOf(NetworkError);
+    ).rejects.toBeInstanceOf(TransportError);
     expect(transport.execute).toHaveBeenCalledTimes(1);
 
     await expect(
@@ -170,7 +172,7 @@ describe("retry middleware", () => {
         method: "write",
         target: "memory://repo/file"
       })
-    ).rejects.toBeInstanceOf(NetworkError);
+    ).rejects.toBeInstanceOf(TransportError);
     expect(transport.execute).toHaveBeenCalledTimes(4);
   });
 
@@ -179,7 +181,7 @@ describe("retry middleware", () => {
     const transport = {
       execute: vi.fn().mockImplementation(() => {
         controller.abort(new Error("stop"));
-        throw new NetworkError("network");
+        throw new TransportError("network", { retryability: "Maybe" });
       })
     };
 
@@ -299,7 +301,7 @@ describe("error mapping and utilities", () => {
     const cause = new TypeError("fetch failed");
     const mapped = mapTransportError(cause);
 
-    expect(mapped).toBeInstanceOf(NetworkError);
+    expect(mapped).toBeInstanceOf(TransportError);
     expect(mapped.cause).toBe(cause);
     expect(mapTransportError(new Error("boom"))).toBeInstanceOf(TransportError);
   });

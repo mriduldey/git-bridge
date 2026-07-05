@@ -8,17 +8,15 @@ export type ErrorRetryability = "Never" | "Maybe" | "Always";
  */
 export const ErrorCodes = {
   Authentication: "GITBRIDGE_AUTHENTICATION",
+  Authorization: "GITBRIDGE_PERMISSION_DENIED",
   Cancellation: "GITBRIDGE_CANCELLED",
   CapabilityNotSupported: "GITBRIDGE_CAPABILITY_NOT_SUPPORTED",
   Configuration: "GITBRIDGE_CONFIGURATION",
   Conflict: "GITBRIDGE_CONFLICT",
-  Network: "GITBRIDGE_NETWORK",
   NotFound: "GITBRIDGE_NOT_FOUND",
-  PermissionDenied: "GITBRIDGE_PERMISSION_DENIED",
   Provider: "GITBRIDGE_PROVIDER",
   RateLimit: "GITBRIDGE_RATE_LIMITED",
   Repository: "GITBRIDGE_REPOSITORY",
-  Streaming: "GITBRIDGE_STREAMING",
   Timeout: "GITBRIDGE_TIMEOUT",
   Transport: "GITBRIDGE_TRANSPORT",
   Unexpected: "GITBRIDGE_UNEXPECTED",
@@ -201,21 +199,15 @@ const definitions = {
     retryability: "Never",
     severity: "error"
   },
-  NetworkError: {
-    category: "transport",
-    code: ErrorCodes.Network,
-    retryability: "Maybe",
-    severity: "warning"
-  },
   NotFoundError: {
     category: "provider",
     code: ErrorCodes.NotFound,
     retryability: "Never",
     severity: "warning"
   },
-  PermissionDeniedError: {
+  AuthorizationError: {
     category: "provider",
-    code: ErrorCodes.PermissionDenied,
+    code: ErrorCodes.Authorization,
     retryability: "Never",
     severity: "error"
   },
@@ -236,12 +228,6 @@ const definitions = {
     code: ErrorCodes.Repository,
     retryability: "Maybe",
     severity: "error"
-  },
-  StreamingError: {
-    category: "transport",
-    code: ErrorCodes.Streaming,
-    retryability: "Maybe",
-    severity: "warning"
   },
   TimeoutError: {
     category: "transport",
@@ -423,24 +409,6 @@ export class CancellationError extends TransportError {
 }
 
 /**
- * Transport-neutral network failure.
- */
-export class NetworkError extends TransportError {
-  public constructor(message: string, options: GitBridgeErrorOptions = {}) {
-    super(message, options);
-  }
-}
-
-/**
- * Streaming transport failure.
- */
-export class StreamingError extends TransportError {
-  public constructor(message: string, options: GitBridgeErrorOptions = {}) {
-    super(message, options);
-  }
-}
-
-/**
  * Authentication failure.
  */
 export class AuthenticationError extends GitBridgeError {
@@ -479,7 +447,7 @@ export class CapabilityNotSupportedError extends ProviderError {
 /**
  * Provider denied permission for the requested operation.
  */
-export class PermissionDeniedError extends ProviderError {
+export class AuthorizationError extends ProviderError {
   public constructor(message: string, options: GitBridgeErrorOptions = {}) {
     super(message, options);
   }
