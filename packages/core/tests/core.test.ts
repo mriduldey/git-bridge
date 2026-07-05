@@ -1,4 +1,15 @@
-import type { Provider, ProviderSession, RepositoryInfo } from "@gitbridge/contracts";
+import type {
+  AuthenticationStrategy,
+  CreateSessionRequest,
+  FilesCapability,
+  PagedResult,
+  Provider,
+  ProviderMatch,
+  ProviderSession,
+  RepositoryInfo,
+  RepositoryLocator,
+  SearchResult
+} from "@gitbridge/contracts";
 import {
   CapabilityNotSupportedError,
   ConfigurationError,
@@ -189,7 +200,7 @@ describe("capability registration", () => {
 });
 
 describe("public exports", () => {
-  it("exports foundation and repository model contracts without client open orchestration", () => {
+  it("exports foundation, repository model, and client orchestration contracts", () => {
     expectTypeOf<GitBridgeClientConfig>().toHaveProperty("providers");
     expectTypeOf<GitBridgeRuntimeContext>().toHaveProperty("providers");
     expectTypeOf<ProviderRegistryView>().toHaveProperty("ids");
@@ -200,7 +211,7 @@ describe("public exports", () => {
     const client = new GitBridgeClient();
     const repository = createRepository({ info: createRepositoryInfo() });
 
-    expect("open" in client).toBe(false);
+    expect("open" in client).toBe(true);
     expect(repository).toBeInstanceOf(Repository);
     expect(
       createRepositoryRef({ capabilities: {}, reference: "main", repository: repository.identity })
@@ -209,6 +220,134 @@ describe("public exports", () => {
       capabilities: [],
       providers: []
     });
+  });
+});
+
+describe("core orchestration", () => {
+  it("opens repositories by resolving a provider and creating a provider session", async () => {
+    const provider = createMatchingProvider("github");
+    const client = new GitBridgeClient({ providers: [provider] });
+
+    const repository = await client.open("https://github.example.com/owner/repo", {
+      correlationId: "corr-1",
+      timeoutMs: 1000
+    });
+
+    expect(repository).toBeInstanceOf(Repository);
+    expect(repository.identity).toEqual({ name: "repo", owner: "owner", provider: "github" });
+    expect(repository.capabilities.files).toEqual({ name: "files", status: "supported" });
+    expect(provider.supports).toHaveBeenCalledWith({
+      url: "https://github.example.com/owner/repo"
+    });
+    expect(provider.createSession).toHaveBeenCalledWith(
+      expect.objectContaining({
+        correlationId: "corr-1",
+        repository: { name: "repo", owner: "owner", provider: "github" },
+        timeoutMs: 1000
+      })
+    );
+    await expect(repository.ref("main").readme()).resolves.toBe("read:README.md");
+  });
+
+  it("creates provider context with authentication and merged metadata", async () => {
+    const provider = createMatchingProvider("github", {
+      matchMetadata: { extra: { match: true }, requestId: "match-1" }
+    });
+    const authentication: AuthenticationStrategy = {
+      type: "anonymous",
+      authenticate: vi.fn(async () => ({
+        credentials: { kind: "anonymous" as const, provider: "github" },
+        provider: "github",
+        type: "anonymous" as const
+      }))
+    };
+    const client = new GitBridgeClient({
+      authentication,
+      metadata: { extra: { client: true }, provider: "client" },
+      providers: [provider]
+    });
+
+    await client.open("https://github.example.com/owner/repo");
+
+    const request = provider.createSession.mock.calls[0]?.[0] as CreateSessionRequest;
+
+    expect(authentication.authenticate).toHaveBeenCalledWith({ provider: "github" });
+    expect(request.context.authentication).toBe(authentication);
+    expect(request.context.authenticationContext).toMatchObject({
+      provider: "github",
+      type: "anonymous"
+    });
+    expect(request.context.metadata).toEqual({
+      extra: { client: true, match: true },
+      provider: "client",
+      requestId: "match-1"
+    });
+  });
+
+  it("rejects provider not found and multiple provider matches", async () => {
+    await expect(
+      new GitBridgeClient().open("https://unknown.example.com/owner/repo")
+    ).rejects.toThrow(NotFoundError);
+
+    await expect(
+      new GitBridgeClient({
+        providers: [createMatchingProvider("one"), createMatchingProvider("two")]
+      }).open("https://example.com/owner/repo")
+    ).rejects.toThrow(ConfigurationError);
+  });
+
+  it("translates provider support and session failures through GitBridge errors", async () => {
+    const supportFailure = createMatchingProvider("github");
+    supportFailure.supports.mockRejectedValueOnce(new Error("boom"));
+
+    await expect(
+      new GitBridgeClient({ providers: [supportFailure] }).open("https://example.com/owner/repo")
+    ).rejects.toThrow(RepositoryError);
+
+    const sessionFailure = createMatchingProvider("github");
+    sessionFailure.createSession.mockRejectedValueOnce(new Error("boom"));
+
+    await expect(
+      new GitBridgeClient({ providers: [sessionFailure] }).open("https://example.com/owner/repo")
+    ).rejects.toThrow(RepositoryError);
+  });
+
+  it("coordinates repository and session disposal", async () => {
+    const provider = createMatchingProvider("github");
+    const client = new GitBridgeClient({ providers: [provider] });
+    const repository = await client.open("https://github.example.com/owner/repo");
+    const session = provider.lastSession;
+
+    await repository.dispose();
+    await repository.dispose();
+
+    expect(session.dispose).toHaveBeenCalledTimes(1);
+
+    const second = await client.open("https://github.example.com/owner/repo");
+    const secondSession = provider.lastSession;
+
+    await client.dispose();
+
+    expect(second.state).toBe("disposed");
+    expect(secondSession.dispose).toHaveBeenCalledTimes(1);
+    await expect(client.open("https://github.example.com/owner/repo")).rejects.toThrow(
+      ConfigurationError
+    );
+  });
+
+  it("supports RepositoryFactory integration from provider sessions", async () => {
+    const provider = createMatchingProvider("github");
+    const session = await provider.createSession({
+      context: { provider: provider.info },
+      repository: { url: "https://github.example.com/owner/repo" }
+    });
+    const repository = await new RepositoryFactory().createFromSession(session);
+
+    expect(repository.identity.provider).toBe("github");
+    expect(repository.capabilities.tree).toEqual({ name: "tree", status: "supported" });
+    await expect(repository.ref("main").files.readText("README.md")).resolves.toBe(
+      "read:README.md"
+    );
   });
 });
 
@@ -401,6 +540,139 @@ function createProvider(
       return { confidence: "none", provider: id };
     }
   };
+}
+
+function createMatchingProvider(
+  id: string,
+  options: Readonly<{ matchMetadata?: CreateSessionRequest["context"]["metadata"] }> = {}
+) {
+  let lastSession = createProviderSession(id);
+  const info: Provider["info"] = {
+    capabilities: {
+      files: { name: "files", status: "supported" },
+      tree: { name: "tree", status: "supported" }
+    },
+    id,
+    name: `${id} provider`
+  };
+  const supports = vi.fn(async (_locator: RepositoryLocator): Promise<ProviderMatch> => {
+    const match: {
+      confidence: "exact";
+      metadata?: NonNullable<CreateSessionRequest["context"]["metadata"]>;
+      provider: string;
+      repository: { name: string; owner: string; provider: string };
+    } = {
+      confidence: "exact",
+      provider: id,
+      repository: { name: "repo", owner: "owner", provider: id }
+    };
+
+    if (options.matchMetadata !== undefined) {
+      match.metadata = options.matchMetadata;
+    }
+
+    return match;
+  });
+  const createSession = vi.fn(async (_request: CreateSessionRequest) => {
+    lastSession = createProviderSession(id);
+    return lastSession;
+  });
+
+  return {
+    get lastSession() {
+      return lastSession;
+    },
+    createSession,
+    info,
+    supports
+  };
+}
+
+function createProviderSession(id: string): ProviderSession {
+  const capabilities = createSessionCapabilities();
+  const provider: Provider["info"] = {
+    capabilities: {
+      files: { name: "files", status: "supported" },
+      tree: { name: "tree", status: "supported" }
+    },
+    id,
+    name: `${id} provider`
+  };
+
+  return {
+    capabilities,
+    provider,
+    repository: createRepositoryInfo(id),
+    state: "active",
+    dispose: vi.fn(async () => undefined),
+    async getCapabilities() {
+      return [
+        { name: "files", status: "supported" },
+        { name: "tree", status: "supported" }
+      ];
+    }
+  };
+}
+
+function createSessionCapabilities(): ProviderSession["capabilities"] {
+  const files: FilesCapability = {
+    download: async (path) => ({ encoding: "utf-8", path, sha: "sha", size: 1 }),
+    exists: async () => true,
+    metadata: async (path) => ({ name: path, path }),
+    readBinary: async () => new Uint8Array(),
+    readJson: async <TValue>() => ({ ok: true }) as TValue,
+    readText: async (path) => `read:${path}`,
+    stream: async () => emptyByteStream()
+  };
+
+  return {
+    files,
+    history: {
+      file: async () => emptyPage(),
+      get: async (sha) => ({
+        author: { name: "author" },
+        message: "message",
+        parents: [],
+        sha,
+        tree: "tree"
+      }),
+      list: async () => emptyPage()
+    },
+    search: {
+      query: async <TItem>() => emptySearchPage<TItem>(),
+      text: async () => emptyPage<SearchResult>()
+    },
+    tree: {
+      get: async (path) => ({ name: path, path, type: "file" }),
+      list: async () => [],
+      tree: async (path = "") => ({ nodes: [], path, sha: "tree" }),
+      walk: () => emptyTreeNodeStream()
+    }
+  };
+}
+
+function emptyPage<T>(): PagedResult<T> {
+  return {
+    items: [],
+    pageInfo: {
+      hasNextPage: false,
+      hasPreviousPage: false
+    }
+  };
+}
+
+function emptySearchPage<TItem>(): PagedResult<SearchResult<TItem>> {
+  return {
+    items: [],
+    pageInfo: {
+      hasNextPage: false,
+      hasPreviousPage: false
+    }
+  };
+}
+
+async function* emptyTreeNodeStream(): AsyncIterable<never> {
+  return undefined;
 }
 
 async function* emptyByteStream(): AsyncIterable<Uint8Array> {

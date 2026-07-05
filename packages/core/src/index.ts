@@ -1,4 +1,8 @@
-import type { AuthenticationStrategy } from "@gitbridge/auth";
+import type {
+  AuthenticationContext,
+  AuthenticationRequest,
+  AuthenticationStrategy
+} from "@gitbridge/auth";
 import { createCacheRegistry, type CacheRegistry } from "@gitbridge/cache";
 import type {
   Blob,
@@ -7,6 +11,7 @@ import type {
   CapabilityDescriptor,
   CapabilityMap,
   CommitListOptions,
+  CreateSessionRequest,
   DiagnosticsService,
   DownloadOptions,
   FileHistoryOptions,
@@ -20,7 +25,11 @@ import type {
   Metadata,
   OperationOptions,
   Provider,
+  ProviderContext,
   ProviderId,
+  ProviderMatch,
+  ProviderSession,
+  ProviderSessionCapabilities,
   PullRequestListOptions,
   PullRequestsCapability,
   ReadBinaryOptions,
@@ -32,6 +41,7 @@ import type {
   Repository as RepositoryContract,
   RepositoryIdentity,
   RepositoryInfo,
+  RepositoryLocator,
   RepositoryRef as RepositoryRefContract,
   SearchCapability,
   SearchQuery,
@@ -169,6 +179,7 @@ export type RepositoryOptions = Readonly<{
   defaultReference?: ReferenceName;
   extensions?: Readonly<Record<string, unknown>>;
   info: RepositoryInfo;
+  onDispose?: (() => Promise<void> | void) | undefined;
   services?: Partial<RepositoryCapabilityServices>;
 }>;
 
@@ -178,6 +189,8 @@ export type RepositoryRefOptions = Readonly<{
   repository: RepositoryIdentity;
   services?: Partial<RepositoryCapabilityServices>;
 }>;
+
+export type OpenRepositoryOptions = OperationOptions;
 
 export function createGitBridgeClient(config: GitBridgeClientConfig = {}): GitBridgeClient {
   return new GitBridgeClient(config);
@@ -215,11 +228,26 @@ export class RepositoryFactory {
   public create(options: RepositoryOptions): Repository {
     return new Repository(options);
   }
+
+  public async createFromSession(
+    session: ProviderSession,
+    options: Readonly<{ onDispose?: (() => Promise<void> | void) | undefined }> = {}
+  ): Promise<Repository> {
+    validateRepositoryInfo(session.repository);
+
+    return new Repository({
+      capabilities: capabilityDescriptorsToMap(await session.getCapabilities()),
+      info: session.repository,
+      onDispose: options.onDispose,
+      services: sessionCapabilitiesToServices(session.capabilities)
+    });
+  }
 }
 
 export class Repository implements RepositoryContract {
   readonly #extensions: Readonly<Record<string, unknown>>;
   readonly #info: RepositoryInfo;
+  readonly #onDispose: (() => Promise<void> | void) | undefined;
   readonly #services: RepositoryCapabilityServices;
   #state: RepositoryLifecycleState = "active";
 
@@ -235,6 +263,7 @@ export class Repository implements RepositoryContract {
     this.identity = this.#info.identity;
     this.capabilities = deepFreeze(options.capabilities ?? {}) as CapabilityMap;
     this.#extensions = Object.freeze({ ...(options.extensions ?? {}) });
+    this.#onDispose = options.onDispose;
     this.#services = createRepositoryCapabilityServices(
       options.services ?? {},
       this.identity,
@@ -255,7 +284,12 @@ export class Repository implements RepositoryContract {
   }
 
   public async dispose(): Promise<void> {
+    if (this.#state === "disposed") {
+      return;
+    }
+
     this.#state = "disposed";
+    await this.#onDispose?.();
   }
 
   public ref(reference: ReferenceName | Reference): RepositoryRef {
@@ -332,6 +366,9 @@ export class GitBridgeClient {
   readonly #context: GitBridgeRuntimeContext;
   readonly #ownsCache: boolean;
   readonly #providerRegistry: ProviderRegistry;
+  readonly #providerResolver: ProviderResolver;
+  readonly #repositoryFactory = new RepositoryFactory();
+  readonly #repositories = new Set<Repository>();
   #state: GitBridgeLifecycleState = "active";
 
   public constructor(config: GitBridgeClientConfig = {}) {
@@ -340,11 +377,14 @@ export class GitBridgeClient {
     const resolved = resolveGitBridgeConfig(config);
     this.#ownsCache = config.cache === undefined;
     this.#providerRegistry = new ProviderRegistry(resolved.providers);
+    this.#providerResolver = new ProviderResolver(this.#providerRegistry);
     this.#capabilityRegistry = new CapabilityRegistry([
       ...resolved.capabilities,
-      ...this.#providerRegistry
-        .all()
-        .flatMap((provider) => capabilityMapToDescriptors(provider.info.capabilities))
+      ...dedupeCapabilityDescriptors(
+        this.#providerRegistry
+          .all()
+          .flatMap((provider) => capabilityMapToDescriptors(provider.info.capabilities))
+      )
     ]);
     this.#config = freezeResolvedConfig({
       ...resolved,
@@ -393,6 +433,8 @@ export class GitBridgeClient {
     }
 
     this.#state = "disposed";
+    await Promise.all([...this.#repositories].map((repository) => repository.dispose()));
+    this.#repositories.clear();
 
     if (this.#ownsCache) {
       await this.#config.cache.dispose();
@@ -407,6 +449,341 @@ export class GitBridgeClient {
       });
     }
   }
+
+  public async open(url: string, options: OpenRepositoryOptions = {}): Promise<Repository> {
+    this.ensureActive();
+    assertNonEmpty(url, "Repository URL must be a non-empty string");
+
+    const locator: RepositoryLocator = deepFreeze({ url }) as RepositoryLocator;
+    const resolution = await this.#providerResolver.resolve(locator);
+    const authenticationContext = await this.createAuthenticationContext(
+      resolution.provider.info.id,
+      options
+    );
+    const context = createProviderContext({
+      authentication: this.#config.authentication,
+      authenticationContext,
+      metadata: mergeMetadata(this.#config.metadata, resolution.match.metadata),
+      provider: resolution.provider.info
+    });
+    const request = createSessionRequest(locator, resolution.match, context, options);
+    const session = await createProviderSession(resolution.provider, request);
+    let repository!: Repository;
+
+    repository = await this.#repositoryFactory.createFromSession(session, {
+      onDispose: async () => {
+        this.#repositories.delete(repository);
+        await session.dispose();
+      }
+    });
+
+    this.#repositories.add(repository);
+    return repository;
+  }
+
+  private async createAuthenticationContext(
+    provider: ProviderId,
+    options: OpenRepositoryOptions
+  ): Promise<AuthenticationContext | undefined> {
+    if (this.#config.authentication === undefined) {
+      return undefined;
+    }
+
+    const request: {
+      correlationId?: string;
+      provider: ProviderId;
+      signal?: AbortSignal;
+      timeoutMs?: number;
+    } = { provider };
+
+    if (options.correlationId !== undefined) {
+      request.correlationId = options.correlationId;
+    }
+
+    if (options.signal !== undefined) {
+      request.signal = options.signal;
+    }
+
+    if (options.timeoutMs !== undefined) {
+      request.timeoutMs = options.timeoutMs;
+    }
+
+    return this.#config.authentication.authenticate(request as AuthenticationRequest);
+  }
+}
+
+type ProviderResolution = Readonly<{
+  match: ProviderMatch;
+  provider: Provider;
+}>;
+
+class ProviderResolver {
+  readonly #registry: ProviderRegistry;
+
+  public constructor(registry: ProviderRegistry) {
+    this.#registry = registry;
+  }
+
+  public async resolve(locator: RepositoryLocator): Promise<ProviderResolution> {
+    const matches: ProviderResolution[] = [];
+
+    for (const provider of this.#registry.all()) {
+      const match = await resolveProviderSupport(provider, locator);
+
+      if (match.confidence !== "none") {
+        matches.push({ match, provider });
+      }
+    }
+
+    if (matches.length === 0) {
+      throw new NotFoundError("No registered provider supports the repository", {
+        diagnostics: {
+          operation: { operation: "provider.resolve" },
+          extra: { url: locator.url }
+        },
+        retryability: "Never"
+      });
+    }
+
+    if (matches.length > 1) {
+      throw new ConfigurationError("Multiple providers support the repository", {
+        diagnostics: {
+          operation: { operation: "provider.resolve" },
+          extra: {
+            providers: matches.map((resolution) => resolution.provider.info.id),
+            url: locator.url
+          }
+        },
+        retryability: "Never"
+      });
+    }
+
+    return matches[0] as ProviderResolution;
+  }
+}
+
+async function resolveProviderSupport(
+  provider: Provider,
+  locator: RepositoryLocator
+): Promise<ProviderMatch> {
+  try {
+    const match = await provider.supports(locator);
+
+    if (match.provider !== provider.info.id) {
+      throw new ConfigurationError("Provider returned mismatched provider identity", {
+        diagnostics: {
+          operation: { operation: "provider.resolve" },
+          provider: { provider: provider.info.id },
+          extra: { matchedProvider: match.provider }
+        },
+        retryability: "Never"
+      });
+    }
+
+    return match;
+  } catch (error: unknown) {
+    if (error instanceof ConfigurationError || error instanceof ValidationError) {
+      throw error;
+    }
+
+    throw new RepositoryError("Provider support check failed", {
+      cause: error,
+      diagnostics: {
+        operation: { operation: "provider.resolve" },
+        provider: { provider: provider.info.id },
+        extra: { url: locator.url }
+      }
+    });
+  }
+}
+
+function createProviderContext(input: {
+  authentication?: AuthenticationStrategy | undefined;
+  authenticationContext?: AuthenticationContext | undefined;
+  metadata?: Metadata | undefined;
+  provider: ProviderContext["provider"];
+}): ProviderContext {
+  const context: {
+    authentication?: AuthenticationStrategy;
+    authenticationContext?: AuthenticationContext;
+    metadata?: Metadata;
+    provider: ProviderContext["provider"];
+  } = {
+    provider: input.provider
+  };
+
+  if (input.authentication !== undefined) {
+    context.authentication = input.authentication;
+  }
+
+  if (input.authenticationContext !== undefined) {
+    context.authenticationContext = input.authenticationContext;
+  }
+
+  if (input.metadata !== undefined) {
+    context.metadata = input.metadata;
+  }
+
+  return Object.freeze(context) as ProviderContext;
+}
+
+function createSessionRequest(
+  locator: RepositoryLocator,
+  match: ProviderMatch,
+  context: ProviderContext,
+  options: OpenRepositoryOptions
+): CreateSessionRequest {
+  const request: {
+    context: ProviderContext;
+    correlationId?: string;
+    repository: RepositoryLocator | RepositoryIdentity;
+    signal?: AbortSignal;
+    timeoutMs?: number;
+  } = {
+    context,
+    repository: match.repository ?? locator
+  };
+
+  if (options.correlationId !== undefined) {
+    request.correlationId = options.correlationId;
+  }
+
+  if (options.signal !== undefined) {
+    request.signal = options.signal;
+  }
+
+  if (options.timeoutMs !== undefined) {
+    request.timeoutMs = options.timeoutMs;
+  }
+
+  return Object.freeze(request) as CreateSessionRequest;
+}
+
+async function createProviderSession(
+  provider: Provider,
+  request: CreateSessionRequest
+): Promise<ProviderSession> {
+  try {
+    return await provider.createSession(request);
+  } catch (error: unknown) {
+    throw new RepositoryError("Provider session creation failed", {
+      cause: error,
+      diagnostics: {
+        operation: { operation: "provider.session.create" },
+        provider: { provider: provider.info.id }
+      }
+    });
+  }
+}
+
+function mergeMetadata(
+  left: Metadata | undefined,
+  right: Metadata | undefined
+): Metadata | undefined {
+  if (left === undefined) {
+    return right;
+  }
+
+  if (right === undefined) {
+    return left;
+  }
+
+  return deepFreeze({
+    ...left,
+    ...right,
+    extra: {
+      ...left.extra,
+      ...right.extra
+    }
+  }) as Metadata;
+}
+
+function sessionCapabilitiesToServices(
+  capabilities: ProviderSessionCapabilities
+): Partial<RepositoryCapabilityServices> {
+  const services: {
+    branches?: BranchesCapability;
+    files: FilesCapability;
+    history: HistoryCapability;
+    issues?: IssuesCapability;
+    pullRequests?: PullRequestsCapability;
+    releases?: ReleasesCapability;
+    search: SearchCapability;
+    tags?: TagsCapability;
+    tree: TreeCapability;
+  } = {
+    files: capabilities.files,
+    history: capabilities.history,
+    search: capabilities.search,
+    tree: capabilities.tree
+  };
+
+  if (capabilities.branches !== undefined) {
+    services.branches = capabilities.branches;
+  }
+
+  if (capabilities.issues !== undefined) {
+    services.issues = capabilities.issues;
+  }
+
+  if (capabilities.pullRequests !== undefined) {
+    services.pullRequests = capabilities.pullRequests;
+  }
+
+  if (capabilities.releases !== undefined) {
+    services.releases = capabilities.releases;
+  }
+
+  if (capabilities.tags !== undefined) {
+    services.tags = capabilities.tags;
+  }
+
+  return services;
+}
+
+function capabilityDescriptorsToMap(descriptors: readonly CapabilityDescriptor[]): CapabilityMap {
+  const map: Partial<Record<keyof CapabilityMap, CapabilityDescriptor>> = {};
+
+  for (const descriptor of descriptors) {
+    validateCapability(descriptor);
+    const capability = toCapabilityKey(descriptor.name);
+
+    if (capability === undefined) {
+      continue;
+    }
+
+    if (map[capability] !== undefined) {
+      throw new ConflictError("Provider returned duplicate capability descriptors", {
+        diagnostics: {
+          operation: {
+            capability: descriptor.name,
+            operation: "capability.resolve"
+          }
+        },
+        retryability: "Never"
+      });
+    }
+
+    map[capability] = descriptor;
+  }
+
+  return deepFreeze(map) as CapabilityMap;
+}
+
+function toCapabilityKey(name: string): keyof CapabilityMap | undefined {
+  const capabilityNames: Readonly<Record<string, keyof CapabilityMap>> = {
+    branches: "branches",
+    files: "files",
+    history: "history",
+    issues: "issues",
+    pullRequests: "pullRequests",
+    releases: "releases",
+    search: "search",
+    tags: "tags",
+    tree: "tree"
+  };
+
+  return capabilityNames[name];
 }
 
 function createRepositoryCapabilityServices(
@@ -800,7 +1177,7 @@ class ProviderRegistry {
   }
 
   public all(): readonly Provider[] {
-    return deepFreeze([...this.#providers.values()]) as readonly Provider[];
+    return Object.freeze([...this.#providers.values()]);
   }
 
   public get(id: ProviderId): Provider | undefined {
@@ -968,6 +1345,20 @@ function capabilityMapToDescriptors(capabilities: CapabilityMap): readonly Capab
   return Object.values(capabilities).filter(
     (capability): capability is CapabilityDescriptor => capability !== undefined
   );
+}
+
+function dedupeCapabilityDescriptors(
+  descriptors: readonly CapabilityDescriptor[]
+): readonly CapabilityDescriptor[] {
+  const byName = new Map<string, CapabilityDescriptor>();
+
+  for (const descriptor of descriptors) {
+    if (!byName.has(descriptor.name)) {
+      byName.set(descriptor.name, descriptor);
+    }
+  }
+
+  return Object.freeze([...byName.values()]);
 }
 
 function validateClientConfig(config: GitBridgeClientConfig): void {
