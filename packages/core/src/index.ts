@@ -494,8 +494,10 @@ export class GitBridgeClient {
       const context = createProviderContext({
         authentication: this.#config.authentication,
         authenticationContext,
+        diagnostics: this.#config.diagnostics,
         metadata: mergeMetadata(this.#config.metadata, resolution.match.metadata),
-        provider: resolution.provider.info
+        provider: resolution.provider.info,
+        transport: this.#config.transport
       });
       const request = createSessionRequest(locator, resolution.match, context, options);
       const session = await createProviderSession(resolution.provider, request);
@@ -689,14 +691,18 @@ async function resolveProviderSupport(
 function createProviderContext(input: {
   authentication?: AuthenticationStrategy | undefined;
   authenticationContext?: AuthenticationContext | undefined;
+  diagnostics?: DiagnosticsService | undefined;
   metadata?: Metadata | undefined;
   provider: ProviderContext["provider"];
+  transport?: Transport | undefined;
 }): ProviderContext {
   const context: {
     authentication?: AuthenticationStrategy;
     authenticationContext?: AuthenticationContext;
+    diagnostics?: DiagnosticsService;
     metadata?: Metadata;
     provider: ProviderContext["provider"];
+    transport?: Transport;
   } = {
     provider: input.provider
   };
@@ -709,8 +715,16 @@ function createProviderContext(input: {
     context.authenticationContext = input.authenticationContext;
   }
 
+  if (input.diagnostics !== undefined) {
+    context.diagnostics = input.diagnostics;
+  }
+
   if (input.metadata !== undefined) {
     context.metadata = input.metadata;
+  }
+
+  if (input.transport !== undefined) {
+    context.transport = input.transport;
   }
 
   return Object.freeze(context) as ProviderContext;

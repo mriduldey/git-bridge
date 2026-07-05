@@ -12,8 +12,11 @@ import type {
   TreeCapability
 } from "../capabilities/index.js";
 import type { AuthenticationContext, AuthenticationStrategy } from "../authentication/index.js";
+import type { CacheProvider } from "../cache/index.js";
+import type { DiagnosticsService } from "../diagnostics/index.js";
 import type { RepositoryIdentity, RepositoryInfo } from "../domain/index.js";
 import type { Metadata, ProviderId, RepositoryUrl } from "../metadata/index.js";
+import type { Transport } from "../transport/index.js";
 import type { DeepReadonly, OperationOptions } from "../types/index.js";
 
 export type ProviderLifecycleState = "registered" | "resolved" | "active" | "disposed";
@@ -42,7 +45,10 @@ export type ProviderContext = DeepReadonly<{
   provider: ProviderInfo;
   authentication?: AuthenticationStrategy;
   authenticationContext?: AuthenticationContext;
+  cache?: CacheProvider;
+  diagnostics?: DiagnosticsService;
   metadata?: Metadata;
+  transport?: Transport;
 }>;
 
 export type CreateSessionRequest = OperationOptions &

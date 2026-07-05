@@ -26,6 +26,16 @@ const allowedWorkspaceDependencies = {
     "@gitbridge/errors",
     "@gitbridge/shared"
   ]),
+  "@gitbridge/provider-github": new Set([
+    "@gitbridge/auth",
+    "@gitbridge/cache",
+    "@gitbridge/contracts",
+    "@gitbridge/core",
+    "@gitbridge/errors",
+    "@gitbridge/observability",
+    "@gitbridge/shared",
+    "@gitbridge/transport"
+  ]),
   "@gitbridge/shared": new Set([]),
   "@gitbridge/transport": new Set([
     "@gitbridge/contracts",
