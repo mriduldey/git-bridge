@@ -59,6 +59,30 @@ importers:
 
   packages/contracts: {}
 
+  packages/core:
+    dependencies:
+      '@gitbridge/auth':
+        specifier: workspace:*
+        version: link:../auth
+      '@gitbridge/cache':
+        specifier: workspace:*
+        version: link:../cache
+      '@gitbridge/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@gitbridge/errors':
+        specifier: workspace:*
+        version: link:../errors
+      '@gitbridge/observability':
+        specifier: workspace:*
+        version: link:../observability
+      '@gitbridge/shared':
+        specifier: workspace:*
+        version: link:../shared
+      '@gitbridge/transport':
+        specifier: workspace:*
+        version: link:../transport
+
   packages/errors: {}
 
   packages/observability:
