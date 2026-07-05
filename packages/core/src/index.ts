@@ -12,6 +12,7 @@ import type {
   CapabilityMap,
   CommitListOptions,
   CreateSessionRequest,
+  DiagnosticEvent,
   DiagnosticsService,
   DownloadOptions,
   FileHistoryOptions,
@@ -192,10 +193,16 @@ export type RepositoryRefOptions = Readonly<{
 
 export type OpenRepositoryOptions = OperationOptions;
 
+/**
+ * Creates an isolated GitBridge client with explicit, instance-scoped configuration.
+ */
 export function createGitBridgeClient(config: GitBridgeClientConfig = {}): GitBridgeClient {
   return new GitBridgeClient(config);
 }
 
+/**
+ * Resolves client configuration by applying library defaults to caller-provided dependencies.
+ */
 export function resolveGitBridgeConfig(
   config: GitBridgeClientConfig = {}
 ): GitBridgeResolvedConfig {
@@ -205,6 +212,10 @@ export function resolveGitBridgeConfig(
   });
 }
 
+/**
+ * Resolves configuration with the ADR-defined precedence:
+ * defaults, client, repository, then operation.
+ */
 export function resolveConfiguration<TConfig extends object>(
   layers: ConfigurationLayer<TConfig>
 ): TConfig {
@@ -216,14 +227,23 @@ export function resolveConfiguration<TConfig extends object>(
   }) as TConfig;
 }
 
+/**
+ * Creates a provider-neutral Repository service object.
+ */
 export function createRepository(options: RepositoryOptions): Repository {
   return new Repository(options);
 }
 
+/**
+ * Creates an immutable RepositoryRef service object for an explicit repository reference.
+ */
 export function createRepositoryRef(options: RepositoryRefOptions): RepositoryRef {
   return new RepositoryRef(options);
 }
 
+/**
+ * Constructs Repository service objects from provider sessions.
+ */
 export class RepositoryFactory {
   public create(options: RepositoryOptions): Repository {
     return new Repository(options);
@@ -364,6 +384,7 @@ export class GitBridgeClient {
   readonly #capabilityRegistry: CapabilityRegistry;
   readonly #config: GitBridgeResolvedConfig;
   readonly #context: GitBridgeRuntimeContext;
+  #diagnosticSequence = 0;
   readonly #ownsCache: boolean;
   readonly #providerRegistry: ProviderRegistry;
   readonly #providerResolver: ProviderResolver;
@@ -395,6 +416,7 @@ export class GitBridgeClient {
       cache: this.#config.cache,
       capabilities: this.capabilities,
       diagnostics: this.#config.diagnostics,
+      authentication: this.#config.authentication,
       metadata: this.#config.metadata,
       metrics: this.#config.metrics,
       providers: this.providers,
@@ -432,6 +454,7 @@ export class GitBridgeClient {
       return;
     }
 
+    await this.publishDiagnostic("repository", "client.dispose.start");
     this.#state = "disposed";
     await Promise.all([...this.#repositories].map((repository) => repository.dispose()));
     this.#repositories.clear();
@@ -439,6 +462,8 @@ export class GitBridgeClient {
     if (this.#ownsCache) {
       await this.#config.cache.dispose();
     }
+
+    await this.publishDiagnostic("repository", "client.dispose.success");
   }
 
   public ensureActive(): void {
@@ -455,30 +480,58 @@ export class GitBridgeClient {
     assertNonEmpty(url, "Repository URL must be a non-empty string");
 
     const locator: RepositoryLocator = deepFreeze({ url }) as RepositoryLocator;
-    const resolution = await this.#providerResolver.resolve(locator);
-    const authenticationContext = await this.createAuthenticationContext(
-      resolution.provider.info.id,
-      options
-    );
-    const context = createProviderContext({
-      authentication: this.#config.authentication,
-      authenticationContext,
-      metadata: mergeMetadata(this.#config.metadata, resolution.match.metadata),
-      provider: resolution.provider.info
+    await this.publishDiagnostic("repository", "repository.open.start", {
+      correlationId: options.correlationId,
+      data: { url }
     });
-    const request = createSessionRequest(locator, resolution.match, context, options);
-    const session = await createProviderSession(resolution.provider, request);
-    let repository!: Repository;
 
-    repository = await this.#repositoryFactory.createFromSession(session, {
-      onDispose: async () => {
-        this.#repositories.delete(repository);
-        await session.dispose();
+    try {
+      const resolution = await this.#providerResolver.resolve(locator);
+      const authenticationContext = await this.createAuthenticationContext(
+        resolution.provider.info.id,
+        options
+      );
+      const context = createProviderContext({
+        authentication: this.#config.authentication,
+        authenticationContext,
+        metadata: mergeMetadata(this.#config.metadata, resolution.match.metadata),
+        provider: resolution.provider.info
+      });
+      const request = createSessionRequest(locator, resolution.match, context, options);
+      const session = await createProviderSession(resolution.provider, request);
+      let repository!: Repository;
+
+      try {
+        repository = await this.#repositoryFactory.createFromSession(session, {
+          onDispose: async () => {
+            this.#repositories.delete(repository);
+            await session.dispose();
+          }
+        });
+      } catch (error: unknown) {
+        await disposeProviderSession(session);
+        throw error;
       }
-    });
 
-    this.#repositories.add(repository);
-    return repository;
+      this.#repositories.add(repository);
+      await this.publishDiagnostic("repository", "repository.open.success", {
+        correlationId: options.correlationId,
+        data: {
+          provider: repository.identity.provider,
+          repository: `${repository.identity.owner}/${repository.identity.name}`
+        }
+      });
+      return repository;
+    } catch (error: unknown) {
+      await this.publishDiagnostic("error", "repository.open.error", {
+        correlationId: options.correlationId,
+        data: {
+          error: error instanceof Error ? error.name : typeof error,
+          url
+        }
+      });
+      throw error;
+    }
   }
 
   private async createAuthenticationContext(
@@ -509,6 +562,42 @@ export class GitBridgeClient {
     }
 
     return this.#config.authentication.authenticate(request as AuthenticationRequest);
+  }
+
+  private async publishDiagnostic(
+    kind: DiagnosticEvent["kind"],
+    name: string,
+    input: Readonly<{
+      correlationId?: string | undefined;
+      data?: Readonly<Record<string, JsonValue>>;
+    }> = {}
+  ): Promise<void> {
+    const context: { correlationId?: string } = {};
+
+    if (input.correlationId !== undefined) {
+      context.correlationId = input.correlationId;
+    }
+
+    const event: DiagnosticEvent = deepFreeze({
+      ...(input.data === undefined ? {} : { data: input.data }),
+      ...(Object.keys(context).length === 0 ? {} : { context }),
+      id: this.createDiagnosticId(name),
+      kind,
+      name,
+      schemaVersion: "1.0",
+      timestamp: new Date().toISOString()
+    }) as DiagnosticEvent;
+
+    try {
+      await this.#config.diagnostics.publish(event);
+    } catch {
+      // Diagnostics are observational and must not influence runtime behavior.
+    }
+  }
+
+  private createDiagnosticId(name: string): string {
+    this.#diagnosticSequence += 1;
+    return `core-${name}-${this.#diagnosticSequence}`;
   }
 }
 
@@ -673,6 +762,14 @@ async function createProviderSession(
         provider: { provider: provider.info.id }
       }
     });
+  }
+}
+
+async function disposeProviderSession(session: ProviderSession): Promise<void> {
+  try {
+    await session.dispose();
+  } catch {
+    // The original repository creation failure is more actionable for callers.
   }
 }
 

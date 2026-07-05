@@ -1,6 +1,7 @@
 import type {
   AuthenticationStrategy,
   CreateSessionRequest,
+  DiagnosticEvent,
   FilesCapability,
   PagedResult,
   Provider,
@@ -89,10 +90,18 @@ describe("GitBridge client foundation", () => {
       require: vi.fn()
     };
     const diagnostics = createDiagnosticsService();
+    const authentication: AuthenticationStrategy = {
+      type: "anonymous",
+      authenticate: vi.fn(async () => ({
+        credentials: { kind: "anonymous" as const },
+        type: "anonymous" as const
+      }))
+    };
     const transport = {
       execute: vi.fn(async () => ({ status: 204 }))
     };
     const client = new GitBridgeClient({
+      authentication,
       cache,
       diagnostics,
       metadata: { provider: "test" },
@@ -100,6 +109,7 @@ describe("GitBridge client foundation", () => {
     });
 
     expect(client.config.cache).toBe(cache);
+    expect(client.context.authentication).toBe(authentication);
     expect(client.config.diagnostics).toBe(diagnostics);
     expect(client.config.transport).toBe(transport);
     expect(client.context.metadata).toEqual({ provider: "test" });
@@ -333,6 +343,59 @@ describe("core orchestration", () => {
     await expect(client.open("https://github.example.com/owner/repo")).rejects.toThrow(
       ConfigurationError
     );
+  });
+
+  it("disposes a created provider session when repository creation fails", async () => {
+    const dispose = vi.fn(async () => undefined);
+    const provider = createMatchingProvider("github");
+
+    provider.createSession.mockResolvedValueOnce({
+      capabilities: createSessionCapabilities(),
+      provider: provider.info,
+      repository: createRepositoryInfo("github"),
+      state: "active",
+      dispose,
+      getCapabilities: vi.fn(async () => {
+        throw new Error("capability failure");
+      })
+    });
+
+    await expect(
+      new GitBridgeClient({ providers: [provider] }).open("https://github.example.com/owner/repo")
+    ).rejects.toThrow("capability failure");
+    expect(dispose).toHaveBeenCalledTimes(1);
+  });
+
+  it("publishes core lifecycle diagnostics without allowing subscribers to change behavior", async () => {
+    const diagnostics = createDiagnosticsService();
+    const events: DiagnosticEvent[] = [];
+    await diagnostics.subscribe((event) => {
+      events.push(event);
+      if (event.name === "repository.open.start") {
+        throw new Error("observer failure");
+      }
+    });
+    const client = new GitBridgeClient({
+      diagnostics,
+      providers: [createMatchingProvider("github")]
+    });
+
+    await expect(
+      client.open("https://github.example.com/owner/repo", { correlationId: "corr-1" })
+    ).resolves.toBeInstanceOf(Repository);
+    await client.dispose();
+
+    expect(events.map((event) => event.name)).toEqual([
+      "repository.open.start",
+      "repository.open.success",
+      "client.dispose.start",
+      "client.dispose.success"
+    ]);
+    expect(events[0]?.context?.correlationId).toBe("corr-1");
+    expect(events[1]?.data).toMatchObject({
+      provider: "github",
+      repository: "owner/repo"
+    });
   });
 
   it("supports RepositoryFactory integration from provider sessions", async () => {
