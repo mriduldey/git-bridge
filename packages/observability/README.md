@@ -1,7 +1,30 @@
 # @gitbridge/observability
 
-Provider-neutral diagnostics, structured logging hooks, metrics, and tracing primitives for
-GitBridge.
+Diagnostics, logging, metrics, tracing, and metadata sanitization for GitBridge.
 
-This package contains contracts and no-op/default implementations only. It does not log to a
-console, export metrics, persist traces, or integrate with provider SDKs.
+## Responsibilities
+
+- Create diagnostics services and diagnostic events.
+- Sanitize structured metadata before logging or telemetry.
+- Provide logger, logger factory, metric collector, and tracer abstractions.
+- Provide no-op defaults for SDK-safe configuration.
+
+## Install
+
+```sh
+pnpm add @gitbridge/observability
+```
+
+## Usage
+
+```ts
+import { createDiagnosticsService } from "@gitbridge/observability";
+
+const diagnostics = createDiagnosticsService();
+await diagnostics.subscribe((event) => {
+  console.log(event.kind, event.name);
+});
+```
+
+Diagnostics are observational. Subscriber failures are isolated and must not change repository
+operation behavior.

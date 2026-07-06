@@ -1,10 +1,37 @@
 # @gitbridge/transport
 
-Provider-neutral transport pipeline and middleware for GitBridge.
+Provider-neutral transport primitives and middleware for GitBridge.
 
-This package implements the foundational transport helpers described by ADR-007. It owns immutable
-transport request/response helpers, middleware composition, retry, timeout, request id,
-cancellation, compression negotiation, and noop transport utilities.
+## Responsibilities
 
-It does not own provider resolution, authentication lifecycle, repository lifecycle, domain model
-mapping, cache orchestration, diagnostics implementation, or protocol-specific adapters.
+- Create immutable transport requests and responses.
+- Compose transport middleware.
+- Provide retry, timeout, cancellation, request ID, user agent, and compression middleware.
+- Normalize unknown transport failures into public GitBridge errors.
+
+## Install
+
+```sh
+pnpm add @gitbridge/transport
+```
+
+## Usage
+
+```ts
+import {
+  createRetryMiddleware,
+  createTimeoutMiddleware,
+  createTransportPipeline
+} from "@gitbridge/transport";
+
+const transport = createTransportPipeline({
+  middleware: [createTimeoutMiddleware({ timeoutMs: 10_000 }), createRetryMiddleware()],
+  transport: {
+    async execute(request) {
+      return { body: undefined, status: 204, headers: request.headers };
+    }
+  }
+});
+```
+
+Providers may use transport directly or adapt provider SDK clients through provider-owned adapters.

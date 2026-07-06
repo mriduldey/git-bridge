@@ -14,6 +14,9 @@ importers:
       '@eslint/js':
         specifier: 9.39.4
         version: 9.39.4
+      '@octokit/rest':
+        specifier: ^22.0.1
+        version: 22.0.1
       '@types/node':
         specifier: 22.16.0
         version: 22.16.0
@@ -32,6 +35,182 @@ importers:
       vitest:
         specifier: 3.2.6
         version: 3.2.6(@types/node@22.16.0)
+
+  examples/basic-node:
+    dependencies:
+      '@gitbridge/auth':
+        specifier: workspace:*
+        version: link:../../packages/auth
+      '@gitbridge/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@gitbridge/errors':
+        specifier: workspace:*
+        version: link:../../packages/errors
+      '@gitbridge/provider-github':
+        specifier: workspace:*
+        version: link:../../packages/provider-github
+    devDependencies:
+      '@types/node':
+        specifier: 22.16.0
+        version: 22.16.0
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+
+  examples/branch-listing:
+    dependencies:
+      '@gitbridge/auth':
+        specifier: workspace:*
+        version: link:../../packages/auth
+      '@gitbridge/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@gitbridge/errors':
+        specifier: workspace:*
+        version: link:../../packages/errors
+      '@gitbridge/provider-github':
+        specifier: workspace:*
+        version: link:../../packages/provider-github
+    devDependencies:
+      '@types/node':
+        specifier: 22.16.0
+        version: 22.16.0
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+
+  examples/commit-history:
+    dependencies:
+      '@gitbridge/auth':
+        specifier: workspace:*
+        version: link:../../packages/auth
+      '@gitbridge/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@gitbridge/errors':
+        specifier: workspace:*
+        version: link:../../packages/errors
+      '@gitbridge/provider-github':
+        specifier: workspace:*
+        version: link:../../packages/provider-github
+    devDependencies:
+      '@types/node':
+        specifier: 22.16.0
+        version: 22.16.0
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+
+  examples/github-repository-info:
+    dependencies:
+      '@gitbridge/auth':
+        specifier: workspace:*
+        version: link:../../packages/auth
+      '@gitbridge/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@gitbridge/errors':
+        specifier: workspace:*
+        version: link:../../packages/errors
+      '@gitbridge/provider-github':
+        specifier: workspace:*
+        version: link:../../packages/provider-github
+    devDependencies:
+      '@types/node':
+        specifier: 22.16.0
+        version: 22.16.0
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+
+  examples/issue-listing:
+    dependencies:
+      '@gitbridge/auth':
+        specifier: workspace:*
+        version: link:../../packages/auth
+      '@gitbridge/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@gitbridge/errors':
+        specifier: workspace:*
+        version: link:../../packages/errors
+      '@gitbridge/provider-github':
+        specifier: workspace:*
+        version: link:../../packages/provider-github
+    devDependencies:
+      '@types/node':
+        specifier: 22.16.0
+        version: 22.16.0
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+
+  examples/pull-request-listing:
+    dependencies:
+      '@gitbridge/auth':
+        specifier: workspace:*
+        version: link:../../packages/auth
+      '@gitbridge/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@gitbridge/errors':
+        specifier: workspace:*
+        version: link:../../packages/errors
+      '@gitbridge/provider-github':
+        specifier: workspace:*
+        version: link:../../packages/provider-github
+    devDependencies:
+      '@types/node':
+        specifier: 22.16.0
+        version: 22.16.0
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+
+  examples/repository-file-reader:
+    dependencies:
+      '@gitbridge/auth':
+        specifier: workspace:*
+        version: link:../../packages/auth
+      '@gitbridge/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@gitbridge/errors':
+        specifier: workspace:*
+        version: link:../../packages/errors
+      '@gitbridge/provider-github':
+        specifier: workspace:*
+        version: link:../../packages/provider-github
+    devDependencies:
+      '@types/node':
+        specifier: 22.16.0
+        version: 22.16.0
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+
+  examples/search:
+    dependencies:
+      '@gitbridge/auth':
+        specifier: workspace:*
+        version: link:../../packages/auth
+      '@gitbridge/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@gitbridge/errors':
+        specifier: workspace:*
+        version: link:../../packages/errors
+      '@gitbridge/provider-github':
+        specifier: workspace:*
+        version: link:../../packages/provider-github
+    devDependencies:
+      '@types/node':
+        specifier: 22.16.0
+        version: 22.16.0
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
 
   packages/auth:
     dependencies:
@@ -128,6 +307,25 @@ importers:
         version: 22.0.1
 
   packages/shared: {}
+
+  packages/testing:
+    dependencies:
+      '@gitbridge/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@gitbridge/core':
+        specifier: workspace:*
+        version: link:../core
+      '@gitbridge/errors':
+        specifier: workspace:*
+        version: link:../errors
+      '@gitbridge/shared':
+        specifier: workspace:*
+        version: link:../shared
+    devDependencies:
+      '@gitbridge/provider-github':
+        specifier: workspace:*
+        version: link:../provider-github
 
   packages/transport:
     dependencies:

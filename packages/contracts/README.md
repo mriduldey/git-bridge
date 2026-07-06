@@ -1,9 +1,33 @@
 # @gitbridge/contracts
 
-Provider-neutral public contracts and immutable value models for GitBridge.
+Stable provider-neutral TypeScript contracts for GitBridge.
 
-This package is intentionally type-first. It contains interfaces, semantic aliases, readonly domain
-models, provider ports, capability service contracts, authentication contracts, transport contracts,
-cache contracts, diagnostics contracts, pagination contracts, and public utility types.
+## Responsibilities
 
-It contains no provider-specific implementation, no networking, and no filesystem access.
+- Define repository domain models.
+- Define capability interfaces for files, tree, history, search, branches, tags, releases, issues,
+  and pull requests.
+- Define provider, session, authentication, transport, cache, diagnostics, pagination, metadata, and
+  JSON-safe value contracts.
+
+## Install
+
+```sh
+pnpm add @gitbridge/contracts
+```
+
+Most applications consume these types transitively through `@gitbridge/core` and provider packages.
+Provider authors import this package directly.
+
+## Usage
+
+```ts
+import type { RepositoryInfo } from "@gitbridge/contracts";
+
+function printRepository(info: RepositoryInfo): string {
+  return `${info.fullName} (${info.visibility})`;
+}
+```
+
+Contracts are the compatibility boundary. Runtime packages may implement them, but applications
+should not rely on package internals.

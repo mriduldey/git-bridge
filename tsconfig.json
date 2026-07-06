@@ -5,6 +5,7 @@
   },
   "include": [
     "eslint.config.mjs",
+    "examples/**/*.ts",
     "packages/**/*.ts",
     "prettier.config.mjs",
     "scripts/**/*.mjs",

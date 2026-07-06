@@ -37,6 +37,12 @@ const allowedWorkspaceDependencies = {
     "@gitbridge/transport"
   ]),
   "@gitbridge/shared": new Set([]),
+  "@gitbridge/testing": new Set([
+    "@gitbridge/contracts",
+    "@gitbridge/core",
+    "@gitbridge/errors",
+    "@gitbridge/shared"
+  ]),
   "@gitbridge/transport": new Set([
     "@gitbridge/contracts",
     "@gitbridge/errors",
@@ -216,6 +222,77 @@ describe("package architecture boundaries", () => {
 
     expect(violations).toEqual([]);
   });
+
+  it("keeps testing infrastructure provider-neutral and on public package APIs", () => {
+    const testingPackage = readPackages().find((pkg) => pkg.name === "@gitbridge/testing");
+    const violations = [];
+
+    if (testingPackage === undefined) {
+      violations.push("@gitbridge/testing package is missing");
+    } else {
+      for (const sourceFile of listSourceFiles(testingPackage.directory)) {
+        for (const specifier of readImportSpecifiers(sourceFile)) {
+          if (isProviderSpecifier(specifier)) {
+            violations.push(
+              `${toRepositoryPath(sourceFile)} imports provider package ${specifier}`
+            );
+          }
+
+          if (isPrivateOrSourceSpecifier(specifier)) {
+            violations.push(`${toRepositoryPath(sourceFile)} imports non-public path ${specifier}`);
+          }
+        }
+      }
+    }
+
+    expect(violations).toEqual([]);
+  });
+
+  it("keeps provider SDK types out of provider public entrypoints where practical", () => {
+    const violations = [];
+
+    for (const pkg of readPackages().filter((candidate) =>
+      candidate.name.startsWith("@gitbridge/provider-")
+    )) {
+      const entrypoint = join(pkg.directory, "src", "index.ts");
+
+      if (!existsSync(entrypoint)) {
+        continue;
+      }
+
+      const source = readFileSync(entrypoint, "utf8");
+
+      if (source.includes("@octokit/") || /\bInternalOctokit\w*\b/u.test(source)) {
+        violations.push(`${pkg.name} public entrypoint references provider SDK naming`);
+      }
+    }
+
+    expect(violations).toEqual([]);
+  });
+
+  it("requires provider packages to have reusable certification coverage", () => {
+    const providerPackages = readPackages().filter((pkg) =>
+      pkg.name.startsWith("@gitbridge/provider-")
+    );
+    const certificationTests = listFiles(join(packagesRoot, "testing", "tests")).filter((file) =>
+      file.endsWith(".test.ts")
+    );
+    const violations = [];
+
+    for (const providerPackage of providerPackages) {
+      const providerName = providerPackage.name.replace("@gitbridge/provider-", "");
+      const hasCertification = certificationTests.some((file) => {
+        const source = readFileSync(file, "utf8");
+        return source.includes(providerPackage.name) && source.includes("runProviderContractSuite");
+      });
+
+      if (!hasCertification) {
+        violations.push(`${providerName}: missing reusable provider certification test`);
+      }
+    }
+
+    expect(violations).toEqual([]);
+  });
 });
 
 /**
@@ -341,6 +418,37 @@ function listSourceFiles(directory) {
 }
 
 /**
+ * @param {string} directory
+ * @returns {string[]}
+ */
+function listFiles(directory) {
+  if (!existsSync(directory)) {
+    return [];
+  }
+
+  /** @type {string[]} */
+  const files = [];
+  collect(directory);
+  return files;
+
+  /**
+   * @param {string} currentDirectory
+   */
+  function collect(currentDirectory) {
+    for (const entry of readdirSync(currentDirectory)) {
+      const entryPath = join(currentDirectory, entry);
+
+      if (statSync(entryPath).isDirectory()) {
+        collect(entryPath);
+        continue;
+      }
+
+      files.push(entryPath);
+    }
+  }
+}
+
+/**
  * @param {string} sourceFile
  * @returns {string[]}
  */
@@ -408,6 +516,19 @@ function normalizeExportTargets(exportTarget) {
  */
 function isProviderSpecifier(specifier) {
   return specifier.startsWith("@gitbridge/provider") || specifier.includes("provider-github");
+}
+
+/**
+ * @param {string} specifier
+ * @returns {boolean}
+ */
+function isPrivateOrSourceSpecifier(specifier) {
+  return (
+    specifier.includes("/internal/") ||
+    specifier.includes("/private/") ||
+    specifier.includes("/src/") ||
+    specifier.endsWith("/src")
+  );
 }
 
 /**

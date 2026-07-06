@@ -1,0 +1,21 @@
+{
+  "name": "@gitbridge/example-repository-file-reader",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@gitbridge/auth": "workspace:*",
+    "@gitbridge/core": "workspace:*",
+    "@gitbridge/errors": "workspace:*",
+    "@gitbridge/provider-github": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "22.16.0",
+    "typescript": "5.9.3"
+  }
+}

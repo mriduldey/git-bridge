@@ -1,19 +1,26 @@
 # @gitbridge/shared
 
-Shared, provider-neutral implementation utilities for GitBridge packages.
+Shared implementation utilities for GitBridge packages.
 
-This package is intentionally small. It contains only deterministic helpers that are independent of
-providers, domain models, frameworks, transports, configuration, logging, and network behavior.
+## Responsibilities
 
-## Modules
+- Provide small assertion, async, constant, guard, object, path, string, and type helpers.
+- Avoid provider-specific behavior.
+- Keep common implementation utilities out of public runtime package internals.
 
-- `types` - reusable TypeScript utility types.
-- `assertions` - invariant helpers for package internals.
-- `guards` - primitive runtime type guards.
-- `objects` - small object helpers.
-- `strings` - deterministic string normalization helpers.
-- `paths` - platform-independent slash-delimited path helpers.
-- `async` - basic Promise and cancellation helpers.
-- `constants` - immutable empty sentinels.
+## Install
 
-All exports are available from the package root and through module subpaths.
+```sh
+pnpm add @gitbridge/shared
+```
+
+Applications usually do not need this package directly. Prefer the public APIs exposed by
+`@gitbridge/core`, provider packages, and `@gitbridge/contracts`.
+
+## Usage
+
+```ts
+import { deepFreeze } from "@gitbridge/shared";
+
+const value = deepFreeze({ stable: true });
+```

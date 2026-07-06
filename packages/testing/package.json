@@ -1,0 +1,33 @@
+{
+  "name": "@gitbridge/testing",
+  "version": "0.0.0",
+  "description": "Reusable provider contract testing and certification utilities for GitBridge providers.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run --config vitest.config.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@gitbridge/contracts": "workspace:*",
+    "@gitbridge/core": "workspace:*",
+    "@gitbridge/errors": "workspace:*",
+    "@gitbridge/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@gitbridge/provider-github": "workspace:*"
+  }
+}
