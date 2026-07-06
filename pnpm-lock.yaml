@@ -264,6 +264,18 @@ importers:
 
   packages/errors: {}
 
+  packages/gitbridge:
+    dependencies:
+      '@gitbridge/auth':
+        specifier: workspace:*
+        version: link:../auth
+      '@gitbridge/core':
+        specifier: workspace:*
+        version: link:../core
+      '@gitbridge/errors':
+        specifier: workspace:*
+        version: link:../errors
+
   packages/observability:
     dependencies:
       '@gitbridge/contracts':

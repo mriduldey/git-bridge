@@ -1,7 +1,7 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "outDir": "dist",
+    "outDir": "dist/typecheck",
     "rootDir": "src",
     "types": ["node", "vitest"]
   },

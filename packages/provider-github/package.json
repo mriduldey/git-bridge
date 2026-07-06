@@ -1,6 +1,6 @@
 {
   "name": "@gitbridge/provider-github",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "GitHub provider foundation for GitBridge.",
   "license": "MIT",
   "type": "module",
@@ -11,13 +11,15 @@
   ],
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
+      "types": "./dist/esm/index.d.ts",
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js",
+      "default": "./dist/esm/index.js"
     }
   },
-  "types": "./dist/index.d.ts",
+  "types": "./dist/esm/index.d.ts",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.esm.json && node ../../scripts/build/build-cjs.mjs .",
     "test": "vitest run --config vitest.config.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
@@ -31,5 +33,30 @@
     "@gitbridge/shared": "workspace:*",
     "@gitbridge/transport": "workspace:*",
     "@octokit/rest": "^22.0.1"
+  },
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mriduldey/git-bridge.git",
+    "directory": "packages/provider-github"
+  },
+  "bugs": {
+    "url": "https://github.com/mriduldey/git-bridge/issues"
+  },
+  "homepage": "https://github.com/mriduldey/git-bridge#readme",
+  "keywords": [
+    "git",
+    "github",
+    "sdk",
+    "typescript",
+    "provider-neutral"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   }
 }

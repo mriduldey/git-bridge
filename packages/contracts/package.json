@@ -1,6 +1,6 @@
 {
   "name": "@gitbridge/contracts",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Provider-neutral public contracts and immutable domain models for GitBridge.",
   "license": "MIT",
   "type": "module",
@@ -11,54 +11,101 @@
   ],
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
+      "types": "./dist/esm/index.d.ts",
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js",
+      "default": "./dist/esm/index.js"
     },
     "./authentication": {
-      "types": "./dist/authentication/index.d.ts",
-      "default": "./dist/authentication/index.js"
+      "types": "./dist/esm/authentication/index.d.ts",
+      "import": "./dist/esm/authentication/index.js",
+      "require": "./dist/cjs/authentication/index.js",
+      "default": "./dist/esm/authentication/index.js"
     },
     "./cache": {
-      "types": "./dist/cache/index.d.ts",
-      "default": "./dist/cache/index.js"
+      "types": "./dist/esm/cache/index.d.ts",
+      "import": "./dist/esm/cache/index.js",
+      "require": "./dist/cjs/cache/index.js",
+      "default": "./dist/esm/cache/index.js"
     },
     "./capabilities": {
-      "types": "./dist/capabilities/index.d.ts",
-      "default": "./dist/capabilities/index.js"
+      "types": "./dist/esm/capabilities/index.d.ts",
+      "import": "./dist/esm/capabilities/index.js",
+      "require": "./dist/cjs/capabilities/index.js",
+      "default": "./dist/esm/capabilities/index.js"
     },
     "./diagnostics": {
-      "types": "./dist/diagnostics/index.d.ts",
-      "default": "./dist/diagnostics/index.js"
+      "types": "./dist/esm/diagnostics/index.d.ts",
+      "import": "./dist/esm/diagnostics/index.js",
+      "require": "./dist/cjs/diagnostics/index.js",
+      "default": "./dist/esm/diagnostics/index.js"
     },
     "./domain": {
-      "types": "./dist/domain/index.d.ts",
-      "default": "./dist/domain/index.js"
+      "types": "./dist/esm/domain/index.d.ts",
+      "import": "./dist/esm/domain/index.js",
+      "require": "./dist/cjs/domain/index.js",
+      "default": "./dist/esm/domain/index.js"
     },
     "./metadata": {
-      "types": "./dist/metadata/index.d.ts",
-      "default": "./dist/metadata/index.js"
+      "types": "./dist/esm/metadata/index.d.ts",
+      "import": "./dist/esm/metadata/index.js",
+      "require": "./dist/cjs/metadata/index.js",
+      "default": "./dist/esm/metadata/index.js"
     },
     "./pagination": {
-      "types": "./dist/pagination/index.d.ts",
-      "default": "./dist/pagination/index.js"
+      "types": "./dist/esm/pagination/index.d.ts",
+      "import": "./dist/esm/pagination/index.js",
+      "require": "./dist/cjs/pagination/index.js",
+      "default": "./dist/esm/pagination/index.js"
     },
     "./provider": {
-      "types": "./dist/provider/index.d.ts",
-      "default": "./dist/provider/index.js"
+      "types": "./dist/esm/provider/index.d.ts",
+      "import": "./dist/esm/provider/index.js",
+      "require": "./dist/cjs/provider/index.js",
+      "default": "./dist/esm/provider/index.js"
     },
     "./transport": {
-      "types": "./dist/transport/index.d.ts",
-      "default": "./dist/transport/index.js"
+      "types": "./dist/esm/transport/index.d.ts",
+      "import": "./dist/esm/transport/index.js",
+      "require": "./dist/cjs/transport/index.js",
+      "default": "./dist/esm/transport/index.js"
     },
     "./types": {
-      "types": "./dist/types/index.d.ts",
-      "default": "./dist/types/index.js"
+      "types": "./dist/esm/types/index.d.ts",
+      "import": "./dist/esm/types/index.js",
+      "require": "./dist/cjs/types/index.js",
+      "default": "./dist/esm/types/index.js"
     }
   },
-  "types": "./dist/index.d.ts",
+  "types": "./dist/esm/index.d.ts",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.esm.json && node ../../scripts/build/build-cjs.mjs .",
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mriduldey/git-bridge.git",
+    "directory": "packages/contracts"
+  },
+  "bugs": {
+    "url": "https://github.com/mriduldey/git-bridge/issues"
+  },
+  "homepage": "https://github.com/mriduldey/git-bridge#readme",
+  "keywords": [
+    "git",
+    "github",
+    "sdk",
+    "typescript",
+    "provider-neutral"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   }
 }

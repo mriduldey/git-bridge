@@ -1,6 +1,6 @@
 {
   "name": "@gitbridge/shared",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Provider-neutral shared utilities for GitBridge packages.",
   "license": "MIT",
   "type": "module",
@@ -11,46 +11,89 @@
   ],
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
+      "types": "./dist/esm/index.d.ts",
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js",
+      "default": "./dist/esm/index.js"
     },
     "./assertions": {
-      "types": "./dist/assertions/index.d.ts",
-      "default": "./dist/assertions/index.js"
+      "types": "./dist/esm/assertions/index.d.ts",
+      "import": "./dist/esm/assertions/index.js",
+      "require": "./dist/cjs/assertions/index.js",
+      "default": "./dist/esm/assertions/index.js"
     },
     "./async": {
-      "types": "./dist/async/index.d.ts",
-      "default": "./dist/async/index.js"
+      "types": "./dist/esm/async/index.d.ts",
+      "import": "./dist/esm/async/index.js",
+      "require": "./dist/cjs/async/index.js",
+      "default": "./dist/esm/async/index.js"
     },
     "./constants": {
-      "types": "./dist/constants/index.d.ts",
-      "default": "./dist/constants/index.js"
+      "types": "./dist/esm/constants/index.d.ts",
+      "import": "./dist/esm/constants/index.js",
+      "require": "./dist/cjs/constants/index.js",
+      "default": "./dist/esm/constants/index.js"
     },
     "./guards": {
-      "types": "./dist/guards/index.d.ts",
-      "default": "./dist/guards/index.js"
+      "types": "./dist/esm/guards/index.d.ts",
+      "import": "./dist/esm/guards/index.js",
+      "require": "./dist/cjs/guards/index.js",
+      "default": "./dist/esm/guards/index.js"
     },
     "./objects": {
-      "types": "./dist/objects/index.d.ts",
-      "default": "./dist/objects/index.js"
+      "types": "./dist/esm/objects/index.d.ts",
+      "import": "./dist/esm/objects/index.js",
+      "require": "./dist/cjs/objects/index.js",
+      "default": "./dist/esm/objects/index.js"
     },
     "./paths": {
-      "types": "./dist/paths/index.d.ts",
-      "default": "./dist/paths/index.js"
+      "types": "./dist/esm/paths/index.d.ts",
+      "import": "./dist/esm/paths/index.js",
+      "require": "./dist/cjs/paths/index.js",
+      "default": "./dist/esm/paths/index.js"
     },
     "./strings": {
-      "types": "./dist/strings/index.d.ts",
-      "default": "./dist/strings/index.js"
+      "types": "./dist/esm/strings/index.d.ts",
+      "import": "./dist/esm/strings/index.js",
+      "require": "./dist/cjs/strings/index.js",
+      "default": "./dist/esm/strings/index.js"
     },
     "./types": {
-      "types": "./dist/types/index.d.ts",
-      "default": "./dist/types/index.js"
+      "types": "./dist/esm/types/index.d.ts",
+      "import": "./dist/esm/types/index.js",
+      "require": "./dist/cjs/types/index.js",
+      "default": "./dist/esm/types/index.js"
     }
   },
-  "types": "./dist/index.d.ts",
+  "types": "./dist/esm/index.d.ts",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.esm.json && node ../../scripts/build/build-cjs.mjs .",
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mriduldey/git-bridge.git",
+    "directory": "packages/shared"
+  },
+  "bugs": {
+    "url": "https://github.com/mriduldey/git-bridge/issues"
+  },
+  "homepage": "https://github.com/mriduldey/git-bridge#readme",
+  "keywords": [
+    "git",
+    "github",
+    "sdk",
+    "typescript",
+    "provider-neutral"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   }
 }

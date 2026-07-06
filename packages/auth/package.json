@@ -1,6 +1,6 @@
 {
   "name": "@gitbridge/auth",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Provider-neutral authentication primitives for GitBridge.",
   "license": "MIT",
   "type": "module",
@@ -11,41 +11,57 @@
   ],
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
+      "types": "./dist/esm/index.d.ts",
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js",
+      "default": "./dist/esm/index.js"
     },
     "./auth-config": {
-      "types": "./dist/auth-config.d.ts",
-      "default": "./dist/auth-config.js"
+      "types": "./dist/esm/auth-config.d.ts",
+      "import": "./dist/esm/auth-config.js",
+      "require": "./dist/cjs/auth-config.js",
+      "default": "./dist/esm/auth-config.js"
     },
     "./auth-context": {
-      "types": "./dist/auth-context.d.ts",
-      "default": "./dist/auth-context.js"
+      "types": "./dist/esm/auth-context.d.ts",
+      "import": "./dist/esm/auth-context.js",
+      "require": "./dist/cjs/auth-context.js",
+      "default": "./dist/esm/auth-context.js"
     },
     "./auth-kind": {
-      "types": "./dist/auth-kind.d.ts",
-      "default": "./dist/auth-kind.js"
+      "types": "./dist/esm/auth-kind.d.ts",
+      "import": "./dist/esm/auth-kind.js",
+      "require": "./dist/cjs/auth-kind.js",
+      "default": "./dist/esm/auth-kind.js"
     },
     "./credentials": {
-      "types": "./dist/credentials.d.ts",
-      "default": "./dist/credentials.js"
+      "types": "./dist/esm/credentials.d.ts",
+      "import": "./dist/esm/credentials.js",
+      "require": "./dist/cjs/credentials.js",
+      "default": "./dist/esm/credentials.js"
     },
     "./factory": {
-      "types": "./dist/factory.d.ts",
-      "default": "./dist/factory.js"
+      "types": "./dist/esm/factory.d.ts",
+      "import": "./dist/esm/factory.js",
+      "require": "./dist/cjs/factory.js",
+      "default": "./dist/esm/factory.js"
     },
     "./guards": {
-      "types": "./dist/guards.d.ts",
-      "default": "./dist/guards.js"
+      "types": "./dist/esm/guards.d.ts",
+      "import": "./dist/esm/guards.js",
+      "require": "./dist/cjs/guards.js",
+      "default": "./dist/esm/guards.js"
     },
     "./redaction": {
-      "types": "./dist/redaction.d.ts",
-      "default": "./dist/redaction.js"
+      "types": "./dist/esm/redaction.d.ts",
+      "import": "./dist/esm/redaction.js",
+      "require": "./dist/cjs/redaction.js",
+      "default": "./dist/esm/redaction.js"
     }
   },
-  "types": "./dist/index.d.ts",
+  "types": "./dist/esm/index.d.ts",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.esm.json && node ../../scripts/build/build-cjs.mjs .",
     "test": "vitest run --config vitest.config.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
@@ -53,5 +69,30 @@
     "@gitbridge/contracts": "workspace:*",
     "@gitbridge/errors": "workspace:*",
     "@gitbridge/shared": "workspace:*"
+  },
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mriduldey/git-bridge.git",
+    "directory": "packages/auth"
+  },
+  "bugs": {
+    "url": "https://github.com/mriduldey/git-bridge/issues"
+  },
+  "homepage": "https://github.com/mriduldey/git-bridge#readme",
+  "keywords": [
+    "git",
+    "github",
+    "sdk",
+    "typescript",
+    "provider-neutral"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   }
 }

@@ -1,5 +1,7 @@
 # Changesets
 
-This directory is reserved for Changesets release metadata.
+Changesets are the canonical release-intent records for GitBridge.
 
-Runtime packages are not implemented during Repository Bootstrap.
+Use `pnpm changeset` for user-facing package changes, then `pnpm version-packages` during release
+preparation to update package versions and changelogs. Public packages are fixed together for
+lockstep versioning.

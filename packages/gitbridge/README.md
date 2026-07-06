@@ -1,0 +1,28 @@
+# gitbridge
+
+Primary public entry point for GitBridge.
+
+## Install
+
+```sh
+pnpm add gitbridge @gitbridge/provider-github
+```
+
+Install at least one provider package before opening repositories.
+
+## Usage
+
+```ts
+import { createGitBridgeClient } from "gitbridge";
+import { createGitHubProviderConfig } from "@gitbridge/provider-github";
+
+const client = createGitBridgeClient({
+  ...createGitHubProviderConfig()
+});
+```
+
+## Public API
+
+This package re-exports stable public APIs from `@gitbridge/core`, `@gitbridge/errors`, and
+`@gitbridge/auth`. Use `@gitbridge/contracts` directly when you need the full provider-neutral
+contract catalog. This package does not bundle or expose provider internals.

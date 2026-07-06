@@ -13,12 +13,16 @@
   "scripts": {
     "build": "turbo run build",
     "check": "pnpm run format:check && pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run validate:architecture",
+    "changeset": "changeset",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint .",
+    "pack:dry-run": "node scripts/release/pack-dry-run.mjs",
+    "release:check": "pnpm lint && pnpm build && pnpm typecheck && pnpm test && pnpm run validate:architecture && pnpm run pack:dry-run",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit",
-    "validate:architecture": "vitest run scripts/validation/repository-structure.test.mjs"
+    "typecheck": "turbo run typecheck && tsc --noEmit",
+    "validate:architecture": "vitest run scripts/validation/repository-structure.test.mjs",
+    "version-packages": "changeset version"
   },
   "devDependencies": {
     "@changesets/cli": "2.31.0",

@@ -8,6 +8,12 @@ const packagesRoot = join(repositoryRoot, "packages");
 
 /** @type {Record<string, Set<string>>} */
 const allowedWorkspaceDependencies = {
+  gitbridge: new Set([
+    "@gitbridge/auth",
+    "@gitbridge/contracts",
+    "@gitbridge/core",
+    "@gitbridge/errors"
+  ]),
   "@gitbridge/auth": new Set(["@gitbridge/contracts", "@gitbridge/errors", "@gitbridge/shared"]),
   "@gitbridge/cache": new Set(["@gitbridge/contracts", "@gitbridge/errors", "@gitbridge/shared"]),
   "@gitbridge/contracts": new Set([]),
@@ -72,6 +78,7 @@ const requiredPaths = [
   "turbo.json",
   "tsconfig.base.json",
   "README.md",
+  "CHANGELOG.md",
   "LICENSE",
   "SECURITY.md",
   "CONTRIBUTING.md",
@@ -223,6 +230,90 @@ describe("package architecture boundaries", () => {
     expect(violations).toEqual([]);
   });
 
+  it("requires release-ready package manifests for publishable packages", () => {
+    const violations = [];
+
+    for (const pkg of readPackages()) {
+      if (pkg.private === true) {
+        continue;
+      }
+
+      const manifest = pkg.manifest;
+
+      if (manifest.version !== "0.1.0") {
+        violations.push(`${pkg.name}: expected v0.1.0`);
+      }
+
+      if (manifest.license !== "MIT") {
+        violations.push(`${pkg.name}: missing MIT license metadata`);
+      }
+
+      if (manifest.sideEffects !== false) {
+        violations.push(`${pkg.name}: sideEffects must be false`);
+      }
+
+      if (!Array.isArray(manifest.files) || !manifest.files.includes("dist")) {
+        violations.push(`${pkg.name}: files must include dist`);
+      }
+
+      if (!Array.isArray(manifest.files) || !manifest.files.includes("README.md")) {
+        violations.push(`${pkg.name}: files must include README.md`);
+      }
+
+      if (manifest.main !== "./dist/cjs/index.js") {
+        violations.push(`${pkg.name}: main must target CommonJS output`);
+      }
+
+      if (manifest.module !== "./dist/esm/index.js") {
+        violations.push(`${pkg.name}: module must target ESM output`);
+      }
+
+      if (manifest.types !== "./dist/esm/index.d.ts") {
+        violations.push(`${pkg.name}: types must target generated declarations`);
+      }
+
+      if (manifest.engines?.node !== ">=20.19.0") {
+        violations.push(`${pkg.name}: missing Node.js engine metadata`);
+      }
+
+      if (manifest.repository?.url !== "git+https://github.com/mriduldey/git-bridge.git") {
+        violations.push(`${pkg.name}: missing repository metadata`);
+      }
+
+      if (manifest.repository?.directory !== toRepositoryPath(pkg.directory)) {
+        violations.push(`${pkg.name}: repository.directory must point at package directory`);
+      }
+
+      if (manifest.bugs?.url !== "https://github.com/mriduldey/git-bridge/issues") {
+        violations.push(`${pkg.name}: missing bugs URL`);
+      }
+
+      if (manifest.homepage !== "https://github.com/mriduldey/git-bridge#readme") {
+        violations.push(`${pkg.name}: missing homepage URL`);
+      }
+
+      if (!Array.isArray(manifest.keywords) || manifest.keywords.length === 0) {
+        violations.push(`${pkg.name}: missing npm keywords`);
+      }
+
+      if (manifest.publishConfig?.access !== "public") {
+        violations.push(`${pkg.name}: publishConfig.access must be public`);
+      }
+
+      if (manifest.publishConfig?.provenance !== true) {
+        violations.push(`${pkg.name}: publishConfig.provenance must be true`);
+      }
+
+      for (const [exportKey, exportTarget] of Object.entries(pkg.exports)) {
+        if (!isConditionalExport(exportTarget)) {
+          violations.push(`${pkg.name}: export ${exportKey} must define types/import/require`);
+        }
+      }
+    }
+
+    expect(violations).toEqual([]);
+  });
+
   it("keeps testing infrastructure provider-neutral and on public package APIs", () => {
     const testingPackage = readPackages().find((pkg) => pkg.name === "@gitbridge/testing");
     const violations = [];
@@ -308,7 +399,9 @@ function pathsExist(paths) {
  *   directory: string;
  *   exportKeys: Set<string>;
  *   exports: Record<string, unknown>;
+ *   manifest: any;
  *   name: string;
+ *   private: boolean;
  *   workspaceDependencies: string[];
  * }>}
  */
@@ -333,11 +426,33 @@ function readPackages() {
         directory,
         exportKeys: new Set(Object.keys(manifest.exports ?? {})),
         exports: manifest.exports ?? {},
+        manifest,
         name: manifest.name,
+        private: manifest.private === true,
         workspaceDependencies
       };
     })
     .sort((left, right) => left.name.localeCompare(right.name));
+}
+
+/**
+ * @param {unknown} exportTarget
+ * @returns {boolean}
+ */
+function isConditionalExport(exportTarget) {
+  /** @type {{ types?: unknown; import?: unknown; require?: unknown } | null} */
+  const conditionalExport =
+    exportTarget !== null && typeof exportTarget === "object" ? exportTarget : null;
+
+  return (
+    conditionalExport !== null &&
+    typeof conditionalExport.types === "string" &&
+    conditionalExport.types.startsWith("./dist/esm/") &&
+    typeof conditionalExport.import === "string" &&
+    conditionalExport.import.startsWith("./dist/esm/") &&
+    typeof conditionalExport.require === "string" &&
+    conditionalExport.require.startsWith("./dist/cjs/")
+  );
 }
 
 /**

@@ -42,7 +42,7 @@ See [docs/architecture/INDEX.md](docs/architecture/INDEX.md) for ADRs, diagrams,
 Install the core package and at least one provider:
 
 ```sh
-pnpm add @gitbridge/core @gitbridge/provider-github @gitbridge/auth
+pnpm add gitbridge @gitbridge/provider-github
 ```
 
 This repository uses Node.js `>=20.19.0` and pnpm `>=10.0.0`.
@@ -56,7 +56,7 @@ files, tree, history, search, branches, tags, releases, issues, and pull request
 
 ```ts
 import { createAuthContext, tokenAuth } from "@gitbridge/auth";
-import { createGitBridgeClient, type AuthenticationStrategy } from "@gitbridge/core";
+import { createGitBridgeClient, type AuthenticationStrategy } from "gitbridge";
 import { createGitHubProviderConfig, GitHubProviderId } from "@gitbridge/provider-github";
 
 const token = process.env.GITHUB_TOKEN;
@@ -213,6 +213,15 @@ pnpm typecheck
 pnpm test
 pnpm run validate:architecture
 ```
+
+Release readiness can be checked locally without publishing:
+
+```sh
+pnpm run release:check
+```
+
+Public packages use Changesets for lockstep versioning and npm provenance metadata. Publishing is a
+manual maintainer action after all release checks pass.
 
 ## Roadmap
 
