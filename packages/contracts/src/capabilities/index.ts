@@ -125,6 +125,7 @@ export interface FilesCapability {
   stream(path: FilePath, options?: StreamOptions): Promise<AsyncIterable<Uint8Array>>;
   exists(path: FilePath, options?: OperationOptions): Promise<boolean>;
   metadata(path: FilePath, options?: OperationOptions): Promise<FileInfo>;
+  getMetadata(path: FilePath, options?: OperationOptions): Promise<FileInfo>;
 }
 
 export interface TreeCapability {
@@ -176,6 +177,13 @@ export interface Repository {
   readonly capabilities: CapabilityMap;
   readonly extensions: Readonly<Record<string, unknown>>;
   ref(reference: ReferenceName | Reference): RepositoryRef;
+  defaultRef(): RepositoryRef;
+  readText(path: FilePath, options?: ReadFileOptions): Promise<string>;
+  readJson<TValue extends JsonValue = JsonValue>(
+    path: FilePath,
+    options?: ReadFileOptions
+  ): Promise<TValue>;
+  exists(path: FilePath, options?: OperationOptions): Promise<boolean>;
   dispose(): Promise<void>;
 }
 
@@ -185,6 +193,7 @@ export interface RepositoryRef {
   readonly files: FilesCapability;
   readonly tree: TreeCapability;
   readonly history: HistoryCapability;
+  readonly commits: HistoryCapability;
   readonly search: SearchCapability;
   readonly branches: BranchesCapability;
   readonly tags: TagsCapability;

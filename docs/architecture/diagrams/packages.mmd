@@ -1,0 +1,54 @@
+flowchart TD
+  Gitbridge["gitbridge"]
+  Core["@gitbridge/core"]
+  Contracts["@gitbridge/contracts"]
+  Auth["@gitbridge/auth"]
+  Cache["@gitbridge/cache"]
+  Errors["@gitbridge/errors"]
+  Observability["@gitbridge/observability"]
+  Shared["@gitbridge/shared"]
+  Testing["@gitbridge/testing"]
+  Transport["@gitbridge/transport"]
+  GitHub["@gitbridge/provider-github"]
+
+  Gitbridge --> Auth
+  Gitbridge --> Core
+  Gitbridge --> Errors
+
+  Core --> Auth
+  Core --> Cache
+  Core --> Contracts
+  Core --> Errors
+  Core --> Observability
+  Core --> Shared
+  Core --> Transport
+
+  Auth --> Contracts
+  Auth --> Errors
+  Auth --> Shared
+
+  Cache --> Contracts
+  Cache --> Errors
+  Cache --> Shared
+
+  Observability --> Contracts
+  Observability --> Errors
+  Observability --> Shared
+
+  Transport --> Contracts
+  Transport --> Errors
+  Transport --> Shared
+
+  GitHub --> Auth
+  GitHub --> Cache
+  GitHub --> Contracts
+  GitHub --> Core
+  GitHub --> Errors
+  GitHub --> Observability
+  GitHub --> Shared
+  GitHub --> Transport
+
+  Testing --> Contracts
+  Testing --> Core
+  Testing --> Errors
+  Testing --> Shared

@@ -31,8 +31,7 @@
     "@gitbridge/errors": "workspace:*",
     "@gitbridge/observability": "workspace:*",
     "@gitbridge/shared": "workspace:*",
-    "@gitbridge/transport": "workspace:*",
-    "@octokit/rest": "^22.0.1"
+    "@gitbridge/transport": "workspace:*"
   },
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",

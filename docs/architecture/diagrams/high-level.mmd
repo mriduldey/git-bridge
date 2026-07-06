@@ -1,0 +1,13 @@
+flowchart TD
+  App["Application"]
+  Client["GitBridge Client"]
+  Core["@gitbridge/core"]
+  Provider["Provider Adapter"]
+  Transport["@gitbridge/transport"]
+  Host["Repository Host"]
+
+  App --> Client
+  Client --> Core
+  Core --> Provider
+  Provider --> Transport
+  Transport --> Host

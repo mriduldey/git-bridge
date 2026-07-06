@@ -1,0 +1,13 @@
+flowchart TD
+  Runtime["Runtime Event"]
+  Diagnostics["DiagnosticsService"]
+  Logger["Logger"]
+  Metrics["MetricCollector"]
+  Tracer["Tracer"]
+  Subscriber["Subscriber"]
+
+  Runtime --> Diagnostics
+  Diagnostics --> Subscriber
+  Runtime --> Logger
+  Runtime --> Metrics
+  Runtime --> Tracer

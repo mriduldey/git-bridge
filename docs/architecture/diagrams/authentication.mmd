@@ -1,0 +1,12 @@
+sequenceDiagram
+  participant Client as GitBridgeClient
+  participant Strategy as AuthenticationStrategy
+  participant Context as AuthenticationContext
+  participant Provider as ProviderSession
+  participant Transport as Transport
+
+  Client->>Strategy: authenticate(provider)
+  Strategy-->>Client: immutable context
+  Client->>Provider: createSession(context)
+  Provider->>Transport: execute(request with auth metadata)
+  Transport-->>Provider: response

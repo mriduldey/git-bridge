@@ -460,6 +460,9 @@ function createFakeSessionCapabilities(
       async metadata(path: string) {
         return createFixtureFileInfo({ path });
       },
+      async getMetadata(path: string) {
+        return createFixtureFileInfo({ path });
+      },
       async readBinary() {
         return new TextEncoder().encode("fixture");
       },

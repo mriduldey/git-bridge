@@ -5,21 +5,17 @@ import {
   runProviderContractSuite,
   type CapabilityTestMatrix
 } from "../src/index.js";
-import {
-  createGitHubProvider,
-  type GitHubOctokitAdapter,
-  type GitHubOctokitResponse
-} from "@gitbridge/provider-github";
+import type { Transport, TransportRequest, TransportResponse } from "@gitbridge/contracts";
+import { createGitHubProvider } from "@gitbridge/provider-github";
 
 describe("GitHub provider certification smoke test", () => {
   it("runs the GitHub provider through the reusable contract suite with mocked SDK calls", async () => {
     const provider = createGitHubProvider({
-      octokit: () =>
-        createMockOctokit({
-          "/repos/openai/codex": createRepositoryModel(),
-          "/repos/openai/codex/contents/README.md": createContentModel("README.md", "# Hello"),
-          "/repos/openai/codex/issues/1": createIssueModel(1)
-        })
+      transport: createMockTransport({
+        "/repos/openai/codex": createRepositoryModel(),
+        "/repos/openai/codex/contents/README.md": createContentModel("README.md", "# Hello"),
+        "/repos/openai/codex/issues/1": createIssueModel(1)
+      })
     });
     const capabilities: CapabilityTestMatrix = createCapabilityTestMatrix([
       {
@@ -61,18 +57,16 @@ describe("GitHub provider certification smoke test", () => {
   });
 });
 
-function createMockOctokit(routes: Readonly<Record<string, unknown>>): GitHubOctokitAdapter {
+function createMockTransport(routes: Readonly<Record<string, unknown>>): Transport {
   return {
-    async request<TBody = unknown>(
-      request: Parameters<GitHubOctokitAdapter["request"]>[0]
-    ): Promise<GitHubOctokitResponse<TBody>> {
-      const route = routes[request.url];
+    async execute<TBody = unknown>(request: TransportRequest): Promise<TransportResponse<TBody>> {
+      const route = routes[request.target];
 
       if (route === undefined) {
         return { status: 404 };
       }
 
-      return { data: route as TBody, status: 200 };
+      return { body: route as TBody, status: 200 };
     }
   };
 }

@@ -14,12 +14,17 @@ Install at least one provider package before opening repositories.
 
 ```ts
 import { createGitBridgeClient } from "gitbridge";
-import { createGitHubProviderConfig } from "@gitbridge/provider-github";
+import { createGitHubProviderConfig, githubTokenAuth } from "@gitbridge/provider-github";
+
+const token = process.env.GITBRIDGE_GITHUB_TOKEN;
 
 const client = createGitBridgeClient({
-  ...createGitHubProviderConfig()
+  ...createGitHubProviderConfig(),
+  authentication: token === undefined ? undefined : githubTokenAuth(token)
 });
 ```
+
+For GitHub-first applications, prefer `createGitHubClient` from `@gitbridge/provider-github`.
 
 ## Public API
 

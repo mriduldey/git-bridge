@@ -1,0 +1,11 @@
+flowchart TD
+  Failure["Provider or Transport Failure"]
+  Boundary["Boundary Translation"]
+  Error["GitBridgeError"]
+  Diagnostics["Safe Diagnostics"]
+  Caller["Application"]
+
+  Failure --> Boundary
+  Boundary --> Error
+  Error --> Diagnostics
+  Error --> Caller

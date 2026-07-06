@@ -104,6 +104,23 @@ const toolingDirectories = [
   "tooling/shared"
 ];
 
+const requiredArchitectureDocuments = [
+  "docs/architecture/ARCHITECTURE.md",
+  "docs/architecture/INDEX.md",
+  "docs/architecture/README.md",
+  "docs/architecture/DOCUMENTATION_STYLE_GUIDE.md",
+  "docs/architecture/glossary.md",
+  "docs/architecture/diagrams/authentication.mmd",
+  "docs/architecture/diagrams/cache.mmd",
+  "docs/architecture/diagrams/errors.mmd",
+  "docs/architecture/diagrams/high-level.mmd",
+  "docs/architecture/diagrams/observability.mmd",
+  "docs/architecture/diagrams/packages.mmd",
+  "docs/architecture/diagrams/provider-flow.mmd",
+  "docs/architecture/diagrams/request-lifecycle.mmd",
+  "docs/architecture/diagrams/transport.mmd"
+];
+
 describe("repository bootstrap structure", () => {
   it("contains the canonical top-level project structure", () => {
     expect(pathsExist(requiredPaths)).toEqual([]);
@@ -115,6 +132,27 @@ describe("repository bootstrap structure", () => {
 
   it("contains the canonical tooling structure", () => {
     expect(pathsExist(toolingDirectories)).toEqual([]);
+  });
+});
+
+describe("architecture documentation", () => {
+  it("keeps derived architecture documentation and diagrams populated", () => {
+    const violations = [];
+
+    for (const documentPath of requiredArchitectureDocuments) {
+      const absolutePath = join(repositoryRoot, documentPath);
+
+      if (!existsSync(absolutePath)) {
+        violations.push(`${documentPath}: missing`);
+        continue;
+      }
+
+      if (readFileSync(absolutePath, "utf8").trim().length === 0) {
+        violations.push(`${documentPath}: empty`);
+      }
+    }
+
+    expect(violations).toEqual([]);
   });
 });
 
@@ -195,7 +233,9 @@ describe("package architecture boundaries", () => {
           }
 
           if (!packageImport.target.exportKeys.has(packageImport.exportKey)) {
-            violations.push(`${toRepositoryPath(sourceFile)} imports ${specifier}`);
+            violations.push(
+              `${toRepositoryPath(sourceFile)} imports ${specifier}, but ${packageImport.target.name} does not export ${packageImport.exportKey}`
+            );
           }
         }
       }
@@ -223,6 +263,46 @@ describe("package architecture boundaries", () => {
           if (target.startsWith("./src/")) {
             violations.push(`${pkg.name} export ${exportKey} targets source file ${target}`);
           }
+        }
+      }
+    }
+
+    expect(violations).toEqual([]);
+  });
+
+  it("keeps provider communication behind Transport and out of provider SDKs", () => {
+    const violations = [];
+
+    for (const pkg of readPackages().filter((candidate) =>
+      candidate.name.startsWith("@gitbridge/provider-")
+    )) {
+      const manifestDependencies = Object.keys(pkg.manifest.dependencies ?? {});
+
+      for (const dependency of manifestDependencies) {
+        if (!dependency.startsWith("@gitbridge/")) {
+          violations.push(
+            `${pkg.name} declares provider/protocol runtime dependency ${dependency}`
+          );
+        }
+      }
+
+      for (const sourceFile of listSourceFiles(pkg.directory)) {
+        const source = readFileSync(sourceFile, "utf8");
+
+        for (const specifier of readImportSpecifiers(sourceFile)) {
+          if (isProviderSdkSpecifier(specifier)) {
+            violations.push(`${toRepositoryPath(sourceFile)} imports provider SDK ${specifier}`);
+          }
+        }
+
+        if (/\b(fetch|XMLHttpRequest)\s*\(/u.test(source)) {
+          violations.push(`${toRepositoryPath(sourceFile)} bypasses Transport with direct IO`);
+        }
+
+        if (/\bOctokit\b/u.test(source)) {
+          violations.push(
+            `${toRepositoryPath(sourceFile)} references Octokit implementation detail`
+          );
         }
       }
     }
@@ -353,7 +433,12 @@ describe("package architecture boundaries", () => {
 
       const source = readFileSync(entrypoint, "utf8");
 
-      if (source.includes("@octokit/") || /\bInternalOctokit\w*\b/u.test(source)) {
+      if (
+        source.includes("@octokit/") ||
+        /\bInternalOctokit\w*\b/u.test(source) ||
+        /\bGitHubOctokit\w*\b/u.test(source) ||
+        /\bOctokit\b/u.test(source)
+      ) {
         violations.push(`${pkg.name} public entrypoint references provider SDK naming`);
       }
     }
@@ -631,6 +716,14 @@ function normalizeExportTargets(exportTarget) {
  */
 function isProviderSpecifier(specifier) {
   return specifier.startsWith("@gitbridge/provider") || specifier.includes("provider-github");
+}
+
+/**
+ * @param {string} specifier
+ * @returns {boolean}
+ */
+function isProviderSdkSpecifier(specifier) {
+  return specifier.startsWith("@octokit/") || specifier === "octokit";
 }
 
 /**

@@ -1,84 +1,35 @@
 # GitBridge
 
-GitBridge is a provider-neutral TypeScript SDK for opening Git repositories and working with common
-repository capabilities through stable public contracts. Applications create a GitBridge client,
-register one or more providers, authenticate explicitly, open a repository, and use capability
-services such as files, branches, history, search, issues, and pull requests.
-
-ADR-001 through ADR-015 are accepted and authoritative. The architecture is frozen; runtime changes
-must preserve those decisions.
-
-## Architecture Summary
-
-GitBridge is organized around explicit package boundaries:
-
-- `@gitbridge/contracts` defines provider-neutral domain, capability, transport, cache, diagnostics,
-  authentication, pagination, and metadata contracts.
-- `@gitbridge/core` owns client lifecycle, provider registration, provider resolution, repository
-  factories, repository references, and capability dispatch.
-- Provider packages, currently `@gitbridge/provider-github`, adapt provider APIs to the contracts.
-- Foundation packages provide authentication, transport, cache, errors, observability, testing, and
-  shared utilities without taking provider dependencies.
-
-See [docs/architecture/INDEX.md](docs/architecture/INDEX.md) for ADRs, diagrams, and terminology.
-
-## Package Overview
-
-| Package                      | Purpose                                                                                |
-| ---------------------------- | -------------------------------------------------------------------------------------- |
-| `@gitbridge/core`            | Creates clients, registers providers, opens repositories, and exposes repository refs. |
-| `@gitbridge/provider-github` | GitHub provider implementation backed by Octokit.                                      |
-| `@gitbridge/contracts`       | Stable public TypeScript contracts shared by all packages.                             |
-| `@gitbridge/auth`            | Authentication config, credential creation, redaction, and guards.                     |
-| `@gitbridge/transport`       | Transport primitives, middleware, retry, timeout, cancellation, and headers.           |
-| `@gitbridge/cache`           | Cache keys, policies, memory adapter, named caches, and registry.                      |
-| `@gitbridge/errors`          | Stable error hierarchy, codes, diagnostics, and serialization.                         |
-| `@gitbridge/observability`   | Diagnostics service, logging, metrics, tracing, and metadata sanitization.             |
-| `@gitbridge/testing`         | Provider certification helpers and deterministic test doubles.                         |
-| `@gitbridge/shared`          | Internal shared assertions, async, guards, objects, paths, strings, and constants.     |
+GitBridge is a provider-neutral TypeScript SDK for opening Git repositories and working with files,
+branches, commits, search, issues, pull requests, releases, and tags through stable public
+contracts.
 
 ## Installation
 
-Install the core package and at least one provider:
+For GitHub-first applications:
+
+```sh
+pnpm add @gitbridge/provider-github
+```
+
+For provider-neutral applications that register providers explicitly:
 
 ```sh
 pnpm add gitbridge @gitbridge/provider-github
 ```
 
-This repository uses Node.js `>=20.19.0` and pnpm `>=10.0.0`.
+GitBridge requires Node.js `>=20.19.0` and pnpm `>=10.0.0` in this repository.
 
-## Supported Providers
-
-GitHub is the currently implemented provider. The GitHub provider supports repository metadata,
-files, tree, history, search, branches, tags, releases, issues, and pull requests.
-
-## Quick Start
+## 30-Second Quick Start
 
 ```ts
-import { createAuthContext, tokenAuth } from "@gitbridge/auth";
-import { createGitBridgeClient, type AuthenticationStrategy } from "gitbridge";
-import { createGitHubProviderConfig, GitHubProviderId } from "@gitbridge/provider-github";
+import { createGitHubClient } from "@gitbridge/provider-github";
 
-const token = process.env.GITHUB_TOKEN;
-
-const authentication: AuthenticationStrategy | undefined =
-  token === undefined
-    ? undefined
-    : {
-        async authenticate() {
-          return createAuthContext(tokenAuth({ provider: GitHubProviderId, token }));
-        }
-      };
-
-const client = createGitBridgeClient({
-  ...createGitHubProviderConfig(),
-  authentication
-});
+const client = createGitHubClient();
 
 try {
-  const repository = await client.open("https://github.com/octokit/rest.js");
-  const ref = repository.ref(repository.info.defaultBranch ?? "main");
-  const readme = await ref.files.readText("README.md");
+  const repository = await client.open("https://github.com/microsoft/TypeScript");
+  const readme = await repository.readText("README.md");
 
   console.log(repository.info.fullName);
   console.log(readme.slice(0, 200));
@@ -89,50 +40,41 @@ try {
 }
 ```
 
-## Authentication
+## GitHub Example
 
-Authentication is explicit and provider-scoped. Use `@gitbridge/auth` helpers to build safe
-credential contexts and pass an `AuthenticationStrategy` to the client. Examples use
-`GITBRIDGE_GITHUB_TOKEN`; credentials should always come from environment variables, secret stores,
-or caller-owned token providers.
-
-## Creating a Client
-
-Use `createGitBridgeClient` with provider config fragments:
+Use `GITBRIDGE_GITHUB_TOKEN` for private repositories or higher API limits:
 
 ```ts
-const client = createGitBridgeClient({
-  ...createGitHubProviderConfig()
-});
+import { createGitHubClient } from "@gitbridge/provider-github";
+
+const token = process.env.GITBRIDGE_GITHUB_TOKEN;
+const client = createGitHubClient(token === undefined ? {} : { token });
+
+const repository = await client.open("https://github.com/microsoft/TypeScript");
+const ref = repository.defaultRef();
+
+console.log(await ref.files.exists("package.json"));
+console.log(await ref.files.readJson("package.json"));
+console.log((await ref.commits.list({ limit: 5 })).items);
 ```
 
-The client owns default cache resources it creates. Always call `client.dispose()` when work is
-complete.
-
-## Opening Repositories
-
-Open repositories by URL:
+## Common Tasks
 
 ```ts
-const repository = await client.open("https://github.com/octokit/rest.js");
-const ref = repository.ref(repository.info.defaultBranch ?? "main");
-```
+const repository = await client.open("https://github.com/microsoft/TypeScript");
+const ref = repository.defaultRef();
 
-`Repository` exposes immutable repository metadata and lifecycle state. `RepositoryRef` exposes the
-capability services bound to a branch, tag, commit, or other reference.
+await repository.readText("README.md");
+await repository.readJson("package.json");
+await repository.exists(".github/workflows");
 
-## Common Operations
-
-```ts
-await ref.files.readText("README.md");
+await ref.files.getMetadata("README.md");
 await ref.branches.list({ limit: 10 });
-await ref.history.list({ limit: 5 });
-await ref.search.text("createGitBridgeClient", { limit: 5 });
-await ref.issues.list({ limit: 10 });
-await ref.pullRequests.list({ limit: 10 });
+await ref.commits.list({ limit: 5 });
+await ref.search.text("createGitHubClient", { limit: 5 });
+await ref.issues?.list({ limit: 10 });
+await ref.pullRequests?.list({ limit: 10 });
 ```
-
-Each operation uses provider-neutral result shapes from `@gitbridge/contracts`.
 
 ## Error Handling
 
@@ -140,10 +82,10 @@ All public GitBridge errors extend `GitBridgeError` and expose stable `code`, `r
 `category`, `severity`, `diagnostics`, and `serialize()` fields.
 
 ```ts
-import { GitBridgeError } from "@gitbridge/errors";
+import { GitBridgeError } from "gitbridge";
 
 try {
-  await ref.files.readText("missing.txt");
+  await repository.readText("missing.txt");
 } catch (error) {
   if (error instanceof GitBridgeError) {
     console.error(error.code, error.retryability, error.diagnostics);
@@ -153,41 +95,50 @@ try {
 }
 ```
 
-## Caching
+## Advanced Configuration
 
-`@gitbridge/cache` provides cache keys, policies, in-memory adapters, named caches, and a registry.
-Core creates a default registry when none is supplied. Provider-specific cache integration is
-configuration-driven and must stay within the accepted architecture.
+Use `gitbridge` when your app should stay provider-neutral and register providers explicitly:
 
-## Observability
+```ts
+import { createGitBridgeClient } from "gitbridge";
+import { createGitHubProviderConfig, githubTokenAuth } from "@gitbridge/provider-github";
 
-`@gitbridge/observability` provides diagnostics, logging, metrics, tracing, and metadata
-sanitization. Diagnostics are observational: subscriber failures must not change SDK behavior.
+const token = process.env.GITBRIDGE_GITHUB_TOKEN;
 
-## Testing Package
+const client = createGitBridgeClient({
+  ...createGitHubProviderConfig(),
+  authentication: token === undefined ? undefined : githubTokenAuth(token)
+});
+```
 
-`@gitbridge/testing` contains provider certification helpers, fake transport, fake provider,
-diagnostic capture, and assertions. Provider implementations should use the certification suite to
-prove public contract behavior.
+The same client accepts provider-neutral cache, transport, diagnostics, metrics, tracing, metadata,
+and authentication dependencies.
 
-## Provider Development
+## SDK Map
 
-Provider packages implement the contracts from `@gitbridge/contracts`, expose a provider factory,
-declare supported capabilities, and return provider sessions that bind runtime capability services.
-Do not import package internals from examples or downstream applications.
+| Use case                                          | Import from                  |
+| ------------------------------------------------- | ---------------------------- |
+| GitHub-first application setup                    | `@gitbridge/provider-github` |
+| Provider-neutral client, errors, and auth helpers | `gitbridge`                  |
+| Direct core orchestration APIs                    | `@gitbridge/core`            |
+| Provider-neutral contracts and domain types       | `@gitbridge/contracts`       |
+| Provider certification and test doubles           | `@gitbridge/testing`         |
+
+Most applications should start with `@gitbridge/provider-github`. Use `gitbridge` when you want the
+provider-neutral entry point. Use `@gitbridge/testing` when building or certifying providers.
 
 ## Examples
 
-Runnable examples live in [examples](examples):
+Runnable examples live in [examples](examples) and follow a learning path:
 
-- `basic-node`
-- `github-repository-info`
-- `repository-file-reader`
-- `branch-listing`
-- `commit-history`
-- `search`
-- `issue-listing`
-- `pull-request-listing`
+1. `basic-node` opens a repository.
+2. `github-repository-info` reads repository metadata.
+3. `repository-file-reader` reads a file.
+4. `branch-listing` lists branches.
+5. `commit-history` lists commits.
+6. `issue-listing` lists issues.
+7. `pull-request-listing` lists pull requests.
+8. `search` runs repository search.
 
 Build all examples with:
 
@@ -201,6 +152,23 @@ Run an example with:
 pnpm --filter @gitbridge/example-basic-node start
 ```
 
+## Architecture
+
+ADR-001 through ADR-015 are accepted and authoritative. The architecture is frozen; runtime changes
+must preserve those decisions.
+
+GitBridge is organized around explicit package boundaries:
+
+- `gitbridge` is the provider-neutral public entry point.
+- `@gitbridge/contracts` defines public provider-neutral contracts and domain types.
+- `@gitbridge/core` owns client lifecycle, provider registration, provider resolution, repository
+  factories, repository references, and capability dispatch.
+- `@gitbridge/provider-github` adapts GitHub behavior to the provider contracts and includes
+  GitHub-first DX helpers.
+- `@gitbridge/testing` supports provider certification and deterministic tests.
+
+See [docs/architecture/INDEX.md](docs/architecture/INDEX.md) for ADRs, diagrams, and terminology.
+
 ## Contributing
 
 Read [CONTRIBUTING.md](CONTRIBUTING.md), follow the accepted ADRs, and run validation before opening
@@ -213,17 +181,3 @@ pnpm typecheck
 pnpm test
 pnpm run validate:architecture
 ```
-
-Release readiness can be checked locally without publishing:
-
-```sh
-pnpm run release:check
-```
-
-Public packages use Changesets for lockstep versioning and npm provenance metadata. Publishing is a
-manual maintainer action after all release checks pass.
-
-## Roadmap
-
-The planning roadmap lives in [docs/planning/ROADMAP.md](docs/planning/ROADMAP.md). Future work is
-tracked by milestone and must preserve the frozen architecture unless a new accepted ADR changes it.

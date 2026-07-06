@@ -1,0 +1,13 @@
+flowchart TD
+  Core["Core"]
+  Registry["CacheRegistry"]
+  Named["Named Cache"]
+  Policy["CachePolicy"]
+  Provider["CacheProvider"]
+  Entry["Immutable CacheEntry"]
+
+  Core --> Registry
+  Registry --> Named
+  Named --> Policy
+  Named --> Provider
+  Provider --> Entry

@@ -216,7 +216,10 @@ describe("public exports", () => {
     expectTypeOf<ProviderRegistryView>().toHaveProperty("ids");
     expectTypeOf<CapabilityRegistryView>().toHaveProperty("names");
     expectTypeOf<Repository>().toHaveProperty("ref");
+    expectTypeOf<Repository>().toHaveProperty("defaultRef");
+    expectTypeOf<Repository>().toHaveProperty("readText");
     expectTypeOf<RepositoryRef>().toHaveProperty("readme");
+    expectTypeOf<RepositoryRef>().toHaveProperty("commits");
 
     const client = new GitBridgeClient();
     const repository = createRepository({ info: createRepositoryInfo() });
@@ -550,6 +553,7 @@ describe("RepositoryRef model", () => {
         files: {
           download: async () => ({ encoding: "utf-8", path: "README.md", sha: "sha", size: 1 }),
           exists: async () => true,
+          getMetadata: async () => ({ name: "README.md", path: "README.md" }),
           metadata: async () => ({ name: "README.md", path: "README.md" }),
           readBinary: async () => new Uint8Array(),
           readJson: async <TValue>() => ({ ok: true }) as TValue,
@@ -560,6 +564,29 @@ describe("RepositoryRef model", () => {
     });
 
     await expect(repository.ref("main").readme()).resolves.toBe("read:README.md");
+  });
+
+  it("routes repository convenience methods through the default reference", async () => {
+    const repository = new Repository({
+      info: createRepositoryInfo("github", { defaultBranch: "trunk" }),
+      services: {
+        files: {
+          download: async (path) => ({ encoding: "utf-8", path, sha: "sha", size: 1 }),
+          exists: async (path) => path === "README.md",
+          getMetadata: async (path) => ({ name: path, path }),
+          metadata: async (path) => ({ name: path, path }),
+          readBinary: async () => new Uint8Array(),
+          readJson: async <TValue>() => ({ ok: true }) as TValue,
+          readText: async (path) => `read:${path}`,
+          stream: async () => emptyByteStream()
+        }
+      }
+    });
+
+    expect(repository.defaultRef().reference.name).toBe("trunk");
+    await expect(repository.readText("README.md")).resolves.toBe("read:README.md");
+    await expect(repository.readJson("package.json")).resolves.toEqual({ ok: true });
+    await expect(repository.exists("README.md")).resolves.toBe(true);
   });
 });
 
@@ -682,6 +709,7 @@ function createSessionCapabilities(): ProviderSession["capabilities"] {
     download: async (path) => ({ encoding: "utf-8", path, sha: "sha", size: 1 }),
     exists: async () => true,
     metadata: async (path) => ({ name: path, path }),
+    getMetadata: async (path) => ({ name: path, path }),
     readBinary: async () => new Uint8Array(),
     readJson: async <TValue>() => ({ ok: true }) as TValue,
     readText: async (path) => `read:${path}`,
