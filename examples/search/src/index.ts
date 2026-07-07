@@ -5,7 +5,12 @@ const repositoryUrl = process.env.GITBRIDGE_REPOSITORY_URL ?? "https://github.co
 const query = process.env.GITBRIDGE_SEARCH_QUERY ?? "Octokit";
 const token = process.env.GITBRIDGE_GITHUB_TOKEN;
 
-const client = createGitHubClient(token === undefined ? {} : { token });
+if (token === undefined) {
+  console.error("GITBRIDGE_GITHUB_TOKEN is required for the search example.");
+  process.exit(1);
+}
+
+const client = createGitHubClient({ token });
 
 try {
   const repository = await client.open(repositoryUrl);
