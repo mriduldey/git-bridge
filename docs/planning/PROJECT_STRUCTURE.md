@@ -255,7 +255,7 @@ packages/
 ├── shared/
 ├── contracts/
 ├── errors/
-├── diagnostics/
+├── observability/
 ├── auth/
 ├── transport/
 ├── cache/
@@ -393,11 +393,11 @@ Implements ADR-008.
 
 ---
 
-## diagnostics
+## observability
 
 ### Purpose
 
-Diagnostics infrastructure.
+Observability infrastructure, including diagnostics.
 
 Examples:
 
@@ -435,7 +435,7 @@ Credential contracts.
 ### Dependencies
 
 - contracts
-- diagnostics
+- observability
 - errors
 
 ---
@@ -461,7 +461,7 @@ Middleware contracts.
 ### Dependencies
 
 - auth
-- diagnostics
+- observability
 - errors
 
 ---
@@ -479,7 +479,7 @@ Implements ADR-009.
 ### Dependencies
 
 - shared
-- diagnostics
+- observability
 
 ---
 
@@ -512,7 +512,7 @@ Consumers interact through `gitbridge`.
 - transport
 - auth
 - cache
-- diagnostics
+- observability
 - errors
 - contracts
 
@@ -842,7 +842,7 @@ errors
 
 ↓
 
-diagnostics
+observability
 
 ↓
 
@@ -900,7 +900,7 @@ Depends only on:
 
 ---
 
-### diagnostics
+### observability
 
 Depends only on:
 
@@ -914,7 +914,7 @@ Depends only on:
 Depends on:
 
 - contracts
-- diagnostics
+- observability
 - errors
 
 ---
@@ -924,7 +924,7 @@ Depends on:
 Depends on:
 
 - auth
-- diagnostics
+- observability
 - errors
 
 ---
@@ -933,7 +933,7 @@ Depends on:
 
 Depends on:
 
-- diagnostics
+- observability
 - shared
 
 ---

@@ -120,7 +120,7 @@ contracts
 errors
     │
     ▼
-diagnostics
+observability
     │
     ▼
 auth
@@ -164,7 +164,7 @@ Examples and documentation consume only public packages and therefore are implem
 |----------|----------------|
 | `@gitbridge/contracts` | Public contracts |
 | `@gitbridge/errors` | Error model |
-| `@gitbridge/diagnostics` | Diagnostics infrastructure |
+| `@gitbridge/observability` | Observability infrastructure, including diagnostics |
 
 ---
 
@@ -283,12 +283,12 @@ Stable public error model.
 
 ---
 
-## Wave 4 — Diagnostics Infrastructure
+## Wave 4 — Observability Infrastructure
 
 Package:
 
 ```text
-@gitbridge/diagnostics
+@gitbridge/observability
 ```
 
 Purpose:
@@ -880,7 +880,7 @@ Observability coupling.
 
 Mitigation
 
-Keep diagnostics framework-neutral.
+Keep diagnostics, as provided through `@gitbridge/observability`, framework-neutral.
 
 ---
 

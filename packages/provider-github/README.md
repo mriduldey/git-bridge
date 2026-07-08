@@ -4,6 +4,9 @@ GitHub provider and GitHub-first convenience helpers for GitBridge.
 
 ## Install
 
+For GitHub-only alpha releases before npm publishing, install commands are shown as the intended npm
+usage. Until packages are published, use the repository source/tag directly.
+
 ```sh
 pnpm add @gitbridge/provider-github
 ```

@@ -6,6 +6,9 @@ contracts.
 
 ## Installation
 
+For GitHub-only alpha releases before npm publishing, install commands are shown as the intended npm
+usage. Until packages are published, use the repository source/tag directly.
+
 For GitHub-first applications:
 
 ```sh

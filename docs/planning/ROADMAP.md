@@ -79,9 +79,11 @@ GitBridge succeeds when developers can switch providers with minimal application
 
 ## Current Phase
 
-**Repository Bootstrap**
+**v0.1 alpha/developer-preview release preparation**
 
-The project is implementation-ready.
+Status note: This roadmap originated during the planning phase. The architecture remains
+authoritative, but implementation status has since progressed. Current implementation state is
+tracked by package manifests, CI, PRs, and release-readiness checks.
 
 ---
 
@@ -429,9 +431,7 @@ Long-Term Evolution
 
 GitBridge has completed its architecture and engineering planning.
 
-Implementation has not yet begun.
-
-The project is ready to enter active development.
+Implementation has progressed to v0.1 alpha/developer-preview release preparation.
 
 ---
 
