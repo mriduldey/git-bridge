@@ -1,0 +1,17 @@
+flowchart TD
+  Locator["Repository Locator"]
+  Match["Provider Match"]
+  Session["Provider Session"]
+  Capability["Capability Service"]
+  Transport["Transport Request"]
+  Response["Provider Response"]
+  Mapper["Mapper"]
+  Domain["GitBridge Domain Model"]
+
+  Locator --> Match
+  Match --> Session
+  Session --> Capability
+  Capability --> Transport
+  Transport --> Response
+  Response --> Mapper
+  Mapper --> Domain

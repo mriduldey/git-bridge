@@ -265,6 +265,7 @@ export class RepositoryFactory {
 }
 
 export class Repository implements RepositoryContract {
+  readonly #defaultReference: ReferenceName | undefined;
   readonly #extensions: Readonly<Record<string, unknown>>;
   readonly #info: RepositoryInfo;
   readonly #onDispose: (() => Promise<void> | void) | undefined;
@@ -280,6 +281,7 @@ export class Repository implements RepositoryContract {
     validateExtensions(options.extensions ?? {});
 
     this.#info = deepFreeze(options.info) as RepositoryInfo;
+    this.#defaultReference = options.defaultReference;
     this.identity = this.#info.identity;
     this.capabilities = deepFreeze(options.capabilities ?? {}) as CapabilityMap;
     this.#extensions = Object.freeze({ ...(options.extensions ?? {}) });
@@ -323,6 +325,25 @@ export class Repository implements RepositoryContract {
     });
   }
 
+  public defaultRef(): RepositoryRef {
+    return this.ref(this.#defaultReference ?? this.#info.defaultBranch ?? "main");
+  }
+
+  public readText(path: FilePath, options?: ReadFileOptions): Promise<string> {
+    return this.defaultRef().files.readText(path, options);
+  }
+
+  public readJson<TValue extends JsonValue = JsonValue>(
+    path: FilePath,
+    options?: ReadFileOptions
+  ): Promise<TValue> {
+    return this.defaultRef().files.readJson<TValue>(path, options);
+  }
+
+  public exists(path: FilePath, options?: OperationOptions): Promise<boolean> {
+    return this.defaultRef().files.exists(path, options);
+  }
+
   public ensureActive(): void {
     if (this.#state === "disposed") {
       throw new RepositoryError("Repository has been disposed", {
@@ -338,6 +359,7 @@ export class Repository implements RepositoryContract {
 
 export class RepositoryRef implements RepositoryRefContract {
   public readonly branches: BranchesCapability;
+  public readonly commits: HistoryCapability;
   public readonly files: FilesCapability;
   public readonly history: HistoryCapability;
   public readonly issues?: IssuesCapability;
@@ -365,6 +387,7 @@ export class RepositoryRef implements RepositoryRefContract {
     this.files = services.files;
     this.tree = services.tree;
     this.history = services.history;
+    this.commits = services.history;
     this.search = services.search;
     this.branches = services.branches;
     this.tags = services.tags;
@@ -948,6 +971,10 @@ function createDeferredFilesCapability(
       validatePath(path);
       return rejectDeferred("files", repository, capabilities);
     },
+    getMetadata(path: FilePath, _options?: OperationOptions): Promise<FileInfo> {
+      validatePath(path);
+      return rejectDeferred("files", repository, capabilities);
+    },
     metadata(path: FilePath, _options?: OperationOptions): Promise<FileInfo> {
       validatePath(path);
       return rejectDeferred("files", repository, capabilities);
@@ -1259,9 +1286,13 @@ const reservedExtensionKeys: Readonly<Record<string, true>> = Object.freeze({
   capabilities: true,
   dispose: true,
   extensions: true,
+  defaultRef: true,
   identity: true,
   info: true,
+  exists: true,
   ref: true,
+  readJson: true,
+  readText: true,
   state: true
 });
 

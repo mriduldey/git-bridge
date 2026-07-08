@@ -314,9 +314,6 @@ importers:
       '@gitbridge/transport':
         specifier: workspace:*
         version: link:../transport
-      '@octokit/rest':
-        specifier: ^22.0.1
-        version: 22.0.1
 
   packages/shared: {}
 

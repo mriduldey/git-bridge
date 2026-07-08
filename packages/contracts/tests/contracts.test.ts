@@ -61,9 +61,13 @@ describe("public contract types", () => {
       .parameter(0)
       .toEqualTypeOf<string | import("../src/index.js").Reference>();
     expectTypeOf<RepositoryRef>().toHaveProperty("files").toMatchTypeOf<FilesCapability>();
+    expectTypeOf<RepositoryRef>().toHaveProperty("commits");
     expectTypeOf<FilesCapability>()
       .toHaveProperty("readText")
       .returns.toEqualTypeOf<Promise<string>>();
+    expectTypeOf<FilesCapability>()
+      .toHaveProperty("getMetadata")
+      .returns.toEqualTypeOf<Promise<import("../src/index.js").FileInfo>>();
     expectTypeOf<FilesCapability>()
       .toHaveProperty("readJson")
       .returns.toEqualTypeOf<Promise<import("../src/index.js").JsonValue>>();

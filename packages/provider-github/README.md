@@ -1,52 +1,68 @@
 # @gitbridge/provider-github
 
-GitHub provider implementation for GitBridge.
-
-## Responsibilities
-
-- Match GitHub repository URLs.
-- Create GitHub-backed provider sessions.
-- Map GitHub repository, branch, commit, file, search, issue, pull request, release, and tag models
-  to provider-neutral contracts.
-- Convert GitHub and transport failures into public GitBridge errors.
+GitHub provider and GitHub-first convenience helpers for GitBridge.
 
 ## Install
 
+For GitHub-only alpha releases before npm publishing, install commands are shown as the intended npm
+usage. Until packages are published, use the repository source/tag directly.
+
 ```sh
-pnpm add @gitbridge/core @gitbridge/provider-github @gitbridge/auth
+pnpm add @gitbridge/provider-github
 ```
 
-## Usage
+## Quick Start
 
 ```ts
-import { createAuthContext, tokenAuth } from "@gitbridge/auth";
-import { createGitBridgeClient, type AuthenticationStrategy } from "@gitbridge/core";
-import { createGitHubProviderConfig, GitHubProviderId } from "@gitbridge/provider-github";
+import { createGitHubClient } from "@gitbridge/provider-github";
 
-const token = process.env.GITHUB_TOKEN;
-const authentication: AuthenticationStrategy | undefined =
-  token === undefined
-    ? undefined
-    : {
-        async authenticate() {
-          return createAuthContext(tokenAuth({ provider: GitHubProviderId, token }));
-        }
-      };
+const client = createGitHubClient();
+const repository = await client.open("https://github.com/microsoft/TypeScript");
+
+console.log(await repository.readText("README.md"));
+```
+
+## Authenticated Access
+
+```ts
+import { createGitHubClient } from "@gitbridge/provider-github";
+
+const token = process.env.GITBRIDGE_GITHUB_TOKEN;
+const client = createGitHubClient(token === undefined ? {} : { token });
+```
+
+## Public Helpers
+
+- `createGitHubClient(config?)` creates a GitBridge client with the GitHub provider registered.
+- `githubProvider(config?)` creates the GitHub provider for explicit registration.
+- `githubTokenAuth(token, options?)` creates a GitHub-scoped token authentication strategy.
+- `createGitHubProvider(config?)` is the explicit provider factory.
+- `createGitHubProviderConfig(config?)` returns a provider config fragment for `gitbridge` or
+  `@gitbridge/core`.
+
+## Provider-Neutral Setup
+
+Use this form when your application wants to register providers explicitly:
+
+```ts
+import { createGitBridgeClient } from "gitbridge";
+import { createGitHubProviderConfig, githubTokenAuth } from "@gitbridge/provider-github";
+
+const token = process.env.GITBRIDGE_GITHUB_TOKEN;
 
 const client = createGitBridgeClient({
   ...createGitHubProviderConfig(),
-  authentication
+  authentication: token === undefined ? undefined : githubTokenAuth(token)
 });
 ```
 
 ## Capabilities
 
-GitHub currently supports files, tree, history, search, branches, tags, releases, issues, and pull
-requests.
+GitHub currently supports files, tree, history/commits, search, branches, tags, releases, issues,
+and pull requests.
 
-## Configuration
+## Package Choice
 
-`createGitHubProviderConfig` returns a client config fragment with a GitHub provider instance.
-`createGitHubProvider` creates the provider directly for advanced registration flows. Use
-`GITBRIDGE_GITHUB_TOKEN` or an equivalent secret source in examples and applications; never hardcode
-credentials.
+- Use `@gitbridge/provider-github` for GitHub-first application setup.
+- Use `gitbridge` for provider-neutral apps that register providers explicitly.
+- Use `@gitbridge/testing` when certifying providers or writing provider contract tests.

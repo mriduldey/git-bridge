@@ -50,12 +50,16 @@ Documentation
     ✓ In Progress
 
 Implementation
-    Not Started
+    v0.1 alpha/developer-preview release preparation
 ```
 
 The architecture is considered stable.
 
 Implementation must conform to the accepted Architecture Constitution.
+
+Status note: This document originated during the planning phase. The architecture remains
+authoritative, but implementation status has since progressed. Current implementation state is
+tracked by package manifests, CI, PRs, and release-readiness checks.
 
 ---
 
@@ -333,7 +337,7 @@ errors
 
 ↓
 
-diagnostics
+observability
 
 ↓
 
@@ -395,7 +399,7 @@ Depends only on:
 
 ---
 
-### diagnostics
+### observability
 
 Provides observability infrastructure.
 
@@ -411,7 +415,7 @@ Depends on:
 
 - types
 - errors
-- diagnostics
+- observability
 
 ---
 
@@ -422,7 +426,7 @@ Provides request execution.
 Consumes:
 
 - auth
-- diagnostics
+- observability
 - errors
 
 ---
@@ -434,7 +438,7 @@ Implements cache abstractions.
 Depends on:
 
 - shared
-- diagnostics
+- observability
 
 ---
 
@@ -447,7 +451,7 @@ Consumes:
 - transport
 - auth
 - cache
-- diagnostics
+- observability
 - errors
 
 ---
@@ -2036,7 +2040,7 @@ Unlike the public roadmap, these milestones represent internal execution goals. 
 | Milestone | Objective | Exit Criteria |
 |------------|-----------|---------------|
 | **M1 — Repository Bootstrap** | Establish the engineering foundation | Workspace, CI, linting, formatting, testing, and build pipeline operational |
-| **M2 — Foundation Packages** | Complete foundational packages | `@gitbridge/shared`, `@gitbridge/contracts`, `@gitbridge/errors`, and `@gitbridge/diagnostics` implemented and validated |
+| **M2 — Foundation Packages** | Complete foundational packages | `@gitbridge/shared`, `@gitbridge/contracts`, `@gitbridge/errors`, and `@gitbridge/observability` implemented and validated |
 | **M3 — Runtime Infrastructure** | Implement runtime infrastructure | Authentication, transport, and cache packages complete with unit tests and architecture validation |
 | **M4 — Core Runtime** | Complete the runtime engine | `@gitbridge/core` operational with repository lifecycle, provider registry, and mock provider support |
 | **M5 — GitHub Provider** | Deliver the first production provider | `@gitbridge/provider-github` passes the Provider Contract Test Kit and supports the planned repository operations |

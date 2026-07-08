@@ -4,6 +4,9 @@ Primary public entry point for GitBridge.
 
 ## Install
 
+For GitHub-only alpha releases before npm publishing, install commands are shown as the intended npm
+usage. Until packages are published, use the repository source/tag directly.
+
 ```sh
 pnpm add gitbridge @gitbridge/provider-github
 ```
@@ -14,12 +17,17 @@ Install at least one provider package before opening repositories.
 
 ```ts
 import { createGitBridgeClient } from "gitbridge";
-import { createGitHubProviderConfig } from "@gitbridge/provider-github";
+import { createGitHubProviderConfig, githubTokenAuth } from "@gitbridge/provider-github";
+
+const token = process.env.GITBRIDGE_GITHUB_TOKEN;
 
 const client = createGitBridgeClient({
-  ...createGitHubProviderConfig()
+  ...createGitHubProviderConfig(),
+  authentication: token === undefined ? undefined : githubTokenAuth(token)
 });
 ```
+
+For GitHub-first applications, prefer `createGitHubClient` from `@gitbridge/provider-github`.
 
 ## Public API
 

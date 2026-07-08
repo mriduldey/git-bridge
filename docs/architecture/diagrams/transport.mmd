@@ -1,0 +1,14 @@
+flowchart LR
+  Provider["Provider Capability"]
+  Request["TransportRequest"]
+  Pipeline["TransportPipeline"]
+  Middleware["Middleware"]
+  Transport["Transport"]
+  Response["TransportResponse"]
+
+  Provider --> Request
+  Request --> Pipeline
+  Pipeline --> Middleware
+  Middleware --> Transport
+  Transport --> Response
+  Response --> Provider

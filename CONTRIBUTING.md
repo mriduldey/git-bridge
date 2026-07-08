@@ -14,3 +14,7 @@ Architectural changes require an accepted ADR or amendment before implementation
 
 Release preparation uses `pnpm run release:check`, which runs all quality gates and dry-runs package
 packing without publishing.
+
+For a GitHub-only alpha release, CI/checks, examples, architecture validation, and the release-check
+workflow or local equivalent must pass. npm publishing additionally requires npm registry name/scope
+ownership confirmation. A v0.1 alpha release does not imply a stable release.

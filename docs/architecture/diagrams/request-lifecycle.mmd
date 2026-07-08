@@ -1,0 +1,20 @@
+sequenceDiagram
+  participant App as Application
+  participant Client as GitBridgeClient
+  participant Provider as Provider
+  participant Session as ProviderSession
+  participant Ref as RepositoryRef
+  participant Transport as Transport
+
+  App->>Client: open(url)
+  Client->>Provider: supports(locator)
+  Provider-->>Client: provider match
+  Client->>Provider: createSession(request)
+  Provider-->>Client: ProviderSession
+  Client-->>App: Repository
+  App->>Ref: files.readText(path)
+  Ref->>Session: capability operation
+  Session->>Transport: execute(request)
+  Transport-->>Session: response
+  Session-->>Ref: domain model
+  Ref-->>App: result

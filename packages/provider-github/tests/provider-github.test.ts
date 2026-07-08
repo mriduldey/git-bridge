@@ -25,11 +25,13 @@ import {
   GitHubProviderCapabilities,
   GitHubProviderId,
   GitHubProviderSession,
+  createGitHubClient,
   createGitHubProvider,
   createGitHubProviderConfig,
-  createTransportOctokitAdapter,
+  githubProvider,
+  githubTokenAuth,
   mapGitHubError,
-  type GitHubOctokitAdapter,
+  type GitHubClientConfig,
   type GitHubProviderConfig
 } from "../src/index.js";
 import * as publicApi from "../src/index.js";
@@ -60,7 +62,6 @@ import {
   mapGitHubTag,
   mapGitHubTree
 } from "../src/mappers.js";
-import { createOctokitAdapter, type InternalOctokitClient } from "../src/octokit-adapter.js";
 
 describe("GitHub provider foundation", () => {
   it("declares provider metadata and foundation capabilities", () => {
@@ -109,10 +110,9 @@ describe("GitHub provider foundation", () => {
 
   it("integrates with Core provider registration and repository opening", async () => {
     const provider = createGitHubProvider({
-      octokit: () =>
-        createMockOctokit({
-          "/repos/openai/codex": createRepositoryModel()
-        })
+      transport: createMockTransport({
+        "/repos/openai/codex": createRepositoryModel()
+      })
     });
     const client = new GitBridgeClient({ providers: [provider] });
     const repository = await client.open("https://github.com/openai/codex");
@@ -123,14 +123,8 @@ describe("GitHub provider foundation", () => {
     expect(repository.capabilities.files?.status).toBe("supported");
   });
 
-  it("creates sessions with injected authentication, transport, cache, diagnostics, and Octokit adapter", async () => {
-    const octokit = createMockOctokit({ "/repos/openai/codex": createRepositoryModel() });
-    let adapterContext: Parameters<NonNullable<GitHubProviderConfig["octokit"]>>[0] | undefined;
-    const octokitFactory: NonNullable<GitHubProviderConfig["octokit"]> = vi.fn((context) => {
-      adapterContext = context;
-      return octokit;
-    });
-    const transport: Transport = { execute: vi.fn(async () => ({ status: 204 })) };
+  it("creates sessions with injected authentication, transport, cache, and diagnostics", async () => {
+    const transport = createMockTransport({ "/repos/openai/codex": createRepositoryModel() });
     const cache = createCacheProvider();
     const diagnostics = createDiagnostics();
     const authentication: AuthenticationStrategy = {
@@ -152,7 +146,6 @@ describe("GitHub provider foundation", () => {
     const provider = createGitHubProvider({
       cache,
       diagnostics,
-      octokit: octokitFactory,
       transport
     });
     const client = new GitBridgeClient({ authentication, providers: [provider] });
@@ -164,8 +157,14 @@ describe("GitHub provider foundation", () => {
       correlationId: "corr-1",
       provider: "github"
     });
-    expect(adapterContext?.authentication?.credentials).toMatchObject({ kind: "access-token" });
-    expect(adapterContext?.transport).toBe(transport);
+    expect(transport.execute).toHaveBeenCalledWith(
+      expect.objectContaining({
+        headers: expect.objectContaining({ authorization: "Bearer secret" }),
+        method: "read",
+        target: "/repos/openai/codex"
+      }),
+      expect.any(Object)
+    );
     expect(repository.identity.provider).toBe("github");
   });
 
@@ -175,7 +174,7 @@ describe("GitHub provider foundation", () => {
     const provider = createGitHubProvider({
       cache,
       diagnostics,
-      octokit: () => createMockOctokit({ "/repos/openai/codex": createRepositoryModel() })
+      transport: createMockTransport({ "/repos/openai/codex": createRepositoryModel() })
     });
     const session = await provider.createSession({
       context: { provider: provider.info },
@@ -197,8 +196,8 @@ describe("GitHub provider foundation", () => {
     await expect(session.capabilities.files.readText("README.md")).rejects.toThrow(ProviderError);
   });
 
-  it("executes foundational repository operations through mocked Octokit", async () => {
-    const octokit = createMockOctokit({
+  it("executes foundational repository operations through mocked transport", async () => {
+    const transport = createMockTransport({
       "/repos/openai/codex": createRepositoryModel(),
       "/repos/openai/codex/branches": [createBranchModel("main")],
       "/repos/openai/codex/branches/main": createBranchModel("main"),
@@ -221,7 +220,7 @@ describe("GitHub provider foundation", () => {
       "/repos/openai/codex/releases/tags/v1.0.0": createReleaseModel("v1.0.0"),
       "/search/code?q=hello%20repo%3Aopenai%2Fcodex": createSearchModel()
     });
-    const provider = createGitHubProvider({ octokit: () => octokit });
+    const provider = createGitHubProvider({ transport });
     const session = await provider.createSession({
       context: { provider: provider.info },
       repository: { url: "https://github.com/openai/codex" }
@@ -235,6 +234,10 @@ describe("GitHub provider foundation", () => {
     await expect(ref.files.readJson("README.md")).rejects.toThrow(SyntaxError);
     await expect(ref.files.exists("README.md")).resolves.toBe(true);
     await expect(ref.files.metadata("README.md")).resolves.toMatchObject({
+      name: "README.md",
+      path: "README.md"
+    });
+    await expect(ref.files.getMetadata("README.md")).resolves.toMatchObject({
       name: "README.md",
       path: "README.md"
     });
@@ -256,6 +259,7 @@ describe("GitHub provider foundation", () => {
     await expect(ref.history.list()).resolves.toMatchObject({
       items: [expect.objectContaining({ sha: "abc123" })]
     });
+    expect(ref.commits).toBe(ref.history);
     await expect(ref.history.get("abc123")).resolves.toMatchObject({ sha: "abc123" });
     await expect(ref.history.file("README.md")).resolves.toMatchObject({
       items: [expect.objectContaining({ sha: "abc123" })]
@@ -286,44 +290,28 @@ describe("GitHub provider foundation", () => {
     });
   });
 
-  it("creates the concrete Octokit adapter with auth and delegates to mocked Octokit methods", async () => {
-    const calls: Array<readonly [string, Readonly<Record<string, unknown>> | undefined]> = [];
-    const client: InternalOctokitClient = {
-      async request<TBody = unknown>(
-        route: string,
-        parameters?: Readonly<Record<string, unknown>>
-      ) {
-        calls.push([route, parameters]);
-        return {
-          data: { ok: true } as TBody,
-          headers: { link: '<https://api.github.com/repositories?page=2>; rel="next"' },
-          status: 200
-        };
-      }
-    };
-    const tokenCredentials: TokenCredentials = { kind: "access-token", token: "secret" };
-    const adapter = createOctokitAdapter(
-      {
-        authentication: {
-          credentials: tokenCredentials,
-          type: "token"
-        },
-        transport: { execute: vi.fn() }
-      },
-      { client }
-    );
-
-    await expect(
-      adapter.request({ method: "GET", timeoutMs: 1000, url: "/repos/openai/codex" })
-    ).resolves.toMatchObject({
-      data: { ok: true },
-      status: 200
+  it("normalizes data-only adapter responses for repository readText", async () => {
+    const transport = createDataResponseTransport({
+      "/repos/openai/codex": createRepositoryModel(),
+      "/repos/openai/codex/contents/docs/planning/ROADMAP.md": createContentModel(
+        "docs/planning/ROADMAP.md",
+        "# Roadmap"
+      )
     });
-    expect(calls[0]?.[0]).toBe("GET /repos/openai/codex");
-    expect(calls[0]?.[1]).toMatchObject({ request: { timeout: 1000 } });
+    const client = createGitHubClient({ transport });
+
+    try {
+      const repository = await client.open("https://github.com/openai/codex");
+
+      await expect(repository.readText("docs/planning/ROADMAP.md")).resolves.toBe("# Roadmap");
+
+      await repository.dispose();
+    } finally {
+      await client.dispose();
+    }
   });
 
-  it("adapts Octokit-style requests to GitBridge transport without leaking Octokit types", async () => {
+  it("expresses provider requests through GitBridge transport", async () => {
     const transportCalls: Array<readonly [TransportRequest, TransportContext | undefined]> = [];
     const transport: Transport = {
       async execute<TBody = unknown>(
@@ -332,37 +320,39 @@ describe("GitHub provider foundation", () => {
       ): Promise<TransportResponse<TBody>> {
         transportCalls.push([request, context]);
         return {
-          body: { ok: true },
+          body: createRepositoryModel() as TBody,
           headers: { request: "1" },
           status: 200
-        } as unknown as TransportResponse<TBody>;
+        };
       }
     };
     const credentials: TokenCredentials = { kind: "access-token", token: "secret" };
-    const adapter = createTransportOctokitAdapter({
-      authentication: {
-        credentials,
-        type: "token"
+    const provider = createGitHubProvider({ transport });
+    const session = await provider.createSession({
+      context: {
+        authenticationContext: {
+          credentials,
+          type: "token"
+        },
+        provider: provider.info
       },
-      transport
+      repository: { url: "https://github.com/openai/codex" }
     });
 
-    await expect(
-      adapter.request({ method: "GET", url: "https://api.github.com/repos/o/r" })
-    ).resolves.toEqual({
-      data: { ok: true },
-      headers: { request: "1" },
-      status: 200
+    expect(session.repository.identity).toEqual({
+      name: "codex",
+      owner: "openai",
+      provider: "github"
     });
     expect(transportCalls[0]?.[0]).toMatchObject({
       headers: expect.objectContaining({ authorization: "Bearer secret" }),
       method: "read",
-      target: "https://api.github.com/repos/o/r"
+      target: "/repos/openai/codex"
     });
     expect(transportCalls[0]?.[1]).toEqual({});
   });
 
-  it("maps GitHub and Octokit failures to approved GitBridge errors", () => {
+  it("maps GitHub provider failures to approved GitBridge errors", () => {
     expect(mapGitHubError({ status: 401 })).toBeInstanceOf(AuthenticationError);
     expect(mapGitHubError({ status: 403 })).toBeInstanceOf(AuthorizationError);
     expect(
@@ -374,11 +364,72 @@ describe("GitHub provider foundation", () => {
     expect(mapGitHubError(new Error("boom")).cause).toBeInstanceOf(Error);
   });
 
+  it("preserves response headers when mapping GitHub rate-limit status responses", async () => {
+    const provider = createGitHubProvider({
+      transport: createMockTransport({
+        "/repos/openai/codex": {
+          data: { message: "API rate limit exceeded" },
+          headers: { "x-ratelimit-remaining": "0" },
+          status: 403
+        }
+      })
+    });
+
+    await expect(
+      provider.createSession({
+        context: { provider: provider.info },
+        repository: { url: "https://github.com/openai/codex" }
+      })
+    ).rejects.toMatchObject({
+      diagnostics: {
+        operation: { operation: "github.repository.get" },
+        provider: { provider: "github", status: 403 }
+      },
+      retryability: "Always"
+    });
+    await expect(
+      provider.createSession({
+        context: { provider: provider.info },
+        repository: { url: "https://github.com/openai/codex" }
+      })
+    ).rejects.toThrow(RateLimitError);
+  });
+
+  it("keeps non-rate-limit GitHub 403 status responses as authorization failures", async () => {
+    const provider = createGitHubProvider({
+      transport: createMockTransport({
+        "/repos/openai/codex": {
+          data: { message: "Forbidden" },
+          status: 403
+        }
+      })
+    });
+
+    await expect(
+      provider.createSession({
+        context: { provider: provider.info },
+        repository: { url: "https://github.com/openai/codex" }
+      })
+    ).rejects.toMatchObject({
+      diagnostics: {
+        operation: { operation: "github.repository.get" },
+        provider: { provider: "github", status: 403 }
+      },
+      retryability: "Never"
+    });
+    await expect(
+      provider.createSession({
+        context: { provider: provider.info },
+        repository: { url: "https://github.com/openai/codex" }
+      })
+    ).rejects.toThrow(AuthorizationError);
+  });
+
   it("rejects invalid provider configuration and unsupported locators", async () => {
     expect(() => createGitHubProvider({ hosts: [] })).toThrow(ValidationError);
 
     const provider = createGitHubProvider({
-      octokit: () => createMockOctokit({ "/repos/openai/codex": createRepositoryModel() })
+      transport: createMockTransport({ "/repos/openai/codex": createRepositoryModel() })
     });
 
     await expect(
@@ -453,12 +504,38 @@ describe("GitHub mappers", () => {
 });
 
 describe("public exports", () => {
-  it("exports provider factory, config helper, classes, and public types", () => {
+  it("exports provider factory, config helper, client helper, classes, and public types", async () => {
     expect(createGitHubProvider()).toBeInstanceOf(GitHubProvider);
+    expect(githubProvider()).toBeInstanceOf(GitHubProvider);
     expect(createGitHubProviderConfig().providers?.[0]?.info.id).toBe("github");
+    expect(createGitHubClient()).toBeInstanceOf(GitBridgeClient);
+    expectTypeOf<GitHubClientConfig>().toHaveProperty("token");
     expectTypeOf<GitHubProviderConfig>().toHaveProperty("transport");
+
+    const authentication = githubTokenAuth("secret");
+    await expect(authentication.authenticate()).resolves.toMatchObject({
+      credentials: { kind: "access-token", provider: "github", token: "secret" },
+      provider: "github",
+      type: "token"
+    });
+    await expect(
+      authentication.authenticate({ provider: GitHubProviderId })
+    ).resolves.toMatchObject({
+      credentials: { kind: "access-token", provider: "github", token: "secret" },
+      provider: "github",
+      type: "token"
+    });
+    await expect(authentication.authenticate({ provider: "gitlab" })).resolves.toMatchObject({
+      credentials: { kind: "anonymous", provider: "gitlab" },
+      provider: "gitlab",
+      type: "anonymous"
+    });
+    await expect(authentication.authenticate({ provider: "gitlab" })).resolves.not.toHaveProperty(
+      "credentials.token"
+    );
     expect("Octokit" in publicApi).toBe(false);
     expect("createOctokitAdapter" in publicApi).toBe(false);
+    expect("createTransportOctokitAdapter" in publicApi).toBe(false);
   });
 });
 
@@ -478,15 +555,43 @@ function createDiagnostics() {
   };
 }
 
-function createMockOctokit(
-  routes: Readonly<Record<string, unknown | Error>>
-): GitHubOctokitAdapter {
+function createMockTransport(routes: Readonly<Record<string, unknown | Error>>): Transport {
   return {
-    async request<TBody = unknown>(
-      request: Parameters<GitHubOctokitAdapter["request"]>[0]
-    ): Promise<{ data?: TBody; headers?: Readonly<Record<string, string>>; status: number }> {
-      const { url } = request;
-      const route = routes[url];
+    execute: vi.fn(
+      async <TBody = unknown>(request: TransportRequest): Promise<TransportResponse<TBody>> => {
+        const route = routes[request.target];
+
+        if (route instanceof Error) {
+          throw route;
+        }
+
+        if (route === undefined) {
+          return { status: 404 };
+        }
+
+        if (isMockResponse(route)) {
+          const response: TransportResponse<TBody> = {
+            body: route.data as TBody,
+            status: route.status ?? 200
+          };
+
+          if (route.headers !== undefined) {
+            response.headers = route.headers;
+          }
+
+          return response;
+        }
+
+        return { body: route as TBody, status: 200 };
+      }
+    )
+  };
+}
+
+function createDataResponseTransport(routes: Readonly<Record<string, unknown | Error>>): Transport {
+  return {
+    execute: vi.fn(async <TBody = unknown>(request: TransportRequest) => {
+      const route = routes[request.target];
 
       if (route instanceof Error) {
         throw route;
@@ -496,25 +601,11 @@ function createMockOctokit(
         return { status: 404 };
       }
 
-      if (isMockResponse(route)) {
-        const response: {
-          data?: TBody;
-          headers?: Readonly<Record<string, string>>;
-          status: number;
-        } = {
-          data: route.data as TBody,
-          status: route.status ?? 200
-        };
-
-        if (route.headers !== undefined) {
-          response.headers = route.headers;
-        }
-
-        return response;
-      }
-
-      return { data: route as TBody, status: 200 };
-    }
+      return {
+        data: route as TBody,
+        status: 200
+      };
+    }) as Transport["execute"]
   };
 }
 

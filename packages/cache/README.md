@@ -33,3 +33,11 @@ await cache.set(key, { fullName: "octokit/rest.js" });
 
 Core creates a default cache registry when none is supplied. Provider-specific caching must remain
 configuration-driven.
+
+## Current Scope
+
+The current implementation provides the provider-neutral cache infrastructure required by ADR-009:
+keys, policies, immutable entries, adapters, named caches, and a registry. Provider operations may
+receive cache references through runtime context, but providers must not own global cache state or
+store provider SDK models. Operation-level cache adoption remains explicit and must preserve those
+constraints.

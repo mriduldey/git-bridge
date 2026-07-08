@@ -216,7 +216,10 @@ describe("public exports", () => {
     expectTypeOf<ProviderRegistryView>().toHaveProperty("ids");
     expectTypeOf<CapabilityRegistryView>().toHaveProperty("names");
     expectTypeOf<Repository>().toHaveProperty("ref");
+    expectTypeOf<Repository>().toHaveProperty("defaultRef");
+    expectTypeOf<Repository>().toHaveProperty("readText");
     expectTypeOf<RepositoryRef>().toHaveProperty("readme");
+    expectTypeOf<RepositoryRef>().toHaveProperty("commits");
 
     const client = new GitBridgeClient();
     const repository = createRepository({ info: createRepositoryInfo() });
@@ -550,6 +553,7 @@ describe("RepositoryRef model", () => {
         files: {
           download: async () => ({ encoding: "utf-8", path: "README.md", sha: "sha", size: 1 }),
           exists: async () => true,
+          getMetadata: async () => ({ name: "README.md", path: "README.md" }),
           metadata: async () => ({ name: "README.md", path: "README.md" }),
           readBinary: async () => new Uint8Array(),
           readJson: async <TValue>() => ({ ok: true }) as TValue,
@@ -560,6 +564,53 @@ describe("RepositoryRef model", () => {
     });
 
     await expect(repository.ref("main").readme()).resolves.toBe("read:README.md");
+  });
+
+  it("routes repository convenience methods through the default reference", async () => {
+    class ObservedRepository extends Repository {
+      public readonly references: string[] = [];
+
+      public override ref(reference: Parameters<Repository["ref"]>[0]): RepositoryRef {
+        if (typeof reference === "string") {
+          this.references.push(reference);
+        }
+
+        return super.ref(reference);
+      }
+    }
+
+    const repository = new ObservedRepository({
+      defaultReference: "develop",
+      info: createRepositoryInfo("github", { defaultBranch: "trunk" }),
+      services: {
+        files: {
+          download: async (path) => ({ encoding: "utf-8", path, sha: "sha", size: 1 }),
+          exists: async (path) => path === "README.md",
+          getMetadata: async (path) => ({ name: path, path }),
+          metadata: async (path) => ({ name: path, path }),
+          readBinary: async () => new Uint8Array(),
+          readJson: async <TValue>() => ({ ok: true }) as TValue,
+          readText: async (path) => `read:${path}`,
+          stream: async () => emptyByteStream()
+        }
+      }
+    });
+
+    expect(repository.defaultRef().reference.name).toBe("develop");
+    await expect(repository.readText("README.md")).resolves.toBe("read:README.md");
+    await expect(repository.readJson("package.json")).resolves.toEqual({ ok: true });
+    await expect(repository.exists("README.md")).resolves.toBe(true);
+    expect(repository.references).toEqual(["develop", "develop", "develop", "develop"]);
+  });
+
+  it("falls back from configured default reference to repository info and then main", () => {
+    const withDefaultBranch = new Repository({
+      info: createRepositoryInfo("github", { defaultBranch: "trunk" })
+    });
+    const withoutDefaultBranch = new Repository({ info: createRepositoryInfo() });
+
+    expect(withDefaultBranch.defaultRef().reference.name).toBe("trunk");
+    expect(withoutDefaultBranch.defaultRef().reference.name).toBe("main");
   });
 });
 
@@ -682,6 +733,7 @@ function createSessionCapabilities(): ProviderSession["capabilities"] {
     download: async (path) => ({ encoding: "utf-8", path, sha: "sha", size: 1 }),
     exists: async () => true,
     metadata: async (path) => ({ name: path, path }),
+    getMetadata: async (path) => ({ name: path, path }),
     readBinary: async () => new Uint8Array(),
     readJson: async <TValue>() => ({ ok: true }) as TValue,
     readText: async (path) => `read:${path}`,

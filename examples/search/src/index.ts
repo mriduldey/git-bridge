@@ -1,30 +1,20 @@
-import { createAuthContext, tokenAuth } from "@gitbridge/auth";
-import { createGitBridgeClient, type AuthenticationStrategy } from "@gitbridge/core";
 import { GitBridgeError } from "@gitbridge/errors";
-import { createGitHubProviderConfig, GitHubProviderId } from "@gitbridge/provider-github";
+import { createGitHubClient } from "@gitbridge/provider-github";
 
 const repositoryUrl = process.env.GITBRIDGE_REPOSITORY_URL ?? "https://github.com/octokit/rest.js";
 const query = process.env.GITBRIDGE_SEARCH_QUERY ?? "Octokit";
 const token = process.env.GITBRIDGE_GITHUB_TOKEN;
 
-const authentication: AuthenticationStrategy | undefined =
-  token === undefined
-    ? undefined
-    : {
-        type: "token",
-        async authenticate() {
-          return createAuthContext(tokenAuth({ provider: GitHubProviderId, token }));
-        }
-      };
+if (token === undefined) {
+  console.error("GITBRIDGE_GITHUB_TOKEN is required for the search example.");
+  process.exit(1);
+}
 
-const client = createGitBridgeClient({
-  ...createGitHubProviderConfig(),
-  authentication
-});
+const client = createGitHubClient({ token });
 
 try {
   const repository = await client.open(repositoryUrl);
-  const reference = repository.ref(repository.info.defaultBranch ?? "main");
+  const reference = repository.defaultRef();
   const results = await reference.search.text(query, { limit: 5 });
 
   for (const result of results.items) {

@@ -1,3 +1,11 @@
+import {
+  anonymousAuth,
+  createAuthContext,
+  tokenAuth,
+  type AuthenticationRequest,
+  type AuthenticationStrategy,
+  type StaticTokenAuthConfig
+} from "@gitbridge/auth";
 import type { CacheProvider } from "@gitbridge/cache";
 import type {
   AuthenticationContext,
@@ -49,7 +57,11 @@ import type {
 } from "@gitbridge/contracts";
 import type { FilesCapability } from "@gitbridge/contracts/capabilities";
 import type { PagedResult } from "@gitbridge/contracts/pagination";
-import type { GitBridgeClientConfig } from "@gitbridge/core";
+import {
+  createGitBridgeClient,
+  type GitBridgeClient,
+  type GitBridgeClientConfig
+} from "@gitbridge/core";
 import {
   AuthenticationError,
   AuthorizationError,
@@ -95,7 +107,6 @@ import {
   mapGitHubTag,
   mapGitHubTree
 } from "./mappers.js";
-import { createOctokitAdapter } from "./octokit-adapter.js";
 export { GitHubProviderId, GitHubProviderName, GitHubProviderVersion } from "./constants.js";
 import { GitHubProviderId, GitHubProviderName, GitHubProviderVersion } from "./constants.js";
 
@@ -104,19 +115,27 @@ export type GitHubProviderConfig = Readonly<{
   diagnostics?: DiagnosticsService;
   hosts?: readonly string[];
   metadata?: Metadata;
-  octokit?: GitHubOctokitAdapterFactory;
   priority?: number;
   transport?: Transport;
 }>;
 
-export type GitHubProviderDependencies = Readonly<{
+export type GitHubTokenAuthOptions = Readonly<
+  Omit<StaticTokenAuthConfig, "kind" | "provider" | "token">
+>;
+
+export type GitHubClientConfig = GitHubProviderConfig &
+  Readonly<{
+    authentication?: AuthenticationStrategy;
+    token?: string;
+  }>;
+
+type GitHubProviderDependencies = Readonly<{
   cache?: CacheProvider;
   diagnostics?: DiagnosticsService;
-  octokit: GitHubOctokitAdapterFactory;
   transport: Transport;
 }>;
 
-export type GitHubOctokitRequest = Readonly<{
+type GitHubRequest = Readonly<{
   body?: TransportRequest["body"];
   headers?: Readonly<Record<string, string>>;
   method?: "GET" | "POST" | "PATCH" | "PUT" | "DELETE";
@@ -125,21 +144,23 @@ export type GitHubOctokitRequest = Readonly<{
   url: string;
 }>;
 
-export type GitHubOctokitResponse<TBody = unknown> = Readonly<{
+type GitHubResponse<TBody = unknown> = Readonly<{
   data?: TBody;
   headers?: Readonly<Record<string, string>>;
   status: number;
 }>;
 
-export interface GitHubOctokitAdapter {
-  request<TBody = unknown>(request: GitHubOctokitRequest): Promise<GitHubOctokitResponse<TBody>>;
+type GitHubDataResponse<TBody = unknown> = Readonly<{
+  data?: TBody;
+  headers?: Readonly<Record<string, string>>;
+  status: number;
+}>;
+
+interface GitHubRequestClient {
+  request<TBody = unknown>(request: GitHubRequest): Promise<GitHubResponse<TBody>>;
 }
 
-export type GitHubOctokitAdapterFactory = (
-  context: GitHubOctokitAdapterContext
-) => GitHubOctokitAdapter;
-
-export type GitHubOctokitAdapterContext = Readonly<{
+type GitHubRequestContext = Readonly<{
   authentication?: AuthenticationContext;
   metadata?: Metadata;
   transport: Transport;
@@ -157,7 +178,15 @@ type MutableSessionState = "active" | "disposed";
 const foundationCapabilityDescriptors = deepFreeze([
   {
     name: "files",
-    operations: ["readText", "readJson", "readBinary", "download", "exists", "metadata"],
+    operations: [
+      "readText",
+      "readJson",
+      "readBinary",
+      "download",
+      "exists",
+      "metadata",
+      "getMetadata"
+    ],
     status: "supported"
   },
   {
@@ -222,6 +251,13 @@ export function createGitHubProvider(config: GitHubProviderConfig = {}): GitHubP
 }
 
 /**
+ * Creates the GitHub provider with a short, discoverable name for application setup.
+ */
+export function githubProvider(config: GitHubProviderConfig = {}): GitHubProvider {
+  return createGitHubProvider(config);
+}
+
+/**
  * Creates a GitBridge client config fragment containing the GitHub provider.
  */
 export function createGitHubProviderConfig(
@@ -230,6 +266,41 @@ export function createGitHubProviderConfig(
   return {
     providers: [createGitHubProvider(config)]
   };
+}
+
+/**
+ * Creates a GitHub-scoped token authentication strategy for GitBridge clients.
+ */
+export function githubTokenAuth(
+  token: string,
+  options: GitHubTokenAuthOptions = {}
+): AuthenticationStrategy {
+  return Object.freeze({
+    type: "token",
+    async authenticate(request?: AuthenticationRequest) {
+      if (request?.provider !== undefined && request.provider !== GitHubProviderId) {
+        return createAuthContext(anonymousAuth({ provider: request.provider }));
+      }
+
+      return createAuthContext(tokenAuth({ ...options, provider: GitHubProviderId, token }));
+    }
+  }) as AuthenticationStrategy;
+}
+
+/**
+ * Creates a GitBridge client with the GitHub provider registered.
+ */
+export function createGitHubClient(config: GitHubClientConfig = {}): GitBridgeClient {
+  const { authentication, token, ...providerConfig } = config;
+  const resolvedProviderConfig: GitHubProviderConfig = {
+    ...providerConfig,
+    transport: providerConfig.transport ?? createGitHubHttpTransport()
+  };
+
+  return createGitBridgeClient({
+    ...createGitHubProviderConfig(resolvedProviderConfig),
+    authentication: authentication ?? (token === undefined ? undefined : githubTokenAuth(token))
+  });
 }
 
 export class GitHubProvider implements Provider {
@@ -274,7 +345,7 @@ export class GitHubProvider implements Provider {
       const location = resolveRepositoryLocation(request.repository, this.#hosts);
       const dependencies = resolveDependencies(this.#config, request.context);
       const context = createGitHubSessionContext(request.context, dependencies);
-      const adapterContext: {
+      const requestContext: {
         authentication?: AuthenticationContext;
         metadata?: Metadata;
         transport: Transport;
@@ -283,20 +354,20 @@ export class GitHubProvider implements Provider {
       };
 
       if (context.authenticationContext !== undefined) {
-        adapterContext.authentication = context.authenticationContext;
+        requestContext.authentication = context.authenticationContext;
       }
 
       if (context.metadata !== undefined) {
-        adapterContext.metadata = context.metadata;
+        requestContext.metadata = context.metadata;
       }
 
-      const octokit = dependencies.octokit(adapterContext);
+      const requestClient = createGitHubRequestClient(requestContext);
       const fallback = toRepositoryInfo(location);
-      const repository = await readRepositoryInfo(octokit, location, fallback);
+      const repository = await readRepositoryInfo(requestClient, location, fallback);
 
       return new GitHubProviderSession({
         context,
-        octokit,
+        requestClient,
         repository
       });
     });
@@ -306,7 +377,7 @@ export class GitHubProvider implements Provider {
 export class GitHubProviderSession implements ProviderSession {
   readonly #context: ProviderContext;
   #diagnosticSequence = 0;
-  readonly #octokit: GitHubOctokitAdapter;
+  readonly #requestClient: GitHubRequestClient;
   #state: MutableSessionState = "active";
 
   public readonly capabilities: ProviderSessionCapabilities;
@@ -321,15 +392,17 @@ export class GitHubProviderSession implements ProviderSession {
   public constructor(
     input: Readonly<{
       context: ProviderContext;
-      octokit: GitHubOctokitAdapter;
+      requestClient: GitHubRequestClient;
       repository: RepositoryInfo;
     }>
   ) {
     this.#context = Object.freeze(input.context) as ProviderContext;
-    this.#octokit = input.octokit;
+    this.#requestClient = input.requestClient;
     this.repository = deepFreeze(input.repository) as RepositoryInfo;
-    this.capabilities = createFoundationCapabilities(this.repository.identity, this.#octokit, () =>
-      this.ensureActive()
+    this.capabilities = createFoundationCapabilities(
+      this.repository.identity,
+      this.#requestClient,
+      () => this.ensureActive()
     );
   }
 
@@ -339,10 +412,6 @@ export class GitHubProviderSession implements ProviderSession {
 
   public get context(): ProviderContext {
     return this.#context;
-  }
-
-  public get octokit(): GitHubOctokitAdapter {
-    return this.#octokit;
   }
 
   public async getCapabilities(): Promise<readonly CapabilityDescriptor[]> {
@@ -393,13 +462,9 @@ export class GitHubProviderSession implements ProviderSession {
   }
 }
 
-export function createTransportOctokitAdapter(
-  context: GitHubOctokitAdapterContext
-): GitHubOctokitAdapter {
+function createGitHubRequestClient(context: GitHubRequestContext): GitHubRequestClient {
   return deepFreeze({
-    async request<TBody = unknown>(
-      request: GitHubOctokitRequest
-    ): Promise<GitHubOctokitResponse<TBody>> {
+    async request<TBody = unknown>(request: GitHubRequest): Promise<GitHubResponse<TBody>> {
       const transportRequest = toTransportRequest(request, context);
 
       try {
@@ -412,19 +477,19 @@ export function createTransportOctokitAdapter(
         const response = await context.transport.execute<TBody>(transportRequest, transportContext);
         return fromTransportResponse(response);
       } catch (error: unknown) {
-        throw mapGitHubError(error, "github.octokit.request");
+        throw mapGitHubError(error, "github.transport.request");
       }
     }
-  }) as GitHubOctokitAdapter;
+  }) as GitHubRequestClient;
 }
 
 async function readRepositoryInfo(
-  octokit: GitHubOctokitAdapter,
+  requestClient: GitHubRequestClient,
   location: GitHubRepositoryLocation,
   fallback: RepositoryInfo
 ): Promise<RepositoryInfo> {
   const response = await requestGitHubResponse<GitHubRepositoryModel>(
-    octokit,
+    requestClient,
     "github.repository.get",
     `/repos/${encodePathPart(location.owner)}/${encodePathPart(location.name)}`
   );
@@ -437,13 +502,13 @@ async function readRepositoryInfo(
 }
 
 async function readContent(
-  octokit: GitHubOctokitAdapter,
+  requestClient: GitHubRequestClient,
   repository: RepositoryIdentity,
   path: FilePath,
   operation: string
 ): Promise<GitHubContentModel> {
   const response = await requestGitHub<GitHubContentModel | readonly GitHubContentModel[]>(
-    octokit,
+    requestClient,
     operation,
     `/repos/${encodePathPart(repository.owner)}/${encodePathPart(repository.name)}/contents/${encodeRepositoryPath(path)}`
   );
@@ -462,11 +527,11 @@ async function readContent(
 }
 
 async function requestGitHub<TBody>(
-  octokit: GitHubOctokitAdapter,
+  requestClient: GitHubRequestClient,
   operation: string,
   url: string
 ): Promise<TBody> {
-  const response = await requestGitHubResponse<TBody>(octokit, operation, url);
+  const response = await requestGitHubResponse<TBody>(requestClient, operation, url);
 
   if (response.data === undefined) {
     throw new ProviderError("GitHub response did not include a response body", {
@@ -482,12 +547,12 @@ async function requestGitHub<TBody>(
 }
 
 async function requestGitHubResponse<TBody>(
-  octokit: GitHubOctokitAdapter,
+  requestClient: GitHubRequestClient,
   operation: string,
   url: string
-): Promise<GitHubOctokitResponse<TBody>> {
+): Promise<GitHubResponse<TBody>> {
   try {
-    const response = await octokit.request<TBody>({ method: "GET", url });
+    const response = await requestClient.request<TBody>({ method: "GET", url });
 
     if (response.status === 404) {
       throw new NotFoundError("GitHub resource was not found", {
@@ -500,7 +565,7 @@ async function requestGitHubResponse<TBody>(
     }
 
     if (response.status < 200 || response.status >= 300) {
-      throw createGitHubStatusError(response.status, operation);
+      throw createGitHubStatusError(response.status, operation, response.headers);
     }
 
     return response;
@@ -631,11 +696,9 @@ function resolveDependencies(
   const dependencies: {
     cache?: CacheProvider;
     diagnostics?: DiagnosticsService;
-    octokit: GitHubOctokitAdapterFactory;
     transport: Transport;
   } = {
-    octokit: config.octokit ?? createOctokitAdapter,
-    transport: config.transport ?? context.transport ?? createNoopProviderTransport()
+    transport: config.transport ?? context.transport ?? createGitHubHttpTransport()
   };
 
   const cache = config.cache ?? context.cache;
@@ -654,10 +717,10 @@ function resolveDependencies(
 
 function createFoundationCapabilities(
   repository: RepositoryIdentity,
-  octokit: GitHubOctokitAdapter,
+  requestClient: GitHubRequestClient,
   ensureActive: () => void
 ): ProviderSessionCapabilities {
-  const runtime = createGitHubRuntimeCapabilities(repository, octokit, ensureActive);
+  const runtime = createGitHubRuntimeCapabilities(repository, requestClient, ensureActive);
 
   return deepFreeze({
     branches: runtime.branches,
@@ -674,7 +737,7 @@ function createFoundationCapabilities(
 
 function createGitHubRuntimeCapabilities(
   repository: RepositoryIdentity,
-  octokit: GitHubOctokitAdapter,
+  requestClient: GitHubRequestClient,
   ensureActive: () => void
 ): Readonly<{
   branches: BranchesCapability;
@@ -688,21 +751,21 @@ function createGitHubRuntimeCapabilities(
   tree: TreeCapability;
 }> {
   return deepFreeze({
-    branches: createGitHubBranchesCapability(repository, octokit, ensureActive),
-    files: createGitHubFilesCapability(repository, octokit, ensureActive),
-    history: createGitHubHistoryCapability(repository, octokit, ensureActive),
-    issues: createGitHubIssuesCapability(repository, octokit, ensureActive),
-    pullRequests: createGitHubPullRequestsCapability(repository, octokit, ensureActive),
-    releases: createGitHubReleasesCapability(repository, octokit, ensureActive),
-    search: createGitHubSearchCapability(repository, octokit, ensureActive),
-    tags: createGitHubTagsCapability(repository, octokit, ensureActive),
-    tree: createGitHubTreeCapability(repository, octokit, ensureActive)
+    branches: createGitHubBranchesCapability(repository, requestClient, ensureActive),
+    files: createGitHubFilesCapability(repository, requestClient, ensureActive),
+    history: createGitHubHistoryCapability(repository, requestClient, ensureActive),
+    issues: createGitHubIssuesCapability(repository, requestClient, ensureActive),
+    pullRequests: createGitHubPullRequestsCapability(repository, requestClient, ensureActive),
+    releases: createGitHubReleasesCapability(repository, requestClient, ensureActive),
+    search: createGitHubSearchCapability(repository, requestClient, ensureActive),
+    tags: createGitHubTagsCapability(repository, requestClient, ensureActive),
+    tree: createGitHubTreeCapability(repository, requestClient, ensureActive)
   });
 }
 
 function createGitHubBranchesCapability(
   repository: RepositoryIdentity,
-  octokit: GitHubOctokitAdapter,
+  requestClient: GitHubRequestClient,
   ensureActive: () => void
 ): BranchesCapability {
   return deepFreeze({
@@ -710,7 +773,7 @@ function createGitHubBranchesCapability(
       ensureActive();
       validateNonEmpty(name, "Branch name must be a non-empty string");
       const response = await requestGitHub<GitHubBranchModel>(
-        octokit,
+        requestClient,
         "github.branches.get",
         `/repos/${encodePathPart(repository.owner)}/${encodePathPart(repository.name)}/branches/${encodePathPart(name)}`
       );
@@ -719,7 +782,7 @@ function createGitHubBranchesCapability(
     async list(_options?: BranchListOptions): Promise<PagedResult<Branch>> {
       ensureActive();
       const response = await requestGitHub<readonly GitHubBranchModel[]>(
-        octokit,
+        requestClient,
         "github.branches.list",
         `/repos/${encodePathPart(repository.owner)}/${encodePathPart(repository.name)}/branches`
       );
@@ -731,7 +794,7 @@ function createGitHubBranchesCapability(
 
 function createGitHubTagsCapability(
   repository: RepositoryIdentity,
-  octokit: GitHubOctokitAdapter,
+  requestClient: GitHubRequestClient,
   ensureActive: () => void
 ): TagsCapability {
   return deepFreeze({
@@ -739,7 +802,7 @@ function createGitHubTagsCapability(
       ensureActive();
       validateNonEmpty(name, "Tag name must be a non-empty string");
       const response = await requestGitHub<GitHubRefModel>(
-        octokit,
+        requestClient,
         "github.tags.get",
         `/repos/${encodePathPart(repository.owner)}/${encodePathPart(repository.name)}/git/ref/tags/${encodePathPart(name)}`
       );
@@ -748,7 +811,7 @@ function createGitHubTagsCapability(
     async list(_options?: TagListOptions): Promise<PagedResult<Tag>> {
       ensureActive();
       const response = await requestGitHub<readonly GitHubRefModel[]>(
-        octokit,
+        requestClient,
         "github.tags.list",
         `/repos/${encodePathPart(repository.owner)}/${encodePathPart(repository.name)}/git/refs/tags`
       );
@@ -760,7 +823,7 @@ function createGitHubTagsCapability(
 
 function createGitHubHistoryCapability(
   repository: RepositoryIdentity,
-  octokit: GitHubOctokitAdapter,
+  requestClient: GitHubRequestClient,
   ensureActive: () => void
 ): HistoryCapability {
   return deepFreeze({
@@ -768,7 +831,7 @@ function createGitHubHistoryCapability(
       ensureActive();
       validatePath(path);
       const response = await requestGitHub<readonly GitHubCommitModel[]>(
-        octokit,
+        requestClient,
         "github.history.file",
         `/repos/${encodePathPart(repository.owner)}/${encodePathPart(repository.name)}/commits?path=${encodeURIComponent(path)}`
       );
@@ -779,7 +842,7 @@ function createGitHubHistoryCapability(
       ensureActive();
       validateNonEmpty(sha, "Commit sha must be a non-empty string");
       const response = await requestGitHub<GitHubCommitModel>(
-        octokit,
+        requestClient,
         "github.history.get",
         `/repos/${encodePathPart(repository.owner)}/${encodePathPart(repository.name)}/commits/${encodePathPart(sha)}`
       );
@@ -788,7 +851,7 @@ function createGitHubHistoryCapability(
     async list(_options?: CommitListOptions): Promise<PagedResult<Commit>> {
       ensureActive();
       const response = await requestGitHub<readonly GitHubCommitModel[]>(
-        octokit,
+        requestClient,
         "github.history.list",
         `/repos/${encodePathPart(repository.owner)}/${encodePathPart(repository.name)}/commits`
       );
@@ -800,7 +863,7 @@ function createGitHubHistoryCapability(
 
 function createGitHubTreeCapability(
   repository: RepositoryIdentity,
-  octokit: GitHubOctokitAdapter,
+  requestClient: GitHubRequestClient,
   ensureActive: () => void
 ): TreeCapability {
   return deepFreeze({
@@ -808,7 +871,7 @@ function createGitHubTreeCapability(
       ensureActive();
       validatePath(path);
       const response = await requestGitHub<GitHubContentModel>(
-        octokit,
+        requestClient,
         "github.tree.get",
         `/repos/${encodePathPart(repository.owner)}/${encodePathPart(repository.name)}/contents/${encodeRepositoryPath(path)}`
       );
@@ -819,7 +882,7 @@ function createGitHubTreeCapability(
       validateOptionalPath(path);
       const suffix = path === undefined ? "" : `/${encodeRepositoryPath(path)}`;
       const response = await requestGitHub<GitHubContentModel | readonly GitHubContentModel[]>(
-        octokit,
+        requestClient,
         "github.tree.list",
         `/repos/${encodePathPart(repository.owner)}/${encodePathPart(repository.name)}/contents${suffix}`
       );
@@ -832,7 +895,7 @@ function createGitHubTreeCapability(
       validateOptionalPath(path);
       const ref = path ?? "HEAD";
       const response = await requestGitHub<GitHubTreeModel>(
-        octokit,
+        requestClient,
         "github.tree.tree",
         `/repos/${encodePathPart(repository.owner)}/${encodePathPart(repository.name)}/git/trees/${encodePathPart(ref)}`
       );
@@ -847,14 +910,14 @@ function createGitHubTreeCapability(
 
 function createGitHubFilesCapability(
   repository: RepositoryIdentity,
-  octokit: GitHubOctokitAdapter,
+  requestClient: GitHubRequestClient,
   ensureActive: () => void
 ): FilesCapability {
   return deepFreeze({
     async download(path: FilePath): Promise<Blob> {
       ensureActive();
       validatePath(path);
-      const response = await readContent(octokit, repository, path, "github.files.download");
+      const response = await readContent(requestClient, repository, path, "github.files.download");
       return mapGitHubContentToBlob(response);
     },
     async exists(path: FilePath): Promise<boolean> {
@@ -862,7 +925,7 @@ function createGitHubFilesCapability(
       validatePath(path);
 
       try {
-        await readContent(octokit, repository, path, "github.files.exists");
+        await readContent(requestClient, repository, path, "github.files.exists");
         return true;
       } catch (error: unknown) {
         if (error instanceof NotFoundError) {
@@ -876,14 +939,17 @@ function createGitHubFilesCapability(
       ensureActive();
       validatePath(path);
       return mapGitHubContentToFileInfo(
-        await readContent(octokit, repository, path, "github.files.metadata")
+        await readContent(requestClient, repository, path, "github.files.metadata")
       );
+    },
+    async getMetadata(path: FilePath): Promise<FileInfo> {
+      return this.metadata(path);
     },
     async readBinary(path: FilePath): Promise<Uint8Array> {
       ensureActive();
       validatePath(path);
       const blob = mapGitHubContentToBlob(
-        await readContent(octokit, repository, path, "github.files.readBinary")
+        await readContent(requestClient, repository, path, "github.files.readBinary")
       );
       return decodeBlobContent(blob);
     },
@@ -898,7 +964,7 @@ function createGitHubFilesCapability(
       return new TextDecoder().decode(
         decodeBlobContent(
           mapGitHubContentToBlob(
-            await readContent(octokit, repository, path, "github.files.readText")
+            await readContent(requestClient, repository, path, "github.files.readText")
           )
         )
       );
@@ -917,7 +983,7 @@ function createGitHubFilesCapability(
 
 function createGitHubIssuesCapability(
   repository: RepositoryIdentity,
-  octokit: GitHubOctokitAdapter,
+  requestClient: GitHubRequestClient,
   ensureActive: () => void
 ): IssuesCapability {
   return deepFreeze({
@@ -925,7 +991,7 @@ function createGitHubIssuesCapability(
       ensureActive();
       validatePositiveInteger(number, "Issue number must be a positive integer");
       const response = await requestGitHub<GitHubIssueModel>(
-        octokit,
+        requestClient,
         "github.issues.get",
         `/repos/${encodePathPart(repository.owner)}/${encodePathPart(repository.name)}/issues/${number}`
       );
@@ -934,7 +1000,7 @@ function createGitHubIssuesCapability(
     async list(options?: IssueListOptions): Promise<PagedResult<Issue>> {
       ensureActive();
       return requestGitHubPage<GitHubIssueModel, Issue>(
-        octokit,
+        requestClient,
         "github.issues.list",
         withPagination(
           `/repos/${encodePathPart(repository.owner)}/${encodePathPart(repository.name)}/issues`,
@@ -948,7 +1014,7 @@ function createGitHubIssuesCapability(
 
 function createGitHubPullRequestsCapability(
   repository: RepositoryIdentity,
-  octokit: GitHubOctokitAdapter,
+  requestClient: GitHubRequestClient,
   ensureActive: () => void
 ): PullRequestsCapability {
   return deepFreeze({
@@ -956,7 +1022,7 @@ function createGitHubPullRequestsCapability(
       ensureActive();
       validatePositiveInteger(number, "Pull request number must be a positive integer");
       const response = await requestGitHub<GitHubPullRequestModel>(
-        octokit,
+        requestClient,
         "github.pullRequests.get",
         `/repos/${encodePathPart(repository.owner)}/${encodePathPart(repository.name)}/pulls/${number}`
       );
@@ -965,7 +1031,7 @@ function createGitHubPullRequestsCapability(
     async list(options?: PullRequestListOptions): Promise<PagedResult<PullRequest>> {
       ensureActive();
       return requestGitHubPage<GitHubPullRequestModel, PullRequest>(
-        octokit,
+        requestClient,
         "github.pullRequests.list",
         withPagination(
           `/repos/${encodePathPart(repository.owner)}/${encodePathPart(repository.name)}/pulls`,
@@ -979,7 +1045,7 @@ function createGitHubPullRequestsCapability(
 
 function createGitHubReleasesCapability(
   repository: RepositoryIdentity,
-  octokit: GitHubOctokitAdapter,
+  requestClient: GitHubRequestClient,
   ensureActive: () => void
 ): ReleasesCapability {
   return deepFreeze({
@@ -987,7 +1053,7 @@ function createGitHubReleasesCapability(
       ensureActive();
       validateNonEmpty(tagName, "Release tag name must be a non-empty string");
       const response = await requestGitHub<GitHubReleaseModel>(
-        octokit,
+        requestClient,
         "github.releases.get",
         `/repos/${encodePathPart(repository.owner)}/${encodePathPart(repository.name)}/releases/tags/${encodePathPart(tagName)}`
       );
@@ -996,7 +1062,7 @@ function createGitHubReleasesCapability(
     async list(options?: ReleaseListOptions): Promise<PagedResult<Release>> {
       ensureActive();
       return requestGitHubPage<GitHubReleaseModel, Release>(
-        octokit,
+        requestClient,
         "github.releases.list",
         withPagination(
           `/repos/${encodePathPart(repository.owner)}/${encodePathPart(repository.name)}/releases`,
@@ -1010,7 +1076,7 @@ function createGitHubReleasesCapability(
 
 function createGitHubSearchCapability(
   repository: RepositoryIdentity,
-  octokit: GitHubOctokitAdapter,
+  requestClient: GitHubRequestClient,
   ensureActive: () => void
 ): SearchCapability {
   return deepFreeze({
@@ -1019,7 +1085,7 @@ function createGitHubSearchCapability(
       validateNonEmpty(query.text, "Search query text must be a non-empty string");
       const pathQualifier = query.path === undefined ? "" : ` path:${query.path}`;
       const response = await requestGitHub<GitHubSearchResponseModel>(
-        octokit,
+        requestClient,
         "github.search.query",
         withPagination(
           `/search/code?q=${encodeURIComponent(`${query.text} repo:${repository.owner}/${repository.name}${pathQualifier}`)}`,
@@ -1040,12 +1106,12 @@ function createGitHubSearchCapability(
 }
 
 async function requestGitHubPage<TModel, TItem>(
-  octokit: GitHubOctokitAdapter,
+  requestClient: GitHubRequestClient,
   operation: string,
   url: string,
   map: (model: TModel) => TItem
 ): Promise<PagedResult<TItem>> {
-  const response = await requestGitHubResponse<readonly TModel[]>(octokit, operation, url);
+  const response = await requestGitHubResponse<readonly TModel[]>(requestClient, operation, url);
 
   if (response.data === undefined) {
     throw new ProviderError("GitHub response did not include a response body", {
@@ -1177,8 +1243,8 @@ function toRepositoryInfo(location: GitHubRepositoryLocation): RepositoryInfo {
 }
 
 function toTransportRequest(
-  request: GitHubOctokitRequest,
-  context: GitHubOctokitAdapterContext
+  request: GitHubRequest,
+  context: GitHubRequestContext
 ): TransportRequest {
   const headers = {
     accept: "application/vnd.github+json",
@@ -1201,16 +1267,25 @@ function toTransportRequest(
 }
 
 function fromTransportResponse<TBody>(
-  response: TransportResponse<TBody>
-): GitHubOctokitResponse<TBody> {
+  response: TransportResponse<TBody> | GitHubDataResponse<TBody>
+): GitHubResponse<TBody> {
+  const data = getResponseData<TBody>(response);
+
   return deepFreeze({
-    data: response.body,
+    data,
     headers: response.headers,
     status: response.status
-  }) as GitHubOctokitResponse<TBody>;
+  }) as GitHubResponse<TBody>;
 }
 
-function toTransportMethod(method: GitHubOctokitRequest["method"]): TransportRequest["method"] {
+function getResponseData<TBody>(
+  response: TransportResponse<TBody> | GitHubDataResponse<TBody>
+): TBody | undefined {
+  const record = response as Readonly<{ body?: TBody; data?: TBody }>;
+  return record.body ?? record.data;
+}
+
+function toTransportMethod(method: GitHubRequest["method"]): TransportRequest["method"] {
   if (method === undefined || method === "GET") {
     return "read";
   }
@@ -1234,15 +1309,127 @@ function authorizationHeader(
   return { authorization: `Bearer ${credentials.token}` };
 }
 
-function createNoopProviderTransport(): Transport {
+function createGitHubHttpTransport(): Transport {
   return deepFreeze({
-    async execute<TBody = unknown>() {
-      return createTransportResponse<TBody>({ status: 204 });
+    async execute<TBody = unknown>(request: TransportRequest): Promise<TransportResponse<TBody>> {
+      const response = await executeGitHubHttpRequest(request);
+      return createTransportResponse<TBody>(response as TransportResponse<TBody>);
     }
   }) as Transport;
 }
 
-function createGitHubStatusError(status: number, operation: string): GitBridgeError {
+async function executeGitHubHttpRequest<TBody = unknown>(
+  request: TransportRequest
+): Promise<TransportResponse<TBody>> {
+  const requestUrl = toGitHubApiUrl(request.target);
+  const init: RequestInit = {
+    method: toHttpMethod(request.method)
+  };
+  const requestBody = toHttpRequestBody(request.body);
+
+  if (requestBody !== undefined) {
+    init.body = requestBody;
+  }
+
+  if (request.headers !== undefined) {
+    init.headers = request.headers;
+  }
+
+  if (request.signal !== undefined) {
+    init.signal = request.signal as AbortSignal;
+  }
+
+  const response = await getFetchImplementation()(requestUrl, init);
+  const responseBody = await readHttpResponseBody<TBody>(response);
+  const transportResponse: {
+    body?: unknown;
+    headers: Readonly<Record<string, string>>;
+    status: number;
+  } = {
+    headers: Object.fromEntries(response.headers.entries()),
+    status: response.status
+  };
+
+  if (responseBody !== undefined) {
+    transportResponse.body = responseBody;
+  }
+
+  return transportResponse as TransportResponse<TBody>;
+}
+
+function getFetchImplementation(): typeof globalThis.fetch {
+  const fetchImplementation = globalThis["fetch"];
+
+  if (typeof fetchImplementation !== "function") {
+    throw new TransportError("GitHub provider requires a fetch-compatible runtime", {
+      diagnostics: {
+        operation: { operation: "github.transport.configure" },
+        provider: { provider: GitHubProviderId }
+      },
+      retryability: "Never"
+    });
+  }
+
+  return fetchImplementation.bind(globalThis);
+}
+
+function toGitHubApiUrl(target: string): string {
+  if (/^https?:\/\//u.test(target)) {
+    return target;
+  }
+
+  return `https://api.github.com${target.startsWith("/") ? target : `/${target}`}`;
+}
+
+function toHttpMethod(method: TransportRequest["method"]): string {
+  switch (method) {
+    case "delete":
+      return "DELETE";
+    case "write":
+      return "POST";
+    case "read":
+    case "stream":
+      return "GET";
+  }
+}
+
+function toHttpRequestBody(body: TransportRequest["body"]): RequestInit["body"] | undefined {
+  if (body === undefined) {
+    return undefined;
+  }
+
+  if (typeof body === "string" || body instanceof Uint8Array) {
+    return body;
+  }
+
+  return JSON.stringify(body);
+}
+
+async function readHttpResponseBody<TBody>(response: Response): Promise<TBody | undefined> {
+  if (response.status === 204 || response.status === 205) {
+    return undefined;
+  }
+
+  const text = await response.text();
+
+  if (text.length === 0) {
+    return undefined;
+  }
+
+  const contentType = response.headers.get("content-type") ?? "";
+
+  if (contentType.includes("application/json")) {
+    return JSON.parse(text) as TBody;
+  }
+
+  return text as TBody;
+}
+
+function createGitHubStatusError(
+  status: number,
+  operation: string,
+  headers?: Readonly<Record<string, string>>
+): GitBridgeError {
   if (status === 401) {
     return new AuthenticationError("GitHub authentication failed", {
       diagnostics: {
@@ -1250,6 +1437,16 @@ function createGitHubStatusError(status: number, operation: string): GitBridgeEr
         provider: { provider: GitHubProviderId, status }
       },
       retryability: "Never"
+    });
+  }
+
+  if (status === 403 && isRateLimitError({ headers, status })) {
+    return new RateLimitError("GitHub rate limit exceeded", {
+      diagnostics: {
+        operation: { operation },
+        provider: { provider: GitHubProviderId, status }
+      },
+      retryability: "Always"
     });
   }
 
