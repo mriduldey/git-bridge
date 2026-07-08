@@ -1,6 +1,6 @@
-# @gitbridge/cache
+# @repoferry/cache
 
-Cache primitives for GitBridge.
+Cache primitives for RepoFerry.
 
 ## Responsibilities
 
@@ -12,13 +12,13 @@ Cache primitives for GitBridge.
 ## Install
 
 ```sh
-pnpm add @gitbridge/cache
+pnpm add @repoferry/cache
 ```
 
 ## Usage
 
 ```ts
-import { createCache, createCacheKey, createMemoryCacheAdapter } from "@gitbridge/cache";
+import { createCache, createCacheKey, createMemoryCacheAdapter } from "@repoferry/cache";
 
 const cache = createCache({
   adapter: createMemoryCacheAdapter(),

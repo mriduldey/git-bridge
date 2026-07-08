@@ -1,7 +1,7 @@
 {
-  "name": "@gitbridge/shared",
+  "name": "@repoferry/shared",
   "version": "0.1.0",
-  "description": "Provider-neutral shared utilities for GitBridge packages.",
+  "description": "Provider-neutral shared utilities for RepoFerry packages.",
   "license": "MIT",
   "type": "module",
   "sideEffects": false,
@@ -78,13 +78,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mriduldey/git-bridge.git",
+    "url": "git+https://github.com/mriduldey/repo-ferry.git",
     "directory": "packages/shared"
   },
   "bugs": {
-    "url": "https://github.com/mriduldey/git-bridge/issues"
+    "url": "https://github.com/mriduldey/repo-ferry/issues"
   },
-  "homepage": "https://github.com/mriduldey/git-bridge#readme",
+  "homepage": "https://github.com/mriduldey/repo-ferry#readme",
   "keywords": [
     "git",
     "github",

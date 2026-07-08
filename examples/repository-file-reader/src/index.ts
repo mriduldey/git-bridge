@@ -1,9 +1,9 @@
-import { GitBridgeError } from "@gitbridge/errors";
-import { createGitHubClient } from "@gitbridge/provider-github";
+import { RepoFerryError } from "@repoferry/errors";
+import { createGitHubClient } from "@repoferry/provider-github";
 
-const repositoryUrl = process.env.GITBRIDGE_REPOSITORY_URL ?? "https://github.com/octokit/rest.js";
-const path = process.env.GITBRIDGE_FILE_PATH ?? "README.md";
-const token = process.env.GITBRIDGE_GITHUB_TOKEN;
+const repositoryUrl = process.env.REPOFERRY_REPOSITORY_URL ?? "https://github.com/octokit/rest.js";
+const path = process.env.REPOFERRY_FILE_PATH ?? "README.md";
+const token = process.env.REPOFERRY_GITHUB_TOKEN;
 
 const client = createGitHubClient(token === undefined ? {} : { token });
 
@@ -16,7 +16,7 @@ try {
 
   await repository.dispose();
 } catch (error: unknown) {
-  if (error instanceof GitBridgeError) {
+  if (error instanceof RepoFerryError) {
     console.error(`${error.code}: ${error.message}`);
     process.exitCode = 1;
   } else {

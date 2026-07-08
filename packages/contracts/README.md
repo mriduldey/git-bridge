@@ -1,6 +1,6 @@
-# @gitbridge/contracts
+# @repoferry/contracts
 
-Stable provider-neutral TypeScript contracts for GitBridge.
+Stable provider-neutral TypeScript contracts for RepoFerry.
 
 ## Responsibilities
 
@@ -13,16 +13,16 @@ Stable provider-neutral TypeScript contracts for GitBridge.
 ## Install
 
 ```sh
-pnpm add @gitbridge/contracts
+pnpm add @repoferry/contracts
 ```
 
-Most applications consume these types transitively through `@gitbridge/core` and provider packages.
+Most applications consume these types transitively through `@repoferry/core` and provider packages.
 Provider authors import this package directly.
 
 ## Usage
 
 ```ts
-import type { RepositoryInfo } from "@gitbridge/contracts";
+import type { RepositoryInfo } from "@repoferry/contracts";
 
 function printRepository(info: RepositoryInfo): string {
   return `${info.fullName} (${info.visibility})`;

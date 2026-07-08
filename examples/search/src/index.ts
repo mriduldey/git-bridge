@@ -1,12 +1,12 @@
-import { GitBridgeError } from "@gitbridge/errors";
-import { createGitHubClient } from "@gitbridge/provider-github";
+import { RepoFerryError } from "@repoferry/errors";
+import { createGitHubClient } from "@repoferry/provider-github";
 
-const repositoryUrl = process.env.GITBRIDGE_REPOSITORY_URL ?? "https://github.com/octokit/rest.js";
-const query = process.env.GITBRIDGE_SEARCH_QUERY ?? "Octokit";
-const token = process.env.GITBRIDGE_GITHUB_TOKEN;
+const repositoryUrl = process.env.REPOFERRY_REPOSITORY_URL ?? "https://github.com/octokit/rest.js";
+const query = process.env.REPOFERRY_SEARCH_QUERY ?? "Octokit";
+const token = process.env.REPOFERRY_GITHUB_TOKEN;
 
 if (token === undefined) {
-  console.error("GITBRIDGE_GITHUB_TOKEN is required for the search example.");
+  console.error("REPOFERRY_GITHUB_TOKEN is required for the search example.");
   process.exit(1);
 }
 
@@ -23,7 +23,7 @@ try {
 
   await repository.dispose();
 } catch (error: unknown) {
-  if (error instanceof GitBridgeError) {
+  if (error instanceof RepoFerryError) {
     console.error(`${error.code}: ${error.message}`);
     process.exitCode = 1;
   } else {

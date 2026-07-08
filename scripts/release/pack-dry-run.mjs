@@ -16,7 +16,7 @@ for (const directory of packageDirectories) {
     continue;
   }
 
-  const result = spawnSync("pnpm", ["pack", "--dry-run"], {
+  const result = spawnSync("npm", ["pack", "--dry-run"], {
     cwd: directory,
     encoding: "utf8",
     shell: process.platform === "win32"

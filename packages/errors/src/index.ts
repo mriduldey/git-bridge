@@ -1,5 +1,5 @@
 /**
- * Retry guidance exposed by every public GitBridge error.
+ * Retry guidance exposed by every public RepoFerry error.
  */
 export type ErrorRetryability = "Never" | "Maybe" | "Always";
 
@@ -7,20 +7,20 @@ export type ErrorRetryability = "Never" | "Maybe" | "Always";
  * Stable public error codes. These codes are part of the compatibility contract.
  */
 export const ErrorCodes = {
-  Authentication: "GITBRIDGE_AUTHENTICATION",
-  Authorization: "GITBRIDGE_PERMISSION_DENIED",
-  Cancellation: "GITBRIDGE_CANCELLED",
-  CapabilityNotSupported: "GITBRIDGE_CAPABILITY_NOT_SUPPORTED",
-  Configuration: "GITBRIDGE_CONFIGURATION",
-  Conflict: "GITBRIDGE_CONFLICT",
-  NotFound: "GITBRIDGE_NOT_FOUND",
-  Provider: "GITBRIDGE_PROVIDER",
-  RateLimit: "GITBRIDGE_RATE_LIMITED",
-  Repository: "GITBRIDGE_REPOSITORY",
-  Timeout: "GITBRIDGE_TIMEOUT",
-  Transport: "GITBRIDGE_TRANSPORT",
-  Unexpected: "GITBRIDGE_UNEXPECTED",
-  Validation: "GITBRIDGE_VALIDATION"
+  Authentication: "REPOFERRY_AUTHENTICATION",
+  Authorization: "REPOFERRY_PERMISSION_DENIED",
+  Cancellation: "REPOFERRY_CANCELLED",
+  CapabilityNotSupported: "REPOFERRY_CAPABILITY_NOT_SUPPORTED",
+  Configuration: "REPOFERRY_CONFIGURATION",
+  Conflict: "REPOFERRY_CONFLICT",
+  NotFound: "REPOFERRY_NOT_FOUND",
+  Provider: "REPOFERRY_PROVIDER",
+  RateLimit: "REPOFERRY_RATE_LIMITED",
+  Repository: "REPOFERRY_REPOSITORY",
+  Timeout: "REPOFERRY_TIMEOUT",
+  Transport: "REPOFERRY_TRANSPORT",
+  Unexpected: "REPOFERRY_UNEXPECTED",
+  Validation: "REPOFERRY_VALIDATION"
 } as const;
 
 /**
@@ -29,7 +29,7 @@ export const ErrorCodes = {
 export type ErrorCode = (typeof ErrorCodes)[keyof typeof ErrorCodes];
 
 /**
- * Public classification for GitBridge errors.
+ * Public classification for RepoFerry errors.
  */
 export type ErrorCategory =
   | "authentication"
@@ -41,7 +41,7 @@ export type ErrorCategory =
   | "validation";
 
 /**
- * Diagnostic severity for a GitBridge error.
+ * Diagnostic severity for a RepoFerry error.
  */
 export type ErrorSeverity = "debug" | "info" | "warning" | "error" | "critical";
 
@@ -100,7 +100,7 @@ export type TransportDiagnostics = Readonly<{
 }>;
 
 /**
- * Safe structured diagnostic context exposed by GitBridge errors.
+ * Safe structured diagnostic context exposed by RepoFerry errors.
  */
 export type ErrorDiagnostics = Readonly<{
   operation?: OperationDiagnostics;
@@ -111,7 +111,7 @@ export type ErrorDiagnostics = Readonly<{
 }>;
 
 /**
- * Immutable metadata exposed by every public GitBridge error.
+ * Immutable metadata exposed by every public RepoFerry error.
  */
 export type ErrorMetadata = Readonly<{
   code: ErrorCode;
@@ -122,9 +122,9 @@ export type ErrorMetadata = Readonly<{
 }>;
 
 /**
- * Constructor options shared by every public GitBridge error.
+ * Constructor options shared by every public RepoFerry error.
  */
-export type GitBridgeErrorOptions = Readonly<{
+export type RepoFerryErrorOptions = Readonly<{
   cause?: unknown;
   diagnostics?: ErrorDiagnostics;
   retryability?: ErrorRetryability;
@@ -141,9 +141,9 @@ export type SerializedCause = Readonly<{
 }>;
 
 /**
- * Safe serialized representation of a GitBridge error.
+ * Safe serialized representation of a RepoFerry error.
  */
-export type SerializedGitBridgeError = Readonly<{
+export type SerializedRepoFerryError = Readonly<{
   name: string;
   message: string;
   code: ErrorCode;
@@ -152,7 +152,7 @@ export type SerializedGitBridgeError = Readonly<{
   severity: ErrorSeverity;
   timestamp: string;
   diagnostics: ErrorDiagnostics;
-  cause?: SerializedGitBridgeError | SerializedCause;
+  cause?: SerializedRepoFerryError | SerializedCause;
 }>;
 
 type ErrorDefinition = Readonly<{
@@ -193,7 +193,7 @@ const definitions = {
     retryability: "Maybe",
     severity: "warning"
   },
-  GitBridgeError: {
+  RepoFerryError: {
     category: "unexpected",
     code: ErrorCodes.Unexpected,
     retryability: "Never",
@@ -256,9 +256,9 @@ const definitions = {
 } as const satisfies Record<string, ErrorDefinition>;
 
 /**
- * Base class for every public GitBridge error.
+ * Base class for every public RepoFerry error.
  */
-export class GitBridgeError extends Error {
+export class RepoFerryError extends Error {
   /**
    * Stable public error code.
    */
@@ -294,7 +294,7 @@ export class GitBridgeError extends Error {
    */
   public readonly metadata: ErrorMetadata;
 
-  public constructor(message: string, options: GitBridgeErrorOptions = {}) {
+  public constructor(message: string, options: RepoFerryErrorOptions = {}) {
     const definition = getDefinition(new.target.name);
     super(message, createErrorOptions(options.cause));
 
@@ -324,7 +324,7 @@ export class GitBridgeError extends Error {
   /**
    * Returns a deterministic, safe representation suitable for diagnostics and telemetry.
    */
-  public toJSON(): SerializedGitBridgeError {
+  public toJSON(): SerializedRepoFerryError {
     const serialized: {
       name: string;
       message: string;
@@ -334,7 +334,7 @@ export class GitBridgeError extends Error {
       severity: ErrorSeverity;
       timestamp: string;
       diagnostics: ErrorDiagnostics;
-      cause?: SerializedGitBridgeError | SerializedCause;
+      cause?: SerializedRepoFerryError | SerializedCause;
     } = {
       category: this.category,
       code: this.code,
@@ -358,7 +358,7 @@ export class GitBridgeError extends Error {
   /**
    * Returns the canonical serialized representation.
    */
-  public serialize(): SerializedGitBridgeError {
+  public serialize(): SerializedRepoFerryError {
     return this.toJSON();
   }
 }
@@ -366,17 +366,17 @@ export class GitBridgeError extends Error {
 /**
  * Validation failure detected before an operation executes.
  */
-export class ValidationError extends GitBridgeError {
-  public constructor(message: string, options: GitBridgeErrorOptions = {}) {
+export class ValidationError extends RepoFerryError {
+  public constructor(message: string, options: RepoFerryErrorOptions = {}) {
     super(message, options);
   }
 }
 
 /**
- * Invalid or missing GitBridge configuration.
+ * Invalid or missing RepoFerry configuration.
  */
-export class ConfigurationError extends GitBridgeError {
-  public constructor(message: string, options: GitBridgeErrorOptions = {}) {
+export class ConfigurationError extends RepoFerryError {
+  public constructor(message: string, options: RepoFerryErrorOptions = {}) {
     super(message, options);
   }
 }
@@ -384,8 +384,8 @@ export class ConfigurationError extends GitBridgeError {
 /**
  * Transport-neutral execution failure.
  */
-export class TransportError extends GitBridgeError {
-  public constructor(message: string, options: GitBridgeErrorOptions = {}) {
+export class TransportError extends RepoFerryError {
+  public constructor(message: string, options: RepoFerryErrorOptions = {}) {
     super(message, options);
   }
 }
@@ -394,7 +394,7 @@ export class TransportError extends GitBridgeError {
  * Request execution exceeded an allowed duration.
  */
 export class TimeoutError extends TransportError {
-  public constructor(message: string, options: GitBridgeErrorOptions = {}) {
+  public constructor(message: string, options: RepoFerryErrorOptions = {}) {
     super(message, options);
   }
 }
@@ -403,7 +403,7 @@ export class TimeoutError extends TransportError {
  * Operation was intentionally interrupted.
  */
 export class CancellationError extends TransportError {
-  public constructor(message: string, options: GitBridgeErrorOptions = {}) {
+  public constructor(message: string, options: RepoFerryErrorOptions = {}) {
     super(message, options);
   }
 }
@@ -411,8 +411,8 @@ export class CancellationError extends TransportError {
 /**
  * Authentication failure.
  */
-export class AuthenticationError extends GitBridgeError {
-  public constructor(message: string, options: GitBridgeErrorOptions = {}) {
+export class AuthenticationError extends RepoFerryError {
+  public constructor(message: string, options: RepoFerryErrorOptions = {}) {
     super(message, options);
   }
 }
@@ -420,8 +420,8 @@ export class AuthenticationError extends GitBridgeError {
 /**
  * Provider-neutral provider failure.
  */
-export class ProviderError extends GitBridgeError {
-  public constructor(message: string, options: GitBridgeErrorOptions = {}) {
+export class ProviderError extends RepoFerryError {
+  public constructor(message: string, options: RepoFerryErrorOptions = {}) {
     super(message, options);
   }
 }
@@ -430,7 +430,7 @@ export class ProviderError extends GitBridgeError {
  * Provider rate limit failure.
  */
 export class RateLimitError extends ProviderError {
-  public constructor(message: string, options: GitBridgeErrorOptions = {}) {
+  public constructor(message: string, options: RepoFerryErrorOptions = {}) {
     super(message, options);
   }
 }
@@ -439,7 +439,7 @@ export class RateLimitError extends ProviderError {
  * Requested provider capability is not supported.
  */
 export class CapabilityNotSupportedError extends ProviderError {
-  public constructor(message: string, options: GitBridgeErrorOptions = {}) {
+  public constructor(message: string, options: RepoFerryErrorOptions = {}) {
     super(message, options);
   }
 }
@@ -448,7 +448,7 @@ export class CapabilityNotSupportedError extends ProviderError {
  * Provider denied permission for the requested operation.
  */
 export class AuthorizationError extends ProviderError {
-  public constructor(message: string, options: GitBridgeErrorOptions = {}) {
+  public constructor(message: string, options: RepoFerryErrorOptions = {}) {
     super(message, options);
   }
 }
@@ -457,7 +457,7 @@ export class AuthorizationError extends ProviderError {
  * Provider reported a conflict for the requested operation.
  */
 export class ConflictError extends ProviderError {
-  public constructor(message: string, options: GitBridgeErrorOptions = {}) {
+  public constructor(message: string, options: RepoFerryErrorOptions = {}) {
     super(message, options);
   }
 }
@@ -466,7 +466,7 @@ export class ConflictError extends ProviderError {
  * Provider or repository resource was not found.
  */
 export class NotFoundError extends ProviderError {
-  public constructor(message: string, options: GitBridgeErrorOptions = {}) {
+  public constructor(message: string, options: RepoFerryErrorOptions = {}) {
     super(message, options);
   }
 }
@@ -474,8 +474,8 @@ export class NotFoundError extends ProviderError {
 /**
  * Repository lifecycle or repository state failure.
  */
-export class RepositoryError extends GitBridgeError {
-  public constructor(message: string, options: GitBridgeErrorOptions = {}) {
+export class RepositoryError extends RepoFerryError {
+  public constructor(message: string, options: RepoFerryErrorOptions = {}) {
     super(message, options);
   }
 }
@@ -483,14 +483,14 @@ export class RepositoryError extends GitBridgeError {
 /**
  * Internal defect or unforeseen runtime condition.
  */
-export class UnexpectedError extends GitBridgeError {
-  public constructor(message: string, options: GitBridgeErrorOptions = {}) {
+export class UnexpectedError extends RepoFerryError {
+  public constructor(message: string, options: RepoFerryErrorOptions = {}) {
     super(message, options);
   }
 }
 
 function getDefinition(name: string): ErrorDefinition {
-  return definitions[name as keyof typeof definitions] ?? definitions.GitBridgeError;
+  return definitions[name as keyof typeof definitions] ?? definitions.RepoFerryError;
 }
 
 function createErrorOptions(cause: unknown): ErrorOptions | undefined {
@@ -509,8 +509,8 @@ function freezeDiagnostics(diagnostics: ErrorDiagnostics | undefined): ErrorDiag
   return deepFreeze(diagnostics ?? {});
 }
 
-function serializeCause(cause: unknown): SerializedGitBridgeError | SerializedCause | undefined {
-  if (cause instanceof GitBridgeError) {
+function serializeCause(cause: unknown): SerializedRepoFerryError | SerializedCause | undefined {
+  if (cause instanceof RepoFerryError) {
     return cause.toJSON();
   }
 

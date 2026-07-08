@@ -1,19 +1,19 @@
 flowchart TD
-  Gitbridge["gitbridge"]
-  Core["@gitbridge/core"]
-  Contracts["@gitbridge/contracts"]
-  Auth["@gitbridge/auth"]
-  Cache["@gitbridge/cache"]
-  Errors["@gitbridge/errors"]
-  Observability["@gitbridge/observability"]
-  Shared["@gitbridge/shared"]
-  Testing["@gitbridge/testing"]
-  Transport["@gitbridge/transport"]
-  GitHub["@gitbridge/provider-github"]
+  RepoFerry["repoferry"]
+  Core["@repoferry/core"]
+  Contracts["@repoferry/contracts"]
+  Auth["@repoferry/auth"]
+  Cache["@repoferry/cache"]
+  Errors["@repoferry/errors"]
+  Observability["@repoferry/observability"]
+  Shared["@repoferry/shared"]
+  Testing["@repoferry/testing"]
+  Transport["@repoferry/transport"]
+  GitHub["@repoferry/provider-github"]
 
-  Gitbridge --> Auth
-  Gitbridge --> Core
-  Gitbridge --> Errors
+  RepoFerry --> Auth
+  RepoFerry --> Core
+  RepoFerry --> Errors
 
   Core --> Auth
   Core --> Cache

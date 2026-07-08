@@ -1,7 +1,7 @@
 {
-  "name": "@gitbridge/provider-github",
+  "name": "@repoferry/provider-github",
   "version": "0.1.0",
-  "description": "GitHub provider foundation for GitBridge.",
+  "description": "GitHub provider foundation for RepoFerry.",
   "license": "MIT",
   "type": "module",
   "sideEffects": false,
@@ -24,14 +24,14 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@gitbridge/auth": "workspace:*",
-    "@gitbridge/cache": "workspace:*",
-    "@gitbridge/contracts": "workspace:*",
-    "@gitbridge/core": "workspace:*",
-    "@gitbridge/errors": "workspace:*",
-    "@gitbridge/observability": "workspace:*",
-    "@gitbridge/shared": "workspace:*",
-    "@gitbridge/transport": "workspace:*"
+    "@repoferry/auth": "workspace:*",
+    "@repoferry/cache": "workspace:*",
+    "@repoferry/contracts": "workspace:*",
+    "@repoferry/core": "workspace:*",
+    "@repoferry/errors": "workspace:*",
+    "@repoferry/observability": "workspace:*",
+    "@repoferry/shared": "workspace:*",
+    "@repoferry/transport": "workspace:*"
   },
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
@@ -40,13 +40,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mriduldey/git-bridge.git",
+    "url": "git+https://github.com/mriduldey/repo-ferry.git",
     "directory": "packages/provider-github"
   },
   "bugs": {
-    "url": "https://github.com/mriduldey/git-bridge/issues"
+    "url": "https://github.com/mriduldey/repo-ferry/issues"
   },
-  "homepage": "https://github.com/mriduldey/git-bridge#readme",
+  "homepage": "https://github.com/mriduldey/repo-ferry#readme",
   "keywords": [
     "git",
     "github",

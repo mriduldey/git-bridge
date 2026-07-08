@@ -1,10 +1,10 @@
-# @gitbridge/errors
+# @repoferry/errors
 
-Stable public error hierarchy for GitBridge.
+Stable public error hierarchy for RepoFerry.
 
 ## Responsibilities
 
-- Provide `GitBridgeError` as the base public error type.
+- Provide `RepoFerryError` as the base public error type.
 - Expose stable error codes, retryability, categories, severity, timestamps, diagnostics, and
   serialization.
 - Provide typed subclasses for authentication, authorization, configuration, provider, repository,
@@ -14,18 +14,18 @@ Stable public error hierarchy for GitBridge.
 ## Install
 
 ```sh
-pnpm add @gitbridge/errors
+pnpm add @repoferry/errors
 ```
 
 ## Usage
 
 ```ts
-import { GitBridgeError } from "@gitbridge/errors";
+import { RepoFerryError } from "@repoferry/errors";
 
 try {
   await operation();
 } catch (error) {
-  if (error instanceof GitBridgeError) {
+  if (error instanceof RepoFerryError) {
     console.error(error.code, error.retryability, error.diagnostics);
   } else {
     throw error;

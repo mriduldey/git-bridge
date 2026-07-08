@@ -5,8 +5,8 @@ import {
   runProviderContractSuite,
   type CapabilityTestMatrix
 } from "../src/index.js";
-import type { Transport, TransportRequest, TransportResponse } from "@gitbridge/contracts";
-import { createGitHubProvider } from "@gitbridge/provider-github";
+import type { Transport, TransportRequest, TransportResponse } from "@repoferry/contracts";
+import { createGitHubProvider } from "@repoferry/provider-github";
 
 describe("GitHub provider certification smoke test", () => {
   it("runs the GitHub provider through the reusable contract suite with mocked SDK calls", async () => {

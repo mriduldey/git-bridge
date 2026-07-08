@@ -1,24 +1,24 @@
-# @gitbridge/testing
+# @repoferry/testing
 
-Testing helpers and provider certification utilities for GitBridge.
+Testing helpers and provider certification utilities for RepoFerry.
 
 ## Responsibilities
 
 - Provide deterministic fake transport, fake provider, and fake repository fixtures.
 - Capture diagnostics in tests.
-- Assert GitBridge error shapes.
+- Assert RepoFerry error shapes.
 - Run provider certification suites against provider implementations.
 
 ## Install
 
 ```sh
-pnpm add -D @gitbridge/testing
+pnpm add -D @repoferry/testing
 ```
 
 ## Usage
 
 ```ts
-import { createDiagnosticCapture, createFakeProvider } from "@gitbridge/testing";
+import { createDiagnosticCapture, createFakeProvider } from "@repoferry/testing";
 
 const diagnostics = createDiagnosticCapture();
 const provider = createFakeProvider();

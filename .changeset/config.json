@@ -2,10 +2,10 @@
   "$schema": "https://unpkg.com/@changesets/config@3.1.1/schema.json",
   "changelog": "@changesets/cli/changelog",
   "commit": false,
-  "fixed": [["gitbridge", "@gitbridge/*"]],
+  "fixed": [["repoferry", "@repoferry/*"]],
   "linked": [],
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
-  "ignore": ["@gitbridge/example-*"]
+  "ignore": ["@repoferry/example-*"]
 }

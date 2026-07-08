@@ -5,9 +5,9 @@ Reads normalized repository metadata through the GitHub provider.
 ## Run
 
 ```sh
-pnpm --filter @gitbridge/example-github-repository-info build
-pnpm --filter @gitbridge/example-github-repository-info start
+pnpm --filter @repoferry/example-github-repository-info build
+pnpm --filter @repoferry/example-github-repository-info start
 ```
 
-Set `GITBRIDGE_GITHUB_TOKEN` for authenticated GitHub API access and `GITBRIDGE_REPOSITORY_URL` to
+Set `REPOFERRY_GITHUB_TOKEN` for authenticated GitHub API access and `REPOFERRY_REPOSITORY_URL` to
 inspect a different repository.

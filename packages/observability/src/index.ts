@@ -4,11 +4,11 @@ import type {
   DiagnosticEventKind,
   DiagnosticSubscriber,
   DiagnosticsService
-} from "@gitbridge/contracts/diagnostics";
-import type { Metadata } from "@gitbridge/contracts/metadata";
-import type { DeepReadonly, JsonValue } from "@gitbridge/contracts/types";
-import { UnexpectedError, ValidationError, type ErrorDiagnostics } from "@gitbridge/errors";
-import { deepFreeze } from "@gitbridge/shared";
+} from "@repoferry/contracts/diagnostics";
+import type { Metadata } from "@repoferry/contracts/metadata";
+import type { DeepReadonly, JsonValue } from "@repoferry/contracts/types";
+import { UnexpectedError, ValidationError, type ErrorDiagnostics } from "@repoferry/errors";
+import { deepFreeze } from "@repoferry/shared";
 
 export type {
   DiagnosticContext,
@@ -16,8 +16,8 @@ export type {
   DiagnosticEventKind,
   DiagnosticSubscriber,
   DiagnosticsService
-} from "@gitbridge/contracts/diagnostics";
-export type { ErrorDiagnostics } from "@gitbridge/errors";
+} from "@repoferry/contracts/diagnostics";
+export type { ErrorDiagnostics } from "@repoferry/errors";
 
 export const ObservabilitySchemaVersion = "1.0";
 

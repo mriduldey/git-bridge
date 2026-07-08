@@ -8,51 +8,51 @@ const packagesRoot = join(repositoryRoot, "packages");
 
 /** @type {Record<string, Set<string>>} */
 const allowedWorkspaceDependencies = {
-  gitbridge: new Set([
-    "@gitbridge/auth",
-    "@gitbridge/contracts",
-    "@gitbridge/core",
-    "@gitbridge/errors"
+  repoferry: new Set([
+    "@repoferry/auth",
+    "@repoferry/contracts",
+    "@repoferry/core",
+    "@repoferry/errors"
   ]),
-  "@gitbridge/auth": new Set(["@gitbridge/contracts", "@gitbridge/errors", "@gitbridge/shared"]),
-  "@gitbridge/cache": new Set(["@gitbridge/contracts", "@gitbridge/errors", "@gitbridge/shared"]),
-  "@gitbridge/contracts": new Set([]),
-  "@gitbridge/core": new Set([
-    "@gitbridge/auth",
-    "@gitbridge/cache",
-    "@gitbridge/contracts",
-    "@gitbridge/errors",
-    "@gitbridge/observability",
-    "@gitbridge/shared",
-    "@gitbridge/transport"
+  "@repoferry/auth": new Set(["@repoferry/contracts", "@repoferry/errors", "@repoferry/shared"]),
+  "@repoferry/cache": new Set(["@repoferry/contracts", "@repoferry/errors", "@repoferry/shared"]),
+  "@repoferry/contracts": new Set([]),
+  "@repoferry/core": new Set([
+    "@repoferry/auth",
+    "@repoferry/cache",
+    "@repoferry/contracts",
+    "@repoferry/errors",
+    "@repoferry/observability",
+    "@repoferry/shared",
+    "@repoferry/transport"
   ]),
-  "@gitbridge/errors": new Set([]),
-  "@gitbridge/observability": new Set([
-    "@gitbridge/contracts",
-    "@gitbridge/errors",
-    "@gitbridge/shared"
+  "@repoferry/errors": new Set([]),
+  "@repoferry/observability": new Set([
+    "@repoferry/contracts",
+    "@repoferry/errors",
+    "@repoferry/shared"
   ]),
-  "@gitbridge/provider-github": new Set([
-    "@gitbridge/auth",
-    "@gitbridge/cache",
-    "@gitbridge/contracts",
-    "@gitbridge/core",
-    "@gitbridge/errors",
-    "@gitbridge/observability",
-    "@gitbridge/shared",
-    "@gitbridge/transport"
+  "@repoferry/provider-github": new Set([
+    "@repoferry/auth",
+    "@repoferry/cache",
+    "@repoferry/contracts",
+    "@repoferry/core",
+    "@repoferry/errors",
+    "@repoferry/observability",
+    "@repoferry/shared",
+    "@repoferry/transport"
   ]),
-  "@gitbridge/shared": new Set([]),
-  "@gitbridge/testing": new Set([
-    "@gitbridge/contracts",
-    "@gitbridge/core",
-    "@gitbridge/errors",
-    "@gitbridge/shared"
+  "@repoferry/shared": new Set([]),
+  "@repoferry/testing": new Set([
+    "@repoferry/contracts",
+    "@repoferry/core",
+    "@repoferry/errors",
+    "@repoferry/shared"
   ]),
-  "@gitbridge/transport": new Set([
-    "@gitbridge/contracts",
-    "@gitbridge/errors",
-    "@gitbridge/shared"
+  "@repoferry/transport": new Set([
+    "@repoferry/contracts",
+    "@repoferry/errors",
+    "@repoferry/shared"
   ])
 };
 
@@ -274,12 +274,12 @@ describe("package architecture boundaries", () => {
     const violations = [];
 
     for (const pkg of readPackages().filter((candidate) =>
-      candidate.name.startsWith("@gitbridge/provider-")
+      candidate.name.startsWith("@repoferry/provider-")
     )) {
       const manifestDependencies = Object.keys(pkg.manifest.dependencies ?? {});
 
       for (const dependency of manifestDependencies) {
-        if (!dependency.startsWith("@gitbridge/")) {
+        if (!dependency.startsWith("@repoferry/")) {
           violations.push(
             `${pkg.name} declares provider/protocol runtime dependency ${dependency}`
           );
@@ -356,7 +356,7 @@ describe("package architecture boundaries", () => {
         violations.push(`${pkg.name}: missing Node.js engine metadata`);
       }
 
-      if (manifest.repository?.url !== "git+https://github.com/mriduldey/git-bridge.git") {
+      if (manifest.repository?.url !== "git+https://github.com/mriduldey/repo-ferry.git") {
         violations.push(`${pkg.name}: missing repository metadata`);
       }
 
@@ -364,11 +364,11 @@ describe("package architecture boundaries", () => {
         violations.push(`${pkg.name}: repository.directory must point at package directory`);
       }
 
-      if (manifest.bugs?.url !== "https://github.com/mriduldey/git-bridge/issues") {
+      if (manifest.bugs?.url !== "https://github.com/mriduldey/repo-ferry/issues") {
         violations.push(`${pkg.name}: missing bugs URL`);
       }
 
-      if (manifest.homepage !== "https://github.com/mriduldey/git-bridge#readme") {
+      if (manifest.homepage !== "https://github.com/mriduldey/repo-ferry#readme") {
         violations.push(`${pkg.name}: missing homepage URL`);
       }
 
@@ -395,11 +395,11 @@ describe("package architecture boundaries", () => {
   });
 
   it("keeps testing infrastructure provider-neutral and on public package APIs", () => {
-    const testingPackage = readPackages().find((pkg) => pkg.name === "@gitbridge/testing");
+    const testingPackage = readPackages().find((pkg) => pkg.name === "@repoferry/testing");
     const violations = [];
 
     if (testingPackage === undefined) {
-      violations.push("@gitbridge/testing package is missing");
+      violations.push("@repoferry/testing package is missing");
     } else {
       for (const sourceFile of listSourceFiles(testingPackage.directory)) {
         for (const specifier of readImportSpecifiers(sourceFile)) {
@@ -423,7 +423,7 @@ describe("package architecture boundaries", () => {
     const violations = [];
 
     for (const pkg of readPackages().filter((candidate) =>
-      candidate.name.startsWith("@gitbridge/provider-")
+      candidate.name.startsWith("@repoferry/provider-")
     )) {
       const entrypoint = join(pkg.directory, "src", "index.ts");
 
@@ -448,7 +448,7 @@ describe("package architecture boundaries", () => {
 
   it("requires provider packages to have reusable certification coverage", () => {
     const providerPackages = readPackages().filter((pkg) =>
-      pkg.name.startsWith("@gitbridge/provider-")
+      pkg.name.startsWith("@repoferry/provider-")
     );
     const certificationTests = listFiles(join(packagesRoot, "testing", "tests")).filter((file) =>
       file.endsWith(".test.ts")
@@ -456,7 +456,7 @@ describe("package architecture boundaries", () => {
     const violations = [];
 
     for (const providerPackage of providerPackages) {
-      const providerName = providerPackage.name.replace("@gitbridge/provider-", "");
+      const providerName = providerPackage.name.replace("@repoferry/provider-", "");
       const hasCertification = certificationTests.some((file) => {
         const source = readFileSync(file, "utf8");
         return source.includes(providerPackage.name) && source.includes("runProviderContractSuite");
@@ -715,7 +715,7 @@ function normalizeExportTargets(exportTarget) {
  * @returns {boolean}
  */
 function isProviderSpecifier(specifier) {
-  return specifier.startsWith("@gitbridge/provider") || specifier.includes("provider-github");
+  return specifier.startsWith("@repoferry/provider") || specifier.includes("provider-github");
 }
 
 /**

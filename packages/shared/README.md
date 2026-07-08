@@ -1,6 +1,6 @@
-# @gitbridge/shared
+# @repoferry/shared
 
-Shared implementation utilities for GitBridge packages.
+Shared implementation utilities for RepoFerry packages.
 
 ## Responsibilities
 
@@ -11,16 +11,16 @@ Shared implementation utilities for GitBridge packages.
 ## Install
 
 ```sh
-pnpm add @gitbridge/shared
+pnpm add @repoferry/shared
 ```
 
 Applications usually do not need this package directly. Prefer the public APIs exposed by
-`@gitbridge/core`, provider packages, and `@gitbridge/contracts`.
+`@repoferry/core`, provider packages, and `@repoferry/contracts`.
 
 ## Usage
 
 ```ts
-import { deepFreeze } from "@gitbridge/shared";
+import { deepFreeze } from "@repoferry/shared";
 
 const value = deepFreeze({ stable: true });
 ```

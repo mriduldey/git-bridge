@@ -14,9 +14,9 @@ import type {
   Tag,
   Tree,
   TreeNode
-} from "@gitbridge/contracts";
-import { ValidationError, type ErrorDiagnostics } from "@gitbridge/errors";
-import { deepFreeze } from "@gitbridge/shared";
+} from "@repoferry/contracts";
+import { ValidationError, type ErrorDiagnostics } from "@repoferry/errors";
+import { deepFreeze } from "@repoferry/shared";
 
 import { GitHubProviderId } from "./constants.js";
 import type {

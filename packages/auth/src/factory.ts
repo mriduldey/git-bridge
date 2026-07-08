@@ -3,9 +3,9 @@ import type {
   CredentialMetadata,
   Credentials,
   TokenCredentials
-} from "@gitbridge/contracts/authentication";
-import { ConfigurationError } from "@gitbridge/errors";
-import { deepFreeze } from "@gitbridge/shared/objects";
+} from "@repoferry/contracts/authentication";
+import { ConfigurationError } from "@repoferry/errors";
+import { deepFreeze } from "@repoferry/shared/objects";
 
 import { authKindToCredentialKind } from "./auth-kind.js";
 import type {

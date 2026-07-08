@@ -24,10 +24,10 @@ import type {
   Tag,
   Tree,
   TreeNode
-} from "@gitbridge/contracts";
-import { createGitBridgeClient } from "@gitbridge/core";
-import { CapabilityNotSupportedError, GitBridgeError, ProviderError } from "@gitbridge/errors";
-import { deepFreeze } from "@gitbridge/shared";
+} from "@repoferry/contracts";
+import { createRepoFerryClient } from "@repoferry/core";
+import { CapabilityNotSupportedError, RepoFerryError, ProviderError } from "@repoferry/errors";
+import { deepFreeze } from "@repoferry/shared";
 
 export type ProviderCapabilityName = keyof CapabilityMap;
 
@@ -140,7 +140,7 @@ export async function runProviderContractSuite(
 
   record(checks, "provider metadata", () => assertProviderInfo(provider.info));
   await recordAsync(checks, "provider registration compatibility", async () => {
-    const client = createGitBridgeClient({ providers: [provider] });
+    const client = createRepoFerryClient({ providers: [provider] });
     assert(client.providers.require(provider.info.id) === provider, "Provider was not registered");
     await client.dispose();
   });
@@ -352,8 +352,8 @@ export function assertPagedResult<TItem>(
   assert(result.pageInfo !== undefined, "Paged result pageInfo must be present");
 }
 
-export function assertGitBridgeError(error: unknown): asserts error is GitBridgeError {
-  assert(error instanceof GitBridgeError, "Expected a GitBridgeError");
+export function assertRepoFerryError(error: unknown): asserts error is RepoFerryError {
+  assert(error instanceof RepoFerryError, "Expected a RepoFerryError");
 }
 
 export function assertCapabilityNotSupported(

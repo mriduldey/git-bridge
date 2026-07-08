@@ -4,17 +4,17 @@ import type {
   CacheNamespace,
   CachePolicy,
   CacheProvider
-} from "@gitbridge/contracts/cache";
-import type { Metadata } from "@gitbridge/contracts/metadata";
-import type { DeepReadonly, JsonValue } from "@gitbridge/contracts/types";
+} from "@repoferry/contracts/cache";
+import type { Metadata } from "@repoferry/contracts/metadata";
+import type { DeepReadonly, JsonValue } from "@repoferry/contracts/types";
 import {
   ConfigurationError,
   ConflictError,
   NotFoundError,
   UnexpectedError,
   ValidationError
-} from "@gitbridge/errors";
-import { deepFreeze } from "@gitbridge/shared";
+} from "@repoferry/errors";
+import { deepFreeze } from "@repoferry/shared";
 
 export type {
   CacheEntry,
@@ -22,7 +22,7 @@ export type {
   CacheNamespace,
   CachePolicy,
   CacheProvider
-} from "@gitbridge/contracts/cache";
+} from "@repoferry/contracts/cache";
 
 export type CachePolicyMode = "cache-aside" | "read-through" | "write-through" | "lazy-loading";
 

@@ -1,6 +1,6 @@
-import type { AuthenticationContext, Credentials } from "@gitbridge/contracts/authentication";
-import type { JsonValue } from "@gitbridge/contracts/types";
-import { deepFreeze } from "@gitbridge/shared/objects";
+import type { AuthenticationContext, Credentials } from "@repoferry/contracts/authentication";
+import type { JsonValue } from "@repoferry/contracts/types";
+import { deepFreeze } from "@repoferry/shared/objects";
 
 import type { TokenDisplayHint } from "./auth-config.js";
 import { summarizeCredentials, type SafeCredentialSummary } from "./credentials.js";

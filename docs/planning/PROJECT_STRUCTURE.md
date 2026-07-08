@@ -1,6 +1,6 @@
 # PROJECT_STRUCTURE.md
 
-> Canonical Repository Blueprint for GitBridge
+> Canonical Repository Blueprint for RepoFerry
 >
 > **Status:** Accepted
 >
@@ -14,7 +14,7 @@
 
 ## Purpose
 
-This document defines the physical organization of the GitBridge repository.
+This document defines the physical organization of the RepoFerry repository.
 
 It specifies:
 
@@ -110,7 +110,7 @@ A contributor should quickly determine:
 # 2. High-Level Repository Layout
 
 ```text
-gitbridge/
+repoferry/
 
 ├── .changeset/
 ├── .github/
@@ -251,7 +251,7 @@ Examples:
 ```text
 packages/
 
-├── gitbridge/
+├── repoferry/
 ├── shared/
 ├── contracts/
 ├── errors/
@@ -272,7 +272,7 @@ Each package owns exactly one architectural responsibility.
 
 ---
 
-## gitbridge
+## repoferry
 
 ### Purpose
 
@@ -286,7 +286,7 @@ Acts as the canonical entry point.
 
 ### Public Exports
 
-- GitBridgeClient
+- RepoFerryClient
 - public contracts
 - public errors
 
@@ -503,7 +503,7 @@ Contains:
 
 Minimal.
 
-Consumers interact through `gitbridge`.
+Consumers interact through `repoferry`.
 
 ---
 
@@ -870,7 +870,7 @@ testing
 
 ↓
 
-gitbridge
+repoferry
 ```
 
 ---
@@ -966,7 +966,7 @@ Never imports package internals.
 
 ---
 
-### gitbridge
+### repoferry
 
 Public aggregation package.
 
@@ -1023,15 +1023,15 @@ Consistency is preferred over brevity.
 Use:
 
 ```text
-@gitbridge/<name>
+@repoferry/<name>
 ```
 
 Examples:
 
 ```text
-@gitbridge/core
-@gitbridge/provider-github
-@gitbridge/testing
+@repoferry/core
+@repoferry/provider-github
+@repoferry/testing
 ```
 
 ---
