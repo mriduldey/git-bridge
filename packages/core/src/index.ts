@@ -265,6 +265,7 @@ export class RepositoryFactory {
 }
 
 export class Repository implements RepositoryContract {
+  readonly #defaultReference: ReferenceName | undefined;
   readonly #extensions: Readonly<Record<string, unknown>>;
   readonly #info: RepositoryInfo;
   readonly #onDispose: (() => Promise<void> | void) | undefined;
@@ -280,6 +281,7 @@ export class Repository implements RepositoryContract {
     validateExtensions(options.extensions ?? {});
 
     this.#info = deepFreeze(options.info) as RepositoryInfo;
+    this.#defaultReference = options.defaultReference;
     this.identity = this.#info.identity;
     this.capabilities = deepFreeze(options.capabilities ?? {}) as CapabilityMap;
     this.#extensions = Object.freeze({ ...(options.extensions ?? {}) });
@@ -324,7 +326,7 @@ export class Repository implements RepositoryContract {
   }
 
   public defaultRef(): RepositoryRef {
-    return this.ref(this.#info.defaultBranch ?? "main");
+    return this.ref(this.#defaultReference ?? this.#info.defaultBranch ?? "main");
   }
 
   public readText(path: FilePath, options?: ReadFileOptions): Promise<string> {

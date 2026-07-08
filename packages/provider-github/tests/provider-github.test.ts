@@ -364,6 +364,67 @@ describe("GitHub provider foundation", () => {
     expect(mapGitHubError(new Error("boom")).cause).toBeInstanceOf(Error);
   });
 
+  it("preserves response headers when mapping GitHub rate-limit status responses", async () => {
+    const provider = createGitHubProvider({
+      transport: createMockTransport({
+        "/repos/openai/codex": {
+          data: { message: "API rate limit exceeded" },
+          headers: { "x-ratelimit-remaining": "0" },
+          status: 403
+        }
+      })
+    });
+
+    await expect(
+      provider.createSession({
+        context: { provider: provider.info },
+        repository: { url: "https://github.com/openai/codex" }
+      })
+    ).rejects.toMatchObject({
+      diagnostics: {
+        operation: { operation: "github.repository.get" },
+        provider: { provider: "github", status: 403 }
+      },
+      retryability: "Always"
+    });
+    await expect(
+      provider.createSession({
+        context: { provider: provider.info },
+        repository: { url: "https://github.com/openai/codex" }
+      })
+    ).rejects.toThrow(RateLimitError);
+  });
+
+  it("keeps non-rate-limit GitHub 403 status responses as authorization failures", async () => {
+    const provider = createGitHubProvider({
+      transport: createMockTransport({
+        "/repos/openai/codex": {
+          data: { message: "Forbidden" },
+          status: 403
+        }
+      })
+    });
+
+    await expect(
+      provider.createSession({
+        context: { provider: provider.info },
+        repository: { url: "https://github.com/openai/codex" }
+      })
+    ).rejects.toMatchObject({
+      diagnostics: {
+        operation: { operation: "github.repository.get" },
+        provider: { provider: "github", status: 403 }
+      },
+      retryability: "Never"
+    });
+    await expect(
+      provider.createSession({
+        context: { provider: provider.info },
+        repository: { url: "https://github.com/openai/codex" }
+      })
+    ).rejects.toThrow(AuthorizationError);
+  });
+
   it("rejects invalid provider configuration and unsupported locators", async () => {
     expect(() => createGitHubProvider({ hosts: [] })).toThrow(ValidationError);
 
@@ -452,6 +513,11 @@ describe("public exports", () => {
     expectTypeOf<GitHubProviderConfig>().toHaveProperty("transport");
 
     const authentication = githubTokenAuth("secret");
+    await expect(authentication.authenticate()).resolves.toMatchObject({
+      credentials: { kind: "access-token", provider: "github", token: "secret" },
+      provider: "github",
+      type: "token"
+    });
     await expect(
       authentication.authenticate({ provider: GitHubProviderId })
     ).resolves.toMatchObject({
@@ -459,6 +525,14 @@ describe("public exports", () => {
       provider: "github",
       type: "token"
     });
+    await expect(authentication.authenticate({ provider: "gitlab" })).resolves.toMatchObject({
+      credentials: { kind: "anonymous", provider: "gitlab" },
+      provider: "gitlab",
+      type: "anonymous"
+    });
+    await expect(authentication.authenticate({ provider: "gitlab" })).resolves.not.toHaveProperty(
+      "credentials.token"
+    );
     expect("Octokit" in publicApi).toBe(false);
     expect("createOctokitAdapter" in publicApi).toBe(false);
     expect("createTransportOctokitAdapter" in publicApi).toBe(false);

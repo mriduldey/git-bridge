@@ -567,7 +567,20 @@ describe("RepositoryRef model", () => {
   });
 
   it("routes repository convenience methods through the default reference", async () => {
-    const repository = new Repository({
+    class ObservedRepository extends Repository {
+      public readonly references: string[] = [];
+
+      public override ref(reference: Parameters<Repository["ref"]>[0]): RepositoryRef {
+        if (typeof reference === "string") {
+          this.references.push(reference);
+        }
+
+        return super.ref(reference);
+      }
+    }
+
+    const repository = new ObservedRepository({
+      defaultReference: "develop",
       info: createRepositoryInfo("github", { defaultBranch: "trunk" }),
       services: {
         files: {
@@ -583,10 +596,21 @@ describe("RepositoryRef model", () => {
       }
     });
 
-    expect(repository.defaultRef().reference.name).toBe("trunk");
+    expect(repository.defaultRef().reference.name).toBe("develop");
     await expect(repository.readText("README.md")).resolves.toBe("read:README.md");
     await expect(repository.readJson("package.json")).resolves.toEqual({ ok: true });
     await expect(repository.exists("README.md")).resolves.toBe(true);
+    expect(repository.references).toEqual(["develop", "develop", "develop", "develop"]);
+  });
+
+  it("falls back from configured default reference to repository info and then main", () => {
+    const withDefaultBranch = new Repository({
+      info: createRepositoryInfo("github", { defaultBranch: "trunk" })
+    });
+    const withoutDefaultBranch = new Repository({ info: createRepositoryInfo() });
+
+    expect(withDefaultBranch.defaultRef().reference.name).toBe("trunk");
+    expect(withoutDefaultBranch.defaultRef().reference.name).toBe("main");
   });
 });
 

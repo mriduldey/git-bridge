@@ -1,6 +1,8 @@
 import {
+  anonymousAuth,
   createAuthContext,
   tokenAuth,
+  type AuthenticationRequest,
   type AuthenticationStrategy,
   type StaticTokenAuthConfig
 } from "@gitbridge/auth";
@@ -275,7 +277,11 @@ export function githubTokenAuth(
 ): AuthenticationStrategy {
   return Object.freeze({
     type: "token",
-    async authenticate() {
+    async authenticate(request?: AuthenticationRequest) {
+      if (request?.provider !== undefined && request.provider !== GitHubProviderId) {
+        return createAuthContext(anonymousAuth({ provider: request.provider }));
+      }
+
       return createAuthContext(tokenAuth({ ...options, provider: GitHubProviderId, token }));
     }
   }) as AuthenticationStrategy;
@@ -559,7 +565,7 @@ async function requestGitHubResponse<TBody>(
     }
 
     if (response.status < 200 || response.status >= 300) {
-      throw createGitHubStatusError(response.status, operation);
+      throw createGitHubStatusError(response.status, operation, response.headers);
     }
 
     return response;
@@ -1419,7 +1425,11 @@ async function readHttpResponseBody<TBody>(response: Response): Promise<TBody | 
   return text as TBody;
 }
 
-function createGitHubStatusError(status: number, operation: string): GitBridgeError {
+function createGitHubStatusError(
+  status: number,
+  operation: string,
+  headers?: Readonly<Record<string, string>>
+): GitBridgeError {
   if (status === 401) {
     return new AuthenticationError("GitHub authentication failed", {
       diagnostics: {
@@ -1427,6 +1437,16 @@ function createGitHubStatusError(status: number, operation: string): GitBridgeEr
         provider: { provider: GitHubProviderId, status }
       },
       retryability: "Never"
+    });
+  }
+
+  if (status === 403 && isRateLimitError({ headers, status })) {
+    return new RateLimitError("GitHub rate limit exceeded", {
+      diagnostics: {
+        operation: { operation },
+        provider: { provider: GitHubProviderId, status }
+      },
+      retryability: "Always"
     });
   }
 
