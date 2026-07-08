@@ -1,4 +1,4 @@
-import { ConfigurationError } from "@gitbridge/errors";
+import { ConfigurationError } from "@repoferry/errors";
 import { describe, expect, expectTypeOf, it } from "vitest";
 
 import {

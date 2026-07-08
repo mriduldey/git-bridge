@@ -1,6 +1,6 @@
-# GitBridge Architecture
+# RepoFerry Architecture
 
-This directory contains the architecture documentation for GitBridge.
+This directory contains the architecture documentation for RepoFerry.
 
 ADR-001 through ADR-015 are the authoritative architecture source. The files in
 this directory are derived guides that summarize the accepted ADRs for easier

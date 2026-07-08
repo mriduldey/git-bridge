@@ -6,7 +6,7 @@ Architecture Decision Record. ADR-001 through ADR-015 are accepted and frozen.
 
 ## Architecture Constitution
 
-The complete set of accepted ADRs that governs GitBridge implementation and
+The complete set of accepted ADRs that governs RepoFerry implementation and
 evolution.
 
 ## Capability
@@ -21,7 +21,7 @@ resolution, repository creation, and repository references.
 
 ## Provider
 
-A package that adapts one repository host to GitBridge contracts. Providers are
+A package that adapts one repository host to RepoFerry contracts. Providers are
 not the public programming model.
 
 ## Provider Session

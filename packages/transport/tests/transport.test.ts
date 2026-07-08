@@ -1,4 +1,4 @@
-import { CancellationError, TimeoutError, TransportError } from "@gitbridge/errors";
+import { CancellationError, TimeoutError, TransportError } from "@repoferry/errors";
 import { describe, expect, expectTypeOf, it, vi } from "vitest";
 
 import {
@@ -73,12 +73,12 @@ describe("transport pipeline", () => {
     };
 
     await createTransportPipeline({
-      middleware: [createUserAgentMiddleware("gitbridge-test")],
+      middleware: [createUserAgentMiddleware("repoferry-test")],
       transport
     }).execute(original);
 
     expect(original.headers).toEqual({ existing: "true" });
-    expect(observed?.headers).toEqual({ existing: "true", "user-agent": "gitbridge-test" });
+    expect(observed?.headers).toEqual({ existing: "true", "user-agent": "repoferry-test" });
     expect(Object.isFrozen(original)).toBe(true);
     expect(Object.isFrozen(observed)).toBe(true);
   });

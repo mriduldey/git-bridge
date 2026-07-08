@@ -1,8 +1,9 @@
-# GitBridge
+# RepoFerry
 
-GitBridge is a provider-neutral TypeScript SDK for opening Git repositories and working with files,
-branches, commits, search, issues, pull requests, releases, and tags through stable public
-contracts.
+RepoFerry is a provider-neutral TypeScript SDK for opening repositories and working with files,
+branches, commits, issues, pull requests, releases, and tags through stable public contracts.
+
+One API across repository providers.
 
 ## Installation
 
@@ -12,21 +13,21 @@ usage. Until packages are published, use the repository source/tag directly.
 For GitHub-first applications:
 
 ```sh
-pnpm add @gitbridge/provider-github
+pnpm add @repoferry/provider-github
 ```
 
 For provider-neutral applications that register providers explicitly:
 
 ```sh
-pnpm add gitbridge @gitbridge/provider-github
+pnpm add repoferry @repoferry/provider-github
 ```
 
-GitBridge requires Node.js `>=20.19.0` and pnpm `>=10.0.0` in this repository.
+RepoFerry requires Node.js `>=20.19.0` and pnpm `>=10.0.0` in this repository.
 
 ## 30-Second Quick Start
 
 ```ts
-import { createGitHubClient } from "@gitbridge/provider-github";
+import { createGitHubClient } from "@repoferry/provider-github";
 
 const client = createGitHubClient();
 
@@ -45,12 +46,12 @@ try {
 
 ## GitHub Example
 
-Use `GITBRIDGE_GITHUB_TOKEN` for private repositories or higher API limits:
+Use `REPOFERRY_GITHUB_TOKEN` for private repositories or higher API limits:
 
 ```ts
-import { createGitHubClient } from "@gitbridge/provider-github";
+import { createGitHubClient } from "@repoferry/provider-github";
 
-const token = process.env.GITBRIDGE_GITHUB_TOKEN;
+const token = process.env.REPOFERRY_GITHUB_TOKEN;
 const client = createGitHubClient(token === undefined ? {} : { token });
 
 const repository = await client.open("https://github.com/microsoft/TypeScript");
@@ -81,16 +82,16 @@ await ref.pullRequests?.list({ limit: 10 });
 
 ## Error Handling
 
-All public GitBridge errors extend `GitBridgeError` and expose stable `code`, `retryability`,
+All public RepoFerry errors extend `RepoFerryError` and expose stable `code`, `retryability`,
 `category`, `severity`, `diagnostics`, and `serialize()` fields.
 
 ```ts
-import { GitBridgeError } from "gitbridge";
+import { RepoFerryError } from "repoferry";
 
 try {
   await repository.readText("missing.txt");
 } catch (error) {
-  if (error instanceof GitBridgeError) {
+  if (error instanceof RepoFerryError) {
     console.error(error.code, error.retryability, error.diagnostics);
   } else {
     throw error;
@@ -100,15 +101,15 @@ try {
 
 ## Advanced Configuration
 
-Use `gitbridge` when your app should stay provider-neutral and register providers explicitly:
+Use `repoferry` when your app should stay provider-neutral and register providers explicitly:
 
 ```ts
-import { createGitBridgeClient } from "gitbridge";
-import { createGitHubProviderConfig, githubTokenAuth } from "@gitbridge/provider-github";
+import { createRepoFerryClient } from "repoferry";
+import { createGitHubProviderConfig, githubTokenAuth } from "@repoferry/provider-github";
 
-const token = process.env.GITBRIDGE_GITHUB_TOKEN;
+const token = process.env.REPOFERRY_GITHUB_TOKEN;
 
-const client = createGitBridgeClient({
+const client = createRepoFerryClient({
   ...createGitHubProviderConfig(),
   authentication: token === undefined ? undefined : githubTokenAuth(token)
 });
@@ -121,14 +122,14 @@ and authentication dependencies.
 
 | Use case                                          | Import from                  |
 | ------------------------------------------------- | ---------------------------- |
-| GitHub-first application setup                    | `@gitbridge/provider-github` |
-| Provider-neutral client, errors, and auth helpers | `gitbridge`                  |
-| Direct core orchestration APIs                    | `@gitbridge/core`            |
-| Provider-neutral contracts and domain types       | `@gitbridge/contracts`       |
-| Provider certification and test doubles           | `@gitbridge/testing`         |
+| GitHub-first application setup                    | `@repoferry/provider-github` |
+| Provider-neutral client, errors, and auth helpers | `repoferry`                  |
+| Direct core orchestration APIs                    | `@repoferry/core`            |
+| Provider-neutral contracts and domain types       | `@repoferry/contracts`       |
+| Provider certification and test doubles           | `@repoferry/testing`         |
 
-Most applications should start with `@gitbridge/provider-github`. Use `gitbridge` when you want the
-provider-neutral entry point. Use `@gitbridge/testing` when building or certifying providers.
+Most applications should start with `@repoferry/provider-github`. Use `repoferry` when you want the
+provider-neutral entry point. Use `@repoferry/testing` when building or certifying providers.
 
 ## Examples
 
@@ -152,7 +153,7 @@ pnpm build
 Run an example with:
 
 ```sh
-pnpm --filter @gitbridge/example-basic-node start
+pnpm --filter @repoferry/example-basic-node start
 ```
 
 ## Architecture
@@ -160,15 +161,15 @@ pnpm --filter @gitbridge/example-basic-node start
 ADR-001 through ADR-015 are accepted and authoritative. The architecture is frozen; runtime changes
 must preserve those decisions.
 
-GitBridge is organized around explicit package boundaries:
+RepoFerry is organized around explicit package boundaries:
 
-- `gitbridge` is the provider-neutral public entry point.
-- `@gitbridge/contracts` defines public provider-neutral contracts and domain types.
-- `@gitbridge/core` owns client lifecycle, provider registration, provider resolution, repository
+- `repoferry` is the provider-neutral public entry point.
+- `@repoferry/contracts` defines public provider-neutral contracts and domain types.
+- `@repoferry/core` owns client lifecycle, provider registration, provider resolution, repository
   factories, repository references, and capability dispatch.
-- `@gitbridge/provider-github` adapts GitHub behavior to the provider contracts and includes
+- `@repoferry/provider-github` adapts GitHub behavior to the provider contracts and includes
   GitHub-first DX helpers.
-- `@gitbridge/testing` supports provider certification and deterministic tests.
+- `@repoferry/testing` supports provider certification and deterministic tests.
 
 See [docs/architecture/INDEX.md](docs/architecture/INDEX.md) for ADRs, diagrams, and terminology.
 

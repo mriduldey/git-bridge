@@ -9,7 +9,7 @@ import {
 
 describe("strings", () => {
   it("capitalizes the first character only", () => {
-    expect(capitalize("gitBridge")).toBe("GitBridge");
+    expect(capitalize("sample")).toBe("Sample");
     expect(capitalize("")).toBe("");
   });
 

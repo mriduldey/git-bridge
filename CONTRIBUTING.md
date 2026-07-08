@@ -1,6 +1,6 @@
 # Contributing
 
-GitBridge implementation follows the accepted architecture documents exactly.
+RepoFerry implementation follows the accepted architecture documents exactly.
 
 Before contributing:
 

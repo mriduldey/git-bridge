@@ -1,7 +1,7 @@
 {
-  "name": "@gitbridge/contracts",
+  "name": "@repoferry/contracts",
   "version": "0.1.0",
-  "description": "Provider-neutral public contracts and immutable domain models for GitBridge.",
+  "description": "Provider-neutral public contracts and immutable domain models for RepoFerry.",
   "license": "MIT",
   "type": "module",
   "sideEffects": false,
@@ -90,13 +90,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mriduldey/git-bridge.git",
+    "url": "git+https://github.com/mriduldey/repo-ferry.git",
     "directory": "packages/contracts"
   },
   "bugs": {
-    "url": "https://github.com/mriduldey/git-bridge/issues"
+    "url": "https://github.com/mriduldey/repo-ferry/issues"
   },
-  "homepage": "https://github.com/mriduldey/git-bridge#readme",
+  "homepage": "https://github.com/mriduldey/repo-ferry#readme",
   "keywords": [
     "git",
     "github",

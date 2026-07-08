@@ -1,6 +1,6 @@
 # Changelog
 
-GitBridge uses Changesets for release notes and lockstep package versioning.
+RepoFerry uses Changesets for release notes and lockstep package versioning.
 
 ## 0.1.0
 

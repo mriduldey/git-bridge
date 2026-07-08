@@ -3,7 +3,7 @@ import type {
   CredentialMetadata,
   Credentials,
   TokenCredentials
-} from "@gitbridge/contracts/authentication";
+} from "@repoferry/contracts/authentication";
 
 export type SafeCredentialSummary = Readonly<{
   kind: Credentials["kind"];

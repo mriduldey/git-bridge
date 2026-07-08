@@ -1,10 +1,10 @@
-# @gitbridge/core
+# @repoferry/core
 
-Provider-neutral GitBridge runtime foundation.
+Provider-neutral RepoFerry runtime foundation.
 
 ## Responsibilities
 
-- Create isolated GitBridge clients with explicit configuration.
+- Create isolated RepoFerry clients with explicit configuration.
 - Register and resolve providers.
 - Open repositories from provider-supported locators.
 - Create repository and repository reference service objects.
@@ -14,19 +14,19 @@ Provider-neutral GitBridge runtime foundation.
 ## Install
 
 ```sh
-pnpm add @gitbridge/core
+pnpm add @repoferry/core
 ```
 
-Install at least one provider package, such as `@gitbridge/provider-github`, before opening
+Install at least one provider package, such as `@repoferry/provider-github`, before opening
 repositories.
 
 ## Usage
 
 ```ts
-import { createGitBridgeClient } from "@gitbridge/core";
-import { createGitHubProviderConfig } from "@gitbridge/provider-github";
+import { createRepoFerryClient } from "@repoferry/core";
+import { createGitHubProviderConfig } from "@repoferry/provider-github";
 
-const client = createGitBridgeClient({
+const client = createRepoFerryClient({
   ...createGitHubProviderConfig()
 });
 
@@ -45,12 +45,12 @@ try {
 
 ## Public API
 
-- `createGitBridgeClient`
-- `resolveGitBridgeConfig`
+- `createRepoFerryClient`
+- `resolveRepoFerryConfig`
 - `resolveConfiguration`
 - `createRepository`
 - `createRepositoryRef`
-- `GitBridgeClient`
+- `RepoFerryClient`
 - `Repository`
 - `RepositoryRef`
 - `RepositoryFactory`

@@ -1,5 +1,5 @@
-import type { CapabilityMap } from "@gitbridge/contracts";
-import { CapabilityNotSupportedError, ProviderError } from "@gitbridge/errors";
+import type { CapabilityMap } from "@repoferry/contracts";
+import { CapabilityNotSupportedError, ProviderError } from "@repoferry/errors";
 import { describe, expect, expectTypeOf, it } from "vitest";
 
 import {
@@ -8,7 +8,7 @@ import {
   assertCapabilityNotSupported,
   assertCommit,
   assertFileInfo,
-  assertGitBridgeError,
+  assertRepoFerryError,
   assertIssue,
   assertPagedResult,
   assertProviderInfo,
@@ -171,12 +171,12 @@ describe("fake provider utilities and assertions", () => {
     await expect(session.getCapabilities()).rejects.toThrow(ProviderError);
   });
 
-  it("asserts GitBridge error families", () => {
+  it("asserts RepoFerry error families", () => {
     const error = new CapabilityNotSupportedError("Nope");
 
-    expect(() => assertGitBridgeError(error)).not.toThrow();
+    expect(() => assertRepoFerryError(error)).not.toThrow();
     expect(() => assertCapabilityNotSupported(error)).not.toThrow();
-    expect(() => assertGitBridgeError(new Error("plain"))).toThrow("Expected a GitBridgeError");
+    expect(() => assertRepoFerryError(new Error("plain"))).toThrow("Expected a RepoFerryError");
   });
 });
 

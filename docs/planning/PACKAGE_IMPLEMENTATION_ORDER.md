@@ -1,6 +1,6 @@
 # PACKAGE_IMPLEMENTATION_ORDER.md
 
-> Canonical Package Execution Order for GitBridge
+> Canonical Package Execution Order for RepoFerry
 >
 > **Status:** Accepted
 >
@@ -16,7 +16,7 @@
 
 ## Purpose
 
-This document defines the **exact implementation sequence** for every package in the GitBridge monorepo.
+This document defines the **exact implementation sequence** for every package in the RepoFerry monorepo.
 
 It translates the architectural dependency graph into a practical engineering roadmap.
 
@@ -138,7 +138,7 @@ core
 provider-github
     │
     ▼
-gitbridge
+repoferry
     │
     ▼
 testing
@@ -154,7 +154,7 @@ Examples and documentation consume only public packages and therefore are implem
 
 | Package | Responsibility |
 |----------|----------------|
-| `@gitbridge/shared` | Common reusable utilities |
+| `@repoferry/shared` | Common reusable utilities |
 
 ---
 
@@ -162,9 +162,9 @@ Examples and documentation consume only public packages and therefore are implem
 
 | Package | Responsibility |
 |----------|----------------|
-| `@gitbridge/contracts` | Public contracts |
-| `@gitbridge/errors` | Error model |
-| `@gitbridge/observability` | Observability infrastructure, including diagnostics |
+| `@repoferry/contracts` | Public contracts |
+| `@repoferry/errors` | Error model |
+| `@repoferry/observability` | Observability infrastructure, including diagnostics |
 
 ---
 
@@ -172,9 +172,9 @@ Examples and documentation consume only public packages and therefore are implem
 
 | Package | Responsibility |
 |----------|----------------|
-| `@gitbridge/auth` | Authentication abstractions |
-| `@gitbridge/transport` | Transport pipeline |
-| `@gitbridge/cache` | Cache infrastructure |
+| `@repoferry/auth` | Authentication abstractions |
+| `@repoferry/transport` | Transport pipeline |
+| `@repoferry/cache` | Cache infrastructure |
 
 ---
 
@@ -182,7 +182,7 @@ Examples and documentation consume only public packages and therefore are implem
 
 | Package | Responsibility |
 |----------|----------------|
-| `@gitbridge/core` | Repository runtime |
+| `@repoferry/core` | Repository runtime |
 
 ---
 
@@ -190,11 +190,11 @@ Examples and documentation consume only public packages and therefore are implem
 
 | Package | Responsibility |
 |----------|----------------|
-| `@gitbridge/provider-github` | GitHub provider |
-| `@gitbridge/provider-gitlab` | Future |
-| `@gitbridge/provider-bitbucket` | Future |
-| `@gitbridge/provider-azure` | Future |
-| `@gitbridge/provider-gitea` | Future |
+| `@repoferry/provider-github` | GitHub provider |
+| `@repoferry/provider-gitlab` | Future |
+| `@repoferry/provider-bitbucket` | Future |
+| `@repoferry/provider-azure` | Future |
+| `@repoferry/provider-gitea` | Future |
 
 ---
 
@@ -202,7 +202,7 @@ Examples and documentation consume only public packages and therefore are implem
 
 | Package | Responsibility |
 |----------|----------------|
-| `gitbridge` | Public entry point |
+| `repoferry` | Public entry point |
 
 ---
 
@@ -210,7 +210,7 @@ Examples and documentation consume only public packages and therefore are implem
 
 | Package | Responsibility |
 |----------|----------------|
-| `@gitbridge/testing` | Contract Test Kit & testing utilities |
+| `@repoferry/testing` | Contract Test Kit & testing utilities |
 
 ---
 
@@ -242,7 +242,7 @@ Deliverables:
 Package:
 
 ```text
-@gitbridge/shared
+@repoferry/shared
 ```
 
 Purpose:
@@ -258,7 +258,7 @@ Produces the lowest layer of the dependency graph.
 Package:
 
 ```text
-@gitbridge/contracts
+@repoferry/contracts
 ```
 
 Purpose:
@@ -274,7 +274,7 @@ All higher packages depend on these contracts.
 Package:
 
 ```text
-@gitbridge/errors
+@repoferry/errors
 ```
 
 Purpose:
@@ -288,7 +288,7 @@ Stable public error model.
 Package:
 
 ```text
-@gitbridge/observability
+@repoferry/observability
 ```
 
 Purpose:
@@ -302,7 +302,7 @@ Events, metrics, tracing contracts.
 Package:
 
 ```text
-@gitbridge/auth
+@repoferry/auth
 ```
 
 Purpose:
@@ -316,7 +316,7 @@ Authentication abstractions.
 Package:
 
 ```text
-@gitbridge/transport
+@repoferry/transport
 ```
 
 Purpose:
@@ -330,7 +330,7 @@ Transport abstraction and middleware pipeline.
 Package:
 
 ```text
-@gitbridge/cache
+@repoferry/cache
 ```
 
 Purpose:
@@ -344,7 +344,7 @@ Caching infrastructure.
 Package:
 
 ```text
-@gitbridge/core
+@repoferry/core
 ```
 
 Purpose:
@@ -358,7 +358,7 @@ Client, Repository, RepositoryRef, Provider Registry, Repository Factory.
 Package:
 
 ```text
-@gitbridge/provider-github
+@repoferry/provider-github
 ```
 
 Purpose:
@@ -374,7 +374,7 @@ Validates the provider architecture.
 Package:
 
 ```text
-gitbridge
+repoferry
 ```
 
 Purpose:
@@ -388,7 +388,7 @@ Stable public entry point.
 Package:
 
 ```text
-@gitbridge/testing
+@repoferry/testing
 ```
 
 Purpose:
@@ -880,7 +880,7 @@ Observability coupling.
 
 Mitigation
 
-Keep diagnostics, as provided through `@gitbridge/observability`, framework-neutral.
+Keep diagnostics, as provided through `@repoferry/observability`, framework-neutral.
 
 ---
 

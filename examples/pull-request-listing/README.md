@@ -5,8 +5,8 @@ Lists repository pull requests through the provider-neutral `pullRequests` capab
 ## Run
 
 ```sh
-pnpm --filter @gitbridge/example-pull-request-listing build
-pnpm --filter @gitbridge/example-pull-request-listing start
+pnpm --filter @repoferry/example-pull-request-listing build
+pnpm --filter @repoferry/example-pull-request-listing start
 ```
 
-Set `GITBRIDGE_GITHUB_TOKEN` and `GITBRIDGE_REPOSITORY_URL` as needed.
+Set `REPOFERRY_GITHUB_TOKEN` and `REPOFERRY_REPOSITORY_URL` as needed.

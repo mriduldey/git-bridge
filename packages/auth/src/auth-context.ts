@@ -1,5 +1,5 @@
-import type { AuthenticationContext } from "@gitbridge/contracts/authentication";
-import { deepFreeze } from "@gitbridge/shared/objects";
+import type { AuthenticationContext } from "@repoferry/contracts/authentication";
+import { deepFreeze } from "@repoferry/shared/objects";
 
 import { authKindToAuthenticationType } from "./auth-kind.js";
 import type { AuthConfig } from "./auth-config.js";

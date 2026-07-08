@@ -1,4 +1,4 @@
-import { ValidationError, type UnexpectedError } from "@gitbridge/errors";
+import { ValidationError, type UnexpectedError } from "@repoferry/errors";
 import { describe, expect, expectTypeOf, it, vi } from "vitest";
 
 import {

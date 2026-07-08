@@ -4,9 +4,9 @@ import type {
   TransportContext,
   TransportRequest,
   TransportResponse
-} from "@gitbridge/contracts";
-import { CancellationError, GitBridgeError, TimeoutError, TransportError } from "@gitbridge/errors";
-import { deepFreeze, sleep } from "@gitbridge/shared";
+} from "@repoferry/contracts";
+import { CancellationError, RepoFerryError, TimeoutError, TransportError } from "@repoferry/errors";
+import { deepFreeze, sleep } from "@repoferry/shared";
 
 export type {
   Transport,
@@ -15,7 +15,7 @@ export type {
   TransportMethod,
   TransportRequest,
   TransportResponse
-} from "@gitbridge/contracts/transport";
+} from "@repoferry/contracts/transport";
 
 export type TransportExecutor = <TBody = unknown>(
   request: TransportRequest,
@@ -44,12 +44,12 @@ export type RetryDecision = boolean | Readonly<{ retry: boolean; delayMs?: numbe
 
 export type RetryDelayStrategy = (
   attempt: number,
-  error: GitBridgeError,
+  error: RepoFerryError,
   request: TransportRequest
 ) => number;
 
 export type RetryPredicate = (
-  error: GitBridgeError,
+  error: RepoFerryError,
   request: TransportRequest,
   attempt: number
 ) => RetryDecision;
@@ -342,8 +342,8 @@ export function throwIfAborted(signal?: AbortSignal): void {
   }
 }
 
-export function mapTransportError(error: unknown): GitBridgeError {
-  if (error instanceof GitBridgeError) {
+export function mapTransportError(error: unknown): RepoFerryError {
+  if (error instanceof RepoFerryError) {
     return error;
   }
 
@@ -384,7 +384,7 @@ function resolveRetryPolicy(policy: Partial<RetryPolicy>): RetryPolicy {
 }
 
 function shouldRetryAttempt(
-  error: GitBridgeError,
+  error: RepoFerryError,
   request: TransportRequest,
   attempt: number,
   policy: RetryPolicy
@@ -416,7 +416,7 @@ function shouldRetryAttempt(
 
 function getRetryDelayMs(
   attempt: number,
-  error: GitBridgeError,
+  error: RepoFerryError,
   request: TransportRequest,
   policy: RetryPolicy
 ): number {
@@ -474,7 +474,7 @@ function createCancellationError(reason: unknown): CancellationError {
   });
 }
 
-function mapTimeoutAbort(error: unknown, timeoutMs: number): GitBridgeError {
+function mapTimeoutAbort(error: unknown, timeoutMs: number): RepoFerryError {
   if (error instanceof TimeoutError) {
     return error;
   }
@@ -500,7 +500,7 @@ function mapAbortSignalError(
   signal: AbortSignal,
   error: unknown,
   timeoutMs: number
-): GitBridgeError {
+): RepoFerryError {
   if (signal.reason instanceof TimeoutError) {
     return mapTimeoutAbort(error, timeoutMs);
   }

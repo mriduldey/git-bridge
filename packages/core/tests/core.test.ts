@@ -10,7 +10,7 @@ import type {
   RepositoryInfo,
   RepositoryLocator,
   SearchResult
-} from "@gitbridge/contracts";
+} from "@repoferry/contracts";
 import {
   CapabilityNotSupportedError,
   ConfigurationError,
@@ -18,29 +18,29 @@ import {
   NotFoundError,
   RepositoryError,
   ValidationError
-} from "@gitbridge/errors";
-import { createDiagnosticsService } from "@gitbridge/observability";
+} from "@repoferry/errors";
+import { createDiagnosticsService } from "@repoferry/observability";
 import { describe, expect, expectTypeOf, it, vi } from "vitest";
 
 import {
-  GitBridgeClient,
+  RepoFerryClient,
   Repository,
   RepositoryFactory,
   RepositoryRef,
-  createGitBridgeClient,
+  createRepoFerryClient,
   createRepository,
   createRepositoryRef,
   resolveConfiguration,
-  resolveGitBridgeConfig,
+  resolveRepoFerryConfig,
   type CapabilityRegistryView,
-  type GitBridgeClientConfig,
-  type GitBridgeRuntimeContext,
+  type RepoFerryClientConfig,
+  type RepoFerryRuntimeContext,
   type ProviderRegistryView
 } from "../src/index.js";
 
-describe("GitBridge client foundation", () => {
+describe("RepoFerry client foundation", () => {
   it("creates an isolated client with resolved default dependencies", () => {
-    const client = new GitBridgeClient();
+    const client = new RepoFerryClient();
 
     expect(client.state).toBe("active");
     expect(client.config.transport).toMatchObject({ execute: expect.any(Function) });
@@ -55,11 +55,11 @@ describe("GitBridge client foundation", () => {
   });
 
   it("supports factory bootstrap without global mutable configuration", () => {
-    const first = createGitBridgeClient();
-    const second = createGitBridgeClient();
+    const first = createRepoFerryClient();
+    const second = createRepoFerryClient();
 
-    expect(first).toBeInstanceOf(GitBridgeClient);
-    expect(second).toBeInstanceOf(GitBridgeClient);
+    expect(first).toBeInstanceOf(RepoFerryClient);
+    expect(second).toBeInstanceOf(RepoFerryClient);
     expect(first.config.cache).not.toBe(second.config.cache);
   });
 
@@ -100,7 +100,7 @@ describe("GitBridge client foundation", () => {
     const transport = {
       execute: vi.fn(async () => ({ status: 204 }))
     };
-    const client = new GitBridgeClient({
+    const client = new RepoFerryClient({
       authentication,
       cache,
       diagnostics,
@@ -121,7 +121,7 @@ describe("GitBridge client foundation", () => {
   });
 
   it("disposes owned dependencies idempotently and rejects active checks after disposal", async () => {
-    const client = new GitBridgeClient();
+    const client = new RepoFerryClient();
 
     await client.dispose();
     await client.dispose();
@@ -133,7 +133,7 @@ describe("GitBridge client foundation", () => {
 
 describe("provider registration", () => {
   it("registers providers deterministically by priority and id", () => {
-    const client = new GitBridgeClient({
+    const client = new RepoFerryClient({
       providers: [
         createProvider("gitlab", 10),
         createProvider("github", 1),
@@ -153,14 +153,14 @@ describe("provider registration", () => {
   });
 
   it("rejects invalid, duplicate, and missing providers through approved errors", () => {
-    expect(() => new GitBridgeClient({ providers: [createProvider(" ")] })).toThrow(
+    expect(() => new RepoFerryClient({ providers: [createProvider(" ")] })).toThrow(
       ValidationError
     );
     expect(
-      () => new GitBridgeClient({ providers: [createProvider("github"), createProvider("github")] })
+      () => new RepoFerryClient({ providers: [createProvider("github"), createProvider("github")] })
     ).toThrow(ConflictError);
 
-    const client = new GitBridgeClient();
+    const client = new RepoFerryClient();
 
     expect(() => client.providers.require("missing")).toThrow(NotFoundError);
   });
@@ -168,7 +168,7 @@ describe("provider registration", () => {
 
 describe("capability registration", () => {
   it("registers configured capabilities and provider-advertised capabilities", () => {
-    const client = new GitBridgeClient({
+    const client = new RepoFerryClient({
       capabilities: [{ name: "metadata", status: "supported" }],
       providers: [
         createProvider("github", 0, {
@@ -191,11 +191,11 @@ describe("capability registration", () => {
 
   it("rejects invalid, duplicate, and missing capabilities through approved errors", () => {
     expect(
-      () => new GitBridgeClient({ capabilities: [{ name: " ", status: "supported" }] })
+      () => new RepoFerryClient({ capabilities: [{ name: " ", status: "supported" }] })
     ).toThrow(ValidationError);
     expect(
       () =>
-        new GitBridgeClient({
+        new RepoFerryClient({
           capabilities: [
             { name: "files", status: "supported" },
             { name: "files", status: "partial" }
@@ -203,7 +203,7 @@ describe("capability registration", () => {
         })
     ).toThrow(ConflictError);
 
-    const client = new GitBridgeClient();
+    const client = new RepoFerryClient();
 
     expect(() => client.capabilities.require("files")).toThrow(NotFoundError);
   });
@@ -211,8 +211,8 @@ describe("capability registration", () => {
 
 describe("public exports", () => {
   it("exports foundation, repository model, and client orchestration contracts", () => {
-    expectTypeOf<GitBridgeClientConfig>().toHaveProperty("providers");
-    expectTypeOf<GitBridgeRuntimeContext>().toHaveProperty("providers");
+    expectTypeOf<RepoFerryClientConfig>().toHaveProperty("providers");
+    expectTypeOf<RepoFerryRuntimeContext>().toHaveProperty("providers");
     expectTypeOf<ProviderRegistryView>().toHaveProperty("ids");
     expectTypeOf<CapabilityRegistryView>().toHaveProperty("names");
     expectTypeOf<Repository>().toHaveProperty("ref");
@@ -221,7 +221,7 @@ describe("public exports", () => {
     expectTypeOf<RepositoryRef>().toHaveProperty("readme");
     expectTypeOf<RepositoryRef>().toHaveProperty("commits");
 
-    const client = new GitBridgeClient();
+    const client = new RepoFerryClient();
     const repository = createRepository({ info: createRepositoryInfo() });
 
     expect("open" in client).toBe(true);
@@ -229,7 +229,7 @@ describe("public exports", () => {
     expect(
       createRepositoryRef({ capabilities: {}, reference: "main", repository: repository.identity })
     ).toBeInstanceOf(RepositoryRef);
-    expect(resolveGitBridgeConfig()).toMatchObject({
+    expect(resolveRepoFerryConfig()).toMatchObject({
       capabilities: [],
       providers: []
     });
@@ -239,7 +239,7 @@ describe("public exports", () => {
 describe("core orchestration", () => {
   it("opens repositories by resolving a provider and creating a provider session", async () => {
     const provider = createMatchingProvider("github");
-    const client = new GitBridgeClient({ providers: [provider] });
+    const client = new RepoFerryClient({ providers: [provider] });
 
     const repository = await client.open("https://github.example.com/owner/repo", {
       correlationId: "corr-1",
@@ -274,7 +274,7 @@ describe("core orchestration", () => {
         type: "anonymous" as const
       }))
     };
-    const client = new GitBridgeClient({
+    const client = new RepoFerryClient({
       authentication,
       metadata: { extra: { client: true }, provider: "client" },
       providers: [provider]
@@ -299,35 +299,35 @@ describe("core orchestration", () => {
 
   it("rejects provider not found and multiple provider matches", async () => {
     await expect(
-      new GitBridgeClient().open("https://unknown.example.com/owner/repo")
+      new RepoFerryClient().open("https://unknown.example.com/owner/repo")
     ).rejects.toThrow(NotFoundError);
 
     await expect(
-      new GitBridgeClient({
+      new RepoFerryClient({
         providers: [createMatchingProvider("one"), createMatchingProvider("two")]
       }).open("https://example.com/owner/repo")
     ).rejects.toThrow(ConfigurationError);
   });
 
-  it("translates provider support and session failures through GitBridge errors", async () => {
+  it("translates provider support and session failures through RepoFerry errors", async () => {
     const supportFailure = createMatchingProvider("github");
     supportFailure.supports.mockRejectedValueOnce(new Error("boom"));
 
     await expect(
-      new GitBridgeClient({ providers: [supportFailure] }).open("https://example.com/owner/repo")
+      new RepoFerryClient({ providers: [supportFailure] }).open("https://example.com/owner/repo")
     ).rejects.toThrow(RepositoryError);
 
     const sessionFailure = createMatchingProvider("github");
     sessionFailure.createSession.mockRejectedValueOnce(new Error("boom"));
 
     await expect(
-      new GitBridgeClient({ providers: [sessionFailure] }).open("https://example.com/owner/repo")
+      new RepoFerryClient({ providers: [sessionFailure] }).open("https://example.com/owner/repo")
     ).rejects.toThrow(RepositoryError);
   });
 
   it("coordinates repository and session disposal", async () => {
     const provider = createMatchingProvider("github");
-    const client = new GitBridgeClient({ providers: [provider] });
+    const client = new RepoFerryClient({ providers: [provider] });
     const repository = await client.open("https://github.example.com/owner/repo");
     const session = provider.lastSession;
 
@@ -364,7 +364,7 @@ describe("core orchestration", () => {
     });
 
     await expect(
-      new GitBridgeClient({ providers: [provider] }).open("https://github.example.com/owner/repo")
+      new RepoFerryClient({ providers: [provider] }).open("https://github.example.com/owner/repo")
     ).rejects.toThrow("capability failure");
     expect(dispose).toHaveBeenCalledTimes(1);
   });
@@ -378,7 +378,7 @@ describe("core orchestration", () => {
         throw new Error("observer failure");
       }
     });
-    const client = new GitBridgeClient({
+    const client = new RepoFerryClient({
       diagnostics,
       providers: [createMatchingProvider("github")]
     });
@@ -530,7 +530,7 @@ describe("RepositoryRef model", () => {
     ).toThrow(ValidationError);
   });
 
-  it("exposes capability services and defers execution through GitBridge errors", async () => {
+  it("exposes capability services and defers execution through RepoFerry errors", async () => {
     const repository = new Repository({
       capabilities: {
         files: { name: "files", operations: ["readText"], status: "supported" }

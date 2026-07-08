@@ -1,5 +1,5 @@
-import type { ProviderId } from "@gitbridge/contracts/metadata";
-import type { DeepReadonly, JsonValue } from "@gitbridge/contracts/types";
+import type { ProviderId } from "@repoferry/contracts/metadata";
+import type { DeepReadonly, JsonValue } from "@repoferry/contracts/types";
 
 import type { AuthKind } from "./auth-kind.js";
 

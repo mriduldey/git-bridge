@@ -1,5 +1,5 @@
 {
-  "name": "gitbridge",
+  "name": "repoferry",
   "version": "0.1.0",
   "description": "Provider-neutral TypeScript SDK entry point for Git repositories.",
   "license": "MIT",
@@ -25,13 +25,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mriduldey/git-bridge.git",
-    "directory": "packages/gitbridge"
+    "url": "git+https://github.com/mriduldey/repo-ferry.git",
+    "directory": "packages/repoferry"
   },
   "bugs": {
-    "url": "https://github.com/mriduldey/git-bridge/issues"
+    "url": "https://github.com/mriduldey/repo-ferry/issues"
   },
-  "homepage": "https://github.com/mriduldey/git-bridge#readme",
+  "homepage": "https://github.com/mriduldey/repo-ferry#readme",
   "keywords": [
     "git",
     "github",
@@ -49,8 +49,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@gitbridge/auth": "workspace:*",
-    "@gitbridge/core": "workspace:*",
-    "@gitbridge/errors": "workspace:*"
+    "@repoferry/auth": "workspace:*",
+    "@repoferry/core": "workspace:*",
+    "@repoferry/errors": "workspace:*"
   }
 }

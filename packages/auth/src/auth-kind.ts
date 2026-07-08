@@ -1,4 +1,4 @@
-import type { AuthenticationType, CredentialKind } from "@gitbridge/contracts/authentication";
+import type { AuthenticationType, CredentialKind } from "@repoferry/contracts/authentication";
 
 export type AuthKind =
   "anonymous" | "token" | "bearer-token" | "oauth-token" | "application-token" | "custom";

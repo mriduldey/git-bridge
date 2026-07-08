@@ -1,6 +1,6 @@
-# @gitbridge/observability
+# @repoferry/observability
 
-Diagnostics, logging, metrics, tracing, and metadata sanitization for GitBridge.
+Diagnostics, logging, metrics, tracing, and metadata sanitization for RepoFerry.
 
 ## Responsibilities
 
@@ -12,13 +12,13 @@ Diagnostics, logging, metrics, tracing, and metadata sanitization for GitBridge.
 ## Install
 
 ```sh
-pnpm add @gitbridge/observability
+pnpm add @repoferry/observability
 ```
 
 ## Usage
 
 ```ts
-import { createDiagnosticsService } from "@gitbridge/observability";
+import { createDiagnosticsService } from "@repoferry/observability";
 
 const diagnostics = createDiagnosticsService();
 await diagnostics.subscribe((event) => {

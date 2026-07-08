@@ -1,6 +1,6 @@
 # ROADMAP.md
 
-> GitBridge Product Roadmap
+> RepoFerry Product Roadmap
 >
 > **Status:** Living Document
 >
@@ -8,7 +8,7 @@
 >
 > **Planning:** Complete
 >
-> This roadmap communicates the intended direction of GitBridge. It is not a release schedule or a contractual commitment. Priorities may evolve based on implementation experience and community feedback while remaining consistent with the accepted architecture.
+> This roadmap communicates the intended direction of RepoFerry. It is not a release schedule or a contractual commitment. Priorities may evolve based on implementation experience and community feedback while remaining consistent with the accepted architecture.
 
 ---
 
@@ -18,13 +18,13 @@
 
 Build the most reliable, provider-neutral TypeScript SDK for interacting with Git repositories through a single, consistent API.
 
-GitBridge enables applications to work with multiple Git hosting platforms without being tightly coupled to any individual provider.
+RepoFerry enables applications to work with multiple Git hosting platforms without being tightly coupled to any individual provider.
 
 ---
 
 ## Scope
 
-GitBridge focuses on:
+RepoFerry focuses on:
 
 - Repository access
 - Repository traversal
@@ -35,7 +35,7 @@ GitBridge focuses on:
 - Transport
 - Extensibility
 
-GitBridge is **not** intended to replace Git itself or become a full Git client.
+RepoFerry is **not** intended to replace Git itself or become a full Git client.
 
 ---
 
@@ -63,7 +63,7 @@ GitBridge is **not** intended to replace Git itself or become a full Git client.
 
 ## Success Definition
 
-GitBridge succeeds when developers can switch providers with minimal application changes while benefiting from a consistent, well-documented API.
+RepoFerry succeeds when developers can switch providers with minimal application changes while benefiting from a consistent, well-documented API.
 
 ---
 
@@ -105,7 +105,7 @@ Development follows these principles:
 
 # 4. Release Journey
 
-GitBridge will mature through progressive release stages.
+RepoFerry will mature through progressive release stages.
 
 ```text
 Prototype
@@ -304,7 +304,7 @@ The goal is to enable sustainable community contributions without compromising a
 
 # 9. Quality Roadmap
 
-GitBridge prioritizes quality over feature count.
+RepoFerry prioritizes quality over feature count.
 
 Areas of continuous improvement:
 
@@ -338,7 +338,7 @@ These ideas will be evaluated after the core platform reaches maturity.
 
 # 11. Success Metrics
 
-GitBridge measures progress through objective indicators.
+RepoFerry measures progress through objective indicators.
 
 Engineering:
 
@@ -429,7 +429,7 @@ Long-Term Evolution
 
 ## Current Project Maturity
 
-GitBridge has completed its architecture and engineering planning.
+RepoFerry has completed its architecture and engineering planning.
 
 Implementation has progressed to v0.1 alpha/developer-preview release preparation.
 
@@ -460,7 +460,7 @@ Goals:
 
 ## Looking Ahead
 
-GitBridge is designed as a long-lived open-source project.
+RepoFerry is designed as a long-lived open-source project.
 
 The architecture provides a stable foundation.
 

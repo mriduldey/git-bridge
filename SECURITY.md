@@ -2,7 +2,7 @@
 
 ## Supported Versions
 
-GitBridge has not published a stable release yet. Security fixes are prepared for the next public
+RepoFerry has not published a stable release yet. Security fixes are prepared for the next public
 release line until `0.1.0` is published.
 
 ## Reporting a Vulnerability

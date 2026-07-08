@@ -5,8 +5,8 @@ import {
   type AuthenticationRequest,
   type AuthenticationStrategy,
   type StaticTokenAuthConfig
-} from "@gitbridge/auth";
-import type { CacheProvider } from "@gitbridge/cache";
+} from "@repoferry/auth";
+import type { CacheProvider } from "@repoferry/cache";
 import type {
   AuthenticationContext,
   Blob,
@@ -54,20 +54,20 @@ import type {
   TransportResponse,
   Tree,
   TreeCapability
-} from "@gitbridge/contracts";
-import type { FilesCapability } from "@gitbridge/contracts/capabilities";
-import type { PagedResult } from "@gitbridge/contracts/pagination";
+} from "@repoferry/contracts";
+import type { FilesCapability } from "@repoferry/contracts/capabilities";
+import type { PagedResult } from "@repoferry/contracts/pagination";
 import {
-  createGitBridgeClient,
-  type GitBridgeClient,
-  type GitBridgeClientConfig
-} from "@gitbridge/core";
+  createRepoFerryClient,
+  type RepoFerryClient,
+  type RepoFerryClientConfig
+} from "@repoferry/core";
 import {
   AuthenticationError,
   AuthorizationError,
   CapabilityNotSupportedError,
   ConflictError,
-  GitBridgeError,
+  RepoFerryError,
   NotFoundError,
   ProviderError,
   RateLimitError,
@@ -75,10 +75,10 @@ import {
   ValidationError,
   type ErrorDiagnostics,
   type ErrorRetryability
-} from "@gitbridge/errors";
-import type { DiagnosticsService } from "@gitbridge/observability";
-import { deepFreeze } from "@gitbridge/shared";
-import { createTransportResponse } from "@gitbridge/transport";
+} from "@repoferry/errors";
+import type { DiagnosticsService } from "@repoferry/observability";
+import { deepFreeze } from "@repoferry/shared";
+import { createTransportResponse } from "@repoferry/transport";
 
 import type {
   GitHubBlobModel,
@@ -258,18 +258,18 @@ export function githubProvider(config: GitHubProviderConfig = {}): GitHubProvide
 }
 
 /**
- * Creates a GitBridge client config fragment containing the GitHub provider.
+ * Creates a RepoFerry client config fragment containing the GitHub provider.
  */
 export function createGitHubProviderConfig(
   config: GitHubProviderConfig = {}
-): GitBridgeClientConfig {
+): RepoFerryClientConfig {
   return {
     providers: [createGitHubProvider(config)]
   };
 }
 
 /**
- * Creates a GitHub-scoped token authentication strategy for GitBridge clients.
+ * Creates a GitHub-scoped token authentication strategy for RepoFerry clients.
  */
 export function githubTokenAuth(
   token: string,
@@ -288,16 +288,16 @@ export function githubTokenAuth(
 }
 
 /**
- * Creates a GitBridge client with the GitHub provider registered.
+ * Creates a RepoFerry client with the GitHub provider registered.
  */
-export function createGitHubClient(config: GitHubClientConfig = {}): GitBridgeClient {
+export function createGitHubClient(config: GitHubClientConfig = {}): RepoFerryClient {
   const { authentication, token, ...providerConfig } = config;
   const resolvedProviderConfig: GitHubProviderConfig = {
     ...providerConfig,
     transport: providerConfig.transport ?? createGitHubHttpTransport()
   };
 
-  return createGitBridgeClient({
+  return createRepoFerryClient({
     ...createGitHubProviderConfig(resolvedProviderConfig),
     authentication: authentication ?? (token === undefined ? undefined : githubTokenAuth(token))
   });
@@ -574,8 +574,8 @@ async function requestGitHubResponse<TBody>(
   }
 }
 
-export function mapGitHubError(error: unknown, operation = "github.provider"): GitBridgeError {
-  if (error instanceof GitBridgeError) {
+export function mapGitHubError(error: unknown, operation = "github.provider"): RepoFerryError {
+  if (error instanceof RepoFerryError) {
     return error;
   }
 
@@ -1429,7 +1429,7 @@ function createGitHubStatusError(
   status: number,
   operation: string,
   headers?: Readonly<Record<string, string>>
-): GitBridgeError {
+): RepoFerryError {
   if (status === 401) {
     return new AuthenticationError("GitHub authentication failed", {
       diagnostics: {

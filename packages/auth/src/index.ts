@@ -10,7 +10,7 @@ export type {
   Credentials,
   TokenCredentials,
   TokenProvider
-} from "@gitbridge/contracts/authentication";
+} from "@repoferry/contracts/authentication";
 
 export * from "./auth-config.js";
 export * from "./auth-context.js";

@@ -1,37 +1,37 @@
-# GitBridge Architecture
+# RepoFerry Architecture
 
 This document is derived from ADR-001 through ADR-015. The ADRs remain the
 source of truth when this overview and an ADR differ.
 
 ## System Shape
 
-GitBridge is a provider-neutral TypeScript SDK for working with hosted Git
-repositories. Applications use the public `gitbridge` entry point and stable
+RepoFerry is a provider-neutral TypeScript SDK for working with hosted Git
+repositories. Applications use the public `repoferry` entry point and stable
 contracts. Provider SDKs and provider response models remain implementation
 details.
 
 The runtime flow is:
 
 ```text
-Application -> GitBridge Client -> Provider -> Transport -> Repository host
+Application -> RepoFerry Client -> Provider -> Transport -> Repository host
 ```
 
 Core selects a provider, creates a provider session, constructs repository
 service objects, and manages lifecycle. Providers adapt host-specific behavior
-to GitBridge contracts. Transport owns protocol execution and middleware.
+to RepoFerry contracts. Transport owns protocol execution and middleware.
 
 ## Package Boundaries
 
-- `gitbridge` is the public convenience entry point.
-- `@gitbridge/contracts` owns public provider-neutral contracts and domain
+- `repoferry` is the public convenience entry point.
+- `@repoferry/contracts` owns public provider-neutral contracts and domain
   value models.
-- `@gitbridge/core` owns client lifecycle, provider resolution, repository
+- `@repoferry/core` owns client lifecycle, provider resolution, repository
   factories, and repository references.
-- `@gitbridge/provider-github` adapts GitHub behavior through the provider
+- `@repoferry/provider-github` adapts GitHub behavior through the provider
   contract.
-- `@gitbridge/auth`, `@gitbridge/transport`, `@gitbridge/cache`,
-  `@gitbridge/errors`, `@gitbridge/observability`, `@gitbridge/testing`, and
-  `@gitbridge/shared` provide foundation capabilities.
+- `@repoferry/auth`, `@repoferry/transport`, `@repoferry/cache`,
+  `@repoferry/errors`, `@repoferry/observability`, `@repoferry/testing`, and
+  `@repoferry/shared` provide foundation capabilities.
 
 Foundational packages must not depend on provider packages. Core must not import
 providers. Providers depend on contracts and foundation packages, not the other
@@ -41,7 +41,7 @@ way around.
 
 The public API is service-oriented:
 
-- `GitBridgeClient` owns configuration, providers, cache, transport, and
+- `RepoFerryClient` owns configuration, providers, cache, transport, and
   diagnostics.
 - `Repository` represents provider-neutral repository identity and metadata.
 - `RepositoryRef` binds operations to an explicit branch, tag, commit, or other
@@ -62,8 +62,8 @@ Providers must:
 
 - implement the public `Provider` and `ProviderSession` contracts,
 - expose provider-neutral capability services,
-- map provider responses to GitBridge domain models,
-- translate provider failures into GitBridge errors,
+- map provider responses to RepoFerry domain models,
+- translate provider failures into RepoFerry errors,
 - use Transport for outbound communication.
 
 Providers must not:
@@ -92,7 +92,7 @@ leak through errors, logs, or metadata.
 
 ## Errors
 
-All public failures are represented by `GitBridgeError` subclasses with stable
+All public failures are represented by `RepoFerryError` subclasses with stable
 codes, retryability, category, severity, diagnostics, and serialization.
 Provider and transport failures are translated at their respective boundaries.
 

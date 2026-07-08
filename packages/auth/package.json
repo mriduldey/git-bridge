@@ -1,7 +1,7 @@
 {
-  "name": "@gitbridge/auth",
+  "name": "@repoferry/auth",
   "version": "0.1.0",
-  "description": "Provider-neutral authentication primitives for GitBridge.",
+  "description": "Provider-neutral authentication primitives for RepoFerry.",
   "license": "MIT",
   "type": "module",
   "sideEffects": false,
@@ -66,9 +66,9 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@gitbridge/contracts": "workspace:*",
-    "@gitbridge/errors": "workspace:*",
-    "@gitbridge/shared": "workspace:*"
+    "@repoferry/contracts": "workspace:*",
+    "@repoferry/errors": "workspace:*",
+    "@repoferry/shared": "workspace:*"
   },
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
@@ -77,13 +77,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mriduldey/git-bridge.git",
+    "url": "git+https://github.com/mriduldey/repo-ferry.git",
     "directory": "packages/auth"
   },
   "bugs": {
-    "url": "https://github.com/mriduldey/git-bridge/issues"
+    "url": "https://github.com/mriduldey/repo-ferry/issues"
   },
-  "homepage": "https://github.com/mriduldey/git-bridge#readme",
+  "homepage": "https://github.com/mriduldey/repo-ferry#readme",
   "keywords": [
     "git",
     "github",

@@ -1,6 +1,6 @@
-# @gitbridge/auth
+# @repoferry/auth
 
-Authentication helpers for GitBridge.
+Authentication helpers for RepoFerry.
 
 ## Responsibilities
 
@@ -12,14 +12,14 @@ Authentication helpers for GitBridge.
 ## Install
 
 ```sh
-pnpm add @gitbridge/auth
+pnpm add @repoferry/auth
 ```
 
 ## Usage
 
 ```ts
-import { createAuthContext, tokenAuth } from "@gitbridge/auth";
-import { GitHubProviderId } from "@gitbridge/provider-github";
+import { createAuthContext, tokenAuth } from "@repoferry/auth";
+import { GitHubProviderId } from "@repoferry/provider-github";
 
 const context = createAuthContext(
   tokenAuth({

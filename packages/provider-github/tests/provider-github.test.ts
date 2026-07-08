@@ -7,8 +7,8 @@ import type {
   TransportContext,
   TransportRequest,
   TransportResponse
-} from "@gitbridge/contracts";
-import { GitBridgeClient, RepositoryFactory } from "@gitbridge/core";
+} from "@repoferry/contracts";
+import { RepoFerryClient, RepositoryFactory } from "@repoferry/core";
 import {
   AuthenticationError,
   AuthorizationError,
@@ -17,7 +17,7 @@ import {
   ProviderError,
   RateLimitError,
   ValidationError
-} from "@gitbridge/errors";
+} from "@repoferry/errors";
 import { describe, expect, expectTypeOf, it, vi } from "vitest";
 
 import {
@@ -114,7 +114,7 @@ describe("GitHub provider foundation", () => {
         "/repos/openai/codex": createRepositoryModel()
       })
     });
-    const client = new GitBridgeClient({ providers: [provider] });
+    const client = new RepoFerryClient({ providers: [provider] });
     const repository = await client.open("https://github.com/openai/codex");
 
     expect(client.providers.require("github")).toBe(provider);
@@ -148,7 +148,7 @@ describe("GitHub provider foundation", () => {
       diagnostics,
       transport
     });
-    const client = new GitBridgeClient({ authentication, providers: [provider] });
+    const client = new RepoFerryClient({ authentication, providers: [provider] });
 
     const repository = await client.open("https://github.com/openai/codex", {
       correlationId: "corr-1"
@@ -311,7 +311,7 @@ describe("GitHub provider foundation", () => {
     }
   });
 
-  it("expresses provider requests through GitBridge transport", async () => {
+  it("expresses provider requests through RepoFerry transport", async () => {
     const transportCalls: Array<readonly [TransportRequest, TransportContext | undefined]> = [];
     const transport: Transport = {
       async execute<TBody = unknown>(
@@ -352,7 +352,7 @@ describe("GitHub provider foundation", () => {
     expect(transportCalls[0]?.[1]).toEqual({});
   });
 
-  it("maps GitHub provider failures to approved GitBridge errors", () => {
+  it("maps GitHub provider failures to approved RepoFerry errors", () => {
     expect(mapGitHubError({ status: 401 })).toBeInstanceOf(AuthenticationError);
     expect(mapGitHubError({ status: 403 })).toBeInstanceOf(AuthorizationError);
     expect(
@@ -508,7 +508,7 @@ describe("public exports", () => {
     expect(createGitHubProvider()).toBeInstanceOf(GitHubProvider);
     expect(githubProvider()).toBeInstanceOf(GitHubProvider);
     expect(createGitHubProviderConfig().providers?.[0]?.info.id).toBe("github");
-    expect(createGitHubClient()).toBeInstanceOf(GitBridgeClient);
+    expect(createGitHubClient()).toBeInstanceOf(RepoFerryClient);
     expectTypeOf<GitHubClientConfig>().toHaveProperty("token");
     expectTypeOf<GitHubProviderConfig>().toHaveProperty("transport");
 
