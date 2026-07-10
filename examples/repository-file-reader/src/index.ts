@@ -1,9 +1,9 @@
-import { RepoFerryError } from "@repoferry/errors";
-import { createGitHubClient } from "@repoferry/provider-github";
+import { SourceAxisError } from "@sourceaxis/errors";
+import { createGitHubClient } from "@sourceaxis/provider-github";
 
-const repositoryUrl = process.env.REPOFERRY_REPOSITORY_URL ?? "https://github.com/octokit/rest.js";
-const path = process.env.REPOFERRY_FILE_PATH ?? "README.md";
-const token = process.env.REPOFERRY_GITHUB_TOKEN;
+const repositoryUrl = process.env.SOURCEAXIS_REPOSITORY_URL ?? "https://github.com/octokit/rest.js";
+const path = process.env.SOURCEAXIS_FILE_PATH ?? "README.md";
+const token = process.env.SOURCEAXIS_GITHUB_TOKEN;
 
 const client = createGitHubClient(token === undefined ? {} : { token });
 
@@ -16,7 +16,7 @@ try {
 
   await repository.dispose();
 } catch (error: unknown) {
-  if (error instanceof RepoFerryError) {
+  if (error instanceof SourceAxisError) {
     console.error(`${error.code}: ${error.message}`);
     process.exitCode = 1;
   } else {

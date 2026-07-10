@@ -1,6 +1,6 @@
 # Code of Conduct
 
-RepoFerry contributors are expected to collaborate respectfully, assume good intent, and keep
+SourceAxis contributors are expected to collaborate respectfully, assume good intent, and keep
 technical discussions focused on the work.
 
 Harassment, abusive behavior, or sustained disruption is not acceptable. Maintainers may moderate

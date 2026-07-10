@@ -25,7 +25,7 @@ for (const directory of packageDirectories) {
   if (result.status !== 0) {
     process.stdout.write(result.stdout);
     process.stderr.write(result.stderr);
-    throw new Error(`pnpm pack --dry-run failed for ${manifest.name}`);
+    throw new Error(`npm pack --dry-run failed for ${manifest.name}`);
   }
 
   process.stdout.write(`Packed ${manifest.name} ${manifest.version} (dry run)\n`);

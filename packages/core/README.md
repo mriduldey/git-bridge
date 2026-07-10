@@ -1,10 +1,10 @@
-# @repoferry/core
+# @sourceaxis/core
 
-Provider-neutral RepoFerry runtime foundation.
+Provider-neutral SourceAxis runtime foundation.
 
 ## Responsibilities
 
-- Create isolated RepoFerry clients with explicit configuration.
+- Create isolated SourceAxis clients with explicit configuration.
 - Register and resolve providers.
 - Open repositories from provider-supported locators.
 - Create repository and repository reference service objects.
@@ -14,19 +14,19 @@ Provider-neutral RepoFerry runtime foundation.
 ## Install
 
 ```sh
-pnpm add @repoferry/core
+pnpm add @sourceaxis/core
 ```
 
-Install at least one provider package, such as `@repoferry/provider-github`, before opening
+Install at least one provider package, such as `@sourceaxis/provider-github`, before opening
 repositories.
 
 ## Usage
 
 ```ts
-import { createRepoFerryClient } from "@repoferry/core";
-import { createGitHubProviderConfig } from "@repoferry/provider-github";
+import { createSourceAxisClient } from "@sourceaxis/core";
+import { createGitHubProviderConfig } from "@sourceaxis/provider-github";
 
-const client = createRepoFerryClient({
+const client = createSourceAxisClient({
   ...createGitHubProviderConfig()
 });
 
@@ -45,12 +45,12 @@ try {
 
 ## Public API
 
-- `createRepoFerryClient`
-- `resolveRepoFerryConfig`
+- `createSourceAxisClient`
+- `resolveSourceAxisConfig`
 - `resolveConfiguration`
 - `createRepository`
 - `createRepositoryRef`
-- `RepoFerryClient`
+- `SourceAxisClient`
 - `Repository`
 - `RepositoryRef`
 - `RepositoryFactory`

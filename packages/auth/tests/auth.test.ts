@@ -1,4 +1,4 @@
-import { ConfigurationError } from "@repoferry/errors";
+import { ConfigurationError } from "@sourceaxis/errors";
 import { describe, expect, expectTypeOf, it } from "vitest";
 
 import {

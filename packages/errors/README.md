@@ -1,10 +1,10 @@
-# @repoferry/errors
+# @sourceaxis/errors
 
-Stable public error hierarchy for RepoFerry.
+Stable public error hierarchy for SourceAxis.
 
 ## Responsibilities
 
-- Provide `RepoFerryError` as the base public error type.
+- Provide `SourceAxisError` as the base public error type.
 - Expose stable error codes, retryability, categories, severity, timestamps, diagnostics, and
   serialization.
 - Provide typed subclasses for authentication, authorization, configuration, provider, repository,
@@ -14,18 +14,18 @@ Stable public error hierarchy for RepoFerry.
 ## Install
 
 ```sh
-pnpm add @repoferry/errors
+pnpm add @sourceaxis/errors
 ```
 
 ## Usage
 
 ```ts
-import { RepoFerryError } from "@repoferry/errors";
+import { SourceAxisError } from "@sourceaxis/errors";
 
 try {
   await operation();
 } catch (error) {
-  if (error instanceof RepoFerryError) {
+  if (error instanceof SourceAxisError) {
     console.error(error.code, error.retryability, error.diagnostics);
   } else {
     throw error;

@@ -8,51 +8,59 @@ const packagesRoot = join(repositoryRoot, "packages");
 
 /** @type {Record<string, Set<string>>} */
 const allowedWorkspaceDependencies = {
-  repoferry: new Set([
-    "@repoferry/auth",
-    "@repoferry/contracts",
-    "@repoferry/core",
-    "@repoferry/errors"
+  sourceaxis: new Set([
+    "@sourceaxis/auth",
+    "@sourceaxis/contracts",
+    "@sourceaxis/core",
+    "@sourceaxis/errors"
   ]),
-  "@repoferry/auth": new Set(["@repoferry/contracts", "@repoferry/errors", "@repoferry/shared"]),
-  "@repoferry/cache": new Set(["@repoferry/contracts", "@repoferry/errors", "@repoferry/shared"]),
-  "@repoferry/contracts": new Set([]),
-  "@repoferry/core": new Set([
-    "@repoferry/auth",
-    "@repoferry/cache",
-    "@repoferry/contracts",
-    "@repoferry/errors",
-    "@repoferry/observability",
-    "@repoferry/shared",
-    "@repoferry/transport"
+  "@sourceaxis/auth": new Set([
+    "@sourceaxis/contracts",
+    "@sourceaxis/errors",
+    "@sourceaxis/shared"
   ]),
-  "@repoferry/errors": new Set([]),
-  "@repoferry/observability": new Set([
-    "@repoferry/contracts",
-    "@repoferry/errors",
-    "@repoferry/shared"
+  "@sourceaxis/cache": new Set([
+    "@sourceaxis/contracts",
+    "@sourceaxis/errors",
+    "@sourceaxis/shared"
   ]),
-  "@repoferry/provider-github": new Set([
-    "@repoferry/auth",
-    "@repoferry/cache",
-    "@repoferry/contracts",
-    "@repoferry/core",
-    "@repoferry/errors",
-    "@repoferry/observability",
-    "@repoferry/shared",
-    "@repoferry/transport"
+  "@sourceaxis/contracts": new Set([]),
+  "@sourceaxis/core": new Set([
+    "@sourceaxis/auth",
+    "@sourceaxis/cache",
+    "@sourceaxis/contracts",
+    "@sourceaxis/errors",
+    "@sourceaxis/observability",
+    "@sourceaxis/shared",
+    "@sourceaxis/transport"
   ]),
-  "@repoferry/shared": new Set([]),
-  "@repoferry/testing": new Set([
-    "@repoferry/contracts",
-    "@repoferry/core",
-    "@repoferry/errors",
-    "@repoferry/shared"
+  "@sourceaxis/errors": new Set([]),
+  "@sourceaxis/observability": new Set([
+    "@sourceaxis/contracts",
+    "@sourceaxis/errors",
+    "@sourceaxis/shared"
   ]),
-  "@repoferry/transport": new Set([
-    "@repoferry/contracts",
-    "@repoferry/errors",
-    "@repoferry/shared"
+  "@sourceaxis/provider-github": new Set([
+    "@sourceaxis/auth",
+    "@sourceaxis/cache",
+    "@sourceaxis/contracts",
+    "@sourceaxis/core",
+    "@sourceaxis/errors",
+    "@sourceaxis/observability",
+    "@sourceaxis/shared",
+    "@sourceaxis/transport"
+  ]),
+  "@sourceaxis/shared": new Set([]),
+  "@sourceaxis/testing": new Set([
+    "@sourceaxis/contracts",
+    "@sourceaxis/core",
+    "@sourceaxis/errors",
+    "@sourceaxis/shared"
+  ]),
+  "@sourceaxis/transport": new Set([
+    "@sourceaxis/contracts",
+    "@sourceaxis/errors",
+    "@sourceaxis/shared"
   ])
 };
 
@@ -274,12 +282,12 @@ describe("package architecture boundaries", () => {
     const violations = [];
 
     for (const pkg of readPackages().filter((candidate) =>
-      candidate.name.startsWith("@repoferry/provider-")
+      candidate.name.startsWith("@sourceaxis/provider-")
     )) {
       const manifestDependencies = Object.keys(pkg.manifest.dependencies ?? {});
 
       for (const dependency of manifestDependencies) {
-        if (!dependency.startsWith("@repoferry/")) {
+        if (!dependency.startsWith("@sourceaxis/")) {
           violations.push(
             `${pkg.name} declares provider/protocol runtime dependency ${dependency}`
           );
@@ -356,7 +364,7 @@ describe("package architecture boundaries", () => {
         violations.push(`${pkg.name}: missing Node.js engine metadata`);
       }
 
-      if (manifest.repository?.url !== "git+https://github.com/mriduldey/repo-ferry.git") {
+      if (manifest.repository?.url !== "git+https://github.com/mriduldey/source-axis.git") {
         violations.push(`${pkg.name}: missing repository metadata`);
       }
 
@@ -364,11 +372,11 @@ describe("package architecture boundaries", () => {
         violations.push(`${pkg.name}: repository.directory must point at package directory`);
       }
 
-      if (manifest.bugs?.url !== "https://github.com/mriduldey/repo-ferry/issues") {
+      if (manifest.bugs?.url !== "https://github.com/mriduldey/source-axis/issues") {
         violations.push(`${pkg.name}: missing bugs URL`);
       }
 
-      if (manifest.homepage !== "https://github.com/mriduldey/repo-ferry#readme") {
+      if (manifest.homepage !== "https://github.com/mriduldey/source-axis#readme") {
         violations.push(`${pkg.name}: missing homepage URL`);
       }
 
@@ -395,11 +403,11 @@ describe("package architecture boundaries", () => {
   });
 
   it("keeps testing infrastructure provider-neutral and on public package APIs", () => {
-    const testingPackage = readPackages().find((pkg) => pkg.name === "@repoferry/testing");
+    const testingPackage = readPackages().find((pkg) => pkg.name === "@sourceaxis/testing");
     const violations = [];
 
     if (testingPackage === undefined) {
-      violations.push("@repoferry/testing package is missing");
+      violations.push("@sourceaxis/testing package is missing");
     } else {
       for (const sourceFile of listSourceFiles(testingPackage.directory)) {
         for (const specifier of readImportSpecifiers(sourceFile)) {
@@ -423,7 +431,7 @@ describe("package architecture boundaries", () => {
     const violations = [];
 
     for (const pkg of readPackages().filter((candidate) =>
-      candidate.name.startsWith("@repoferry/provider-")
+      candidate.name.startsWith("@sourceaxis/provider-")
     )) {
       const entrypoint = join(pkg.directory, "src", "index.ts");
 
@@ -448,7 +456,7 @@ describe("package architecture boundaries", () => {
 
   it("requires provider packages to have reusable certification coverage", () => {
     const providerPackages = readPackages().filter((pkg) =>
-      pkg.name.startsWith("@repoferry/provider-")
+      pkg.name.startsWith("@sourceaxis/provider-")
     );
     const certificationTests = listFiles(join(packagesRoot, "testing", "tests")).filter((file) =>
       file.endsWith(".test.ts")
@@ -456,7 +464,7 @@ describe("package architecture boundaries", () => {
     const violations = [];
 
     for (const providerPackage of providerPackages) {
-      const providerName = providerPackage.name.replace("@repoferry/provider-", "");
+      const providerName = providerPackage.name.replace("@sourceaxis/provider-", "");
       const hasCertification = certificationTests.some((file) => {
         const source = readFileSync(file, "utf8");
         return source.includes(providerPackage.name) && source.includes("runProviderContractSuite");
@@ -715,7 +723,7 @@ function normalizeExportTargets(exportTarget) {
  * @returns {boolean}
  */
 function isProviderSpecifier(specifier) {
-  return specifier.startsWith("@repoferry/provider") || specifier.includes("provider-github");
+  return specifier.startsWith("@sourceaxis/provider") || specifier.includes("provider-github");
 }
 
 /**

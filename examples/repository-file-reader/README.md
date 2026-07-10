@@ -5,12 +5,12 @@ Reads a text file from the default branch of a GitHub repository.
 ## Run
 
 ```sh
-pnpm --filter @repoferry/example-repository-file-reader build
-pnpm --filter @repoferry/example-repository-file-reader start
+pnpm --filter @sourceaxis/example-repository-file-reader build
+pnpm --filter @sourceaxis/example-repository-file-reader start
 ```
 
 Optional environment variables:
 
-- `REPOFERRY_GITHUB_TOKEN`
-- `REPOFERRY_REPOSITORY_URL`
-- `REPOFERRY_FILE_PATH`, defaulting to `README.md`
+- `SOURCEAXIS_GITHUB_TOKEN`
+- `SOURCEAXIS_REPOSITORY_URL`
+- `SOURCEAXIS_FILE_PATH`, defaulting to `README.md`

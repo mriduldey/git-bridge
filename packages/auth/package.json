@@ -1,7 +1,7 @@
 {
-  "name": "@repoferry/auth",
+  "name": "@sourceaxis/auth",
   "version": "0.1.0",
-  "description": "Provider-neutral authentication primitives for RepoFerry.",
+  "description": "Provider-neutral authentication primitives for SourceAxis.",
   "license": "MIT",
   "type": "module",
   "sideEffects": false,
@@ -66,9 +66,9 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@repoferry/contracts": "workspace:*",
-    "@repoferry/errors": "workspace:*",
-    "@repoferry/shared": "workspace:*"
+    "@sourceaxis/contracts": "workspace:*",
+    "@sourceaxis/errors": "workspace:*",
+    "@sourceaxis/shared": "workspace:*"
   },
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
@@ -77,13 +77,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mriduldey/repo-ferry.git",
+    "url": "git+https://github.com/mriduldey/source-axis.git",
     "directory": "packages/auth"
   },
   "bugs": {
-    "url": "https://github.com/mriduldey/repo-ferry/issues"
+    "url": "https://github.com/mriduldey/source-axis/issues"
   },
-  "homepage": "https://github.com/mriduldey/repo-ferry#readme",
+  "homepage": "https://github.com/mriduldey/source-axis#readme",
   "keywords": [
     "git",
     "github",

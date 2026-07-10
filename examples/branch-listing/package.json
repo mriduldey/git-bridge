@@ -1,5 +1,5 @@
 {
-  "name": "@repoferry/example-branch-listing",
+  "name": "@sourceaxis/example-branch-listing",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -9,10 +9,10 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@repoferry/auth": "workspace:*",
-    "@repoferry/core": "workspace:*",
-    "@repoferry/errors": "workspace:*",
-    "@repoferry/provider-github": "workspace:*"
+    "@sourceaxis/auth": "workspace:*",
+    "@sourceaxis/core": "workspace:*",
+    "@sourceaxis/errors": "workspace:*",
+    "@sourceaxis/provider-github": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "22.16.0",

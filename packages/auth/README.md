@@ -1,6 +1,6 @@
-# @repoferry/auth
+# @sourceaxis/auth
 
-Authentication helpers for RepoFerry.
+Authentication helpers for SourceAxis.
 
 ## Responsibilities
 
@@ -12,14 +12,14 @@ Authentication helpers for RepoFerry.
 ## Install
 
 ```sh
-pnpm add @repoferry/auth
+pnpm add @sourceaxis/auth
 ```
 
 ## Usage
 
 ```ts
-import { createAuthContext, tokenAuth } from "@repoferry/auth";
-import { GitHubProviderId } from "@repoferry/provider-github";
+import { createAuthContext, tokenAuth } from "@sourceaxis/auth";
+import { GitHubProviderId } from "@sourceaxis/provider-github";
 
 const context = createAuthContext(
   tokenAuth({

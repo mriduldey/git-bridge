@@ -1,6 +1,6 @@
 # IMPLEMENTATION_PLAN.md
 
-> Engineering Execution Blueprint for RepoFerry
+> Engineering Execution Blueprint for SourceAxis
 >
 > **Architecture Status:** Frozen (ADR-001 → ADR-015 Accepted)
 >
@@ -14,7 +14,7 @@
 
 ## Purpose
 
-This document defines **how RepoFerry will be built**.
+This document defines **how SourceAxis will be built**.
 
 The architecture has been finalized through ADR-001 to ADR-015. No implementation should introduce new architectural decisions unless a critical defect is discovered and resolved through the ADR process.
 
@@ -24,7 +24,7 @@ This document translates the accepted architecture into an incremental engineeri
 
 ## Project Vision
 
-RepoFerry aims to become the standard provider-agnostic TypeScript SDK for interacting with Git repositories.
+SourceAxis aims to become the standard provider-agnostic TypeScript SDK for interacting with Git repositories.
 
 Applications should interact with repositories through one stable API regardless of whether the underlying provider is:
 
@@ -79,7 +79,7 @@ Primary goals:
 
 ## Engineering Philosophy
 
-RepoFerry will be built according to the following principles:
+SourceAxis will be built according to the following principles:
 
 - Build the foundation before features.
 - Every milestone should be demonstrable.
@@ -101,7 +101,7 @@ Implementation is successful when:
 - Provider Contract Tests pass.
 - Documentation is synchronized.
 - CI remains healthy.
-- RepoFerry can be published as a production-ready npm package.
+- SourceAxis can be published as a production-ready npm package.
 
 ---
 
@@ -234,7 +234,7 @@ Prefer automated verification over manual review whenever practical.
 
 # 3. Implementation Strategy
 
-RepoFerry follows a **Foundation → Runtime → Features → Ecosystem** strategy.
+SourceAxis follows a **Foundation → Runtime → Features → Ecosystem** strategy.
 
 Implementation order:
 
@@ -365,7 +365,7 @@ testing
 
 ↓
 
-repoferry
+sourceaxis
 ```
 
 ---
@@ -482,7 +482,7 @@ Depends on public packages only.
 
 ---
 
-### repoferry
+### sourceaxis
 
 The public entry package.
 
@@ -640,7 +640,7 @@ Phase 1
 
 ### Purpose
 
-Implement the RepoFerry runtime.
+Implement the SourceAxis runtime.
 
 ### Packages
 
@@ -732,7 +732,7 @@ Expose the complete consumer experience.
 
 ### Packages
 
-- repoferry
+- sourceaxis
 
 ### Deliverables
 
@@ -742,7 +742,7 @@ Expose the complete consumer experience.
 
 ### Acceptance Criteria
 
-Consumers interact only with the `repoferry` package.
+Consumers interact only with the `sourceaxis` package.
 
 ### Risks
 
@@ -912,7 +912,7 @@ Architecture Constitution fully realized in production.
 
 # 7. Vertical Slice Strategy
 
-RepoFerry is implemented as a sequence of **vertical slices** rather than isolated horizontal layers.
+SourceAxis is implemented as a sequence of **vertical slices** rather than isolated horizontal layers.
 
 Each slice delivers end-to-end functionality using the existing architectural foundation.
 
@@ -1246,7 +1246,7 @@ Repository can be cloned and:
 
 # 11. Development Workflow
 
-RepoFerry follows a trunk-based workflow with short-lived feature branches.
+SourceAxis follows a trunk-based workflow with short-lived feature branches.
 
 ---
 
@@ -1446,7 +1446,7 @@ Milestones align with the implementation phases defined in this document.
 
 # 13. Definition of Done
 
-RepoFerry defines DoD at multiple levels.
+SourceAxis defines DoD at multiple levels.
 
 ---
 
@@ -1555,7 +1555,7 @@ Estimated effort to **v1.0**:
 
 # 15. Success Metrics
 
-RepoFerry measures success through objective engineering metrics rather than subjective opinions.
+SourceAxis measures success through objective engineering metrics rather than subjective opinions.
 
 Success metrics are grouped into six categories.
 
@@ -1955,7 +1955,7 @@ Core Runtime
 
 Deliverables:
 
-- RepoFerryClient
+- SourceAxisClient
 - Repository
 - RepositoryRef
 - Provider Registry
@@ -2033,18 +2033,18 @@ Deliver a production-ready provider-agnostic Git SDK with:
 
 # Engineering Milestones
 
-This section defines the major engineering checkpoints for RepoFerry.
+This section defines the major engineering checkpoints for SourceAxis.
 
 Unlike the public roadmap, these milestones represent internal execution goals. They do not imply release dates and may be refined as implementation progresses without changing the accepted architecture.
 
 | Milestone | Objective | Exit Criteria |
 |------------|-----------|---------------|
 | **M1 — Repository Bootstrap** | Establish the engineering foundation | Workspace, CI, linting, formatting, testing, and build pipeline operational |
-| **M2 — Foundation Packages** | Complete foundational packages | `@repoferry/shared`, `@repoferry/contracts`, `@repoferry/errors`, and `@repoferry/observability` implemented and validated |
+| **M2 — Foundation Packages** | Complete foundational packages | `@sourceaxis/shared`, `@sourceaxis/contracts`, `@sourceaxis/errors`, and `@sourceaxis/observability` implemented and validated |
 | **M3 — Runtime Infrastructure** | Implement runtime infrastructure | Authentication, transport, and cache packages complete with unit tests and architecture validation |
-| **M4 — Core Runtime** | Complete the runtime engine | `@repoferry/core` operational with repository lifecycle, provider registry, and mock provider support |
-| **M5 — GitHub Provider** | Deliver the first production provider | `@repoferry/provider-github` passes the Provider Contract Test Kit and supports the planned repository operations |
-| **M6 — Public SDK** | Stabilize the public developer experience | `repoferry` package published internally, Quick Start examples compile, public APIs reviewed |
+| **M4 — Core Runtime** | Complete the runtime engine | `@sourceaxis/core` operational with repository lifecycle, provider registry, and mock provider support |
+| **M5 — GitHub Provider** | Deliver the first production provider | `@sourceaxis/provider-github` passes the Provider Contract Test Kit and supports the planned repository operations |
+| **M6 — Public SDK** | Stabilize the public developer experience | `sourceaxis` package published internally, Quick Start examples compile, public APIs reviewed |
 | **M7 — Testing & Documentation** | Finalize project quality | Contract tests, benchmarks, documentation, API reference, and examples complete |
 | **M8 — Developer Preview (v0.1)** | First public preview | All quality gates satisfied, release artifacts generated, documentation published |
 
@@ -2078,13 +2078,13 @@ No runtime code should be written before the engineering foundation is establish
 
 Begin with the **repository infrastructure**, not a runtime package.
 
-Repository tooling should be fully operational before implementing `@repoferry/shared`.
+Repository tooling should be fully operational before implementing `@sourceaxis/shared`.
 
 ---
 
 ## Recommended First Runtime Package
 
-`@repoferry/shared`
+`@sourceaxis/shared`
 
 This package has the fewest dependencies and provides reusable utilities for all subsequent packages.
 
@@ -2141,7 +2141,7 @@ Avoid:
 
 **Status:** Accepted
 
-This document is the authoritative engineering execution blueprint for RepoFerry.
+This document is the authoritative engineering execution blueprint for SourceAxis.
 
 It translates the Architecture Constitution (ADR-001 through ADR-015) into an incremental implementation roadmap.
 

@@ -14,9 +14,9 @@ import type {
   Tag,
   Tree,
   TreeNode
-} from "@repoferry/contracts";
-import { ValidationError, type ErrorDiagnostics } from "@repoferry/errors";
-import { deepFreeze } from "@repoferry/shared";
+} from "@sourceaxis/contracts";
+import { ValidationError, type ErrorDiagnostics } from "@sourceaxis/errors";
+import { deepFreeze } from "@sourceaxis/shared";
 
 import { GitHubProviderId } from "./constants.js";
 import type {

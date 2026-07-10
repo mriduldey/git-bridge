@@ -24,10 +24,10 @@ import type {
   Tag,
   Tree,
   TreeNode
-} from "@repoferry/contracts";
-import { createRepoFerryClient } from "@repoferry/core";
-import { CapabilityNotSupportedError, RepoFerryError, ProviderError } from "@repoferry/errors";
-import { deepFreeze } from "@repoferry/shared";
+} from "@sourceaxis/contracts";
+import { createSourceAxisClient } from "@sourceaxis/core";
+import { CapabilityNotSupportedError, SourceAxisError, ProviderError } from "@sourceaxis/errors";
+import { deepFreeze } from "@sourceaxis/shared";
 
 export type ProviderCapabilityName = keyof CapabilityMap;
 
@@ -140,7 +140,7 @@ export async function runProviderContractSuite(
 
   record(checks, "provider metadata", () => assertProviderInfo(provider.info));
   await recordAsync(checks, "provider registration compatibility", async () => {
-    const client = createRepoFerryClient({ providers: [provider] });
+    const client = createSourceAxisClient({ providers: [provider] });
     assert(client.providers.require(provider.info.id) === provider, "Provider was not registered");
     await client.dispose();
   });
@@ -352,8 +352,8 @@ export function assertPagedResult<TItem>(
   assert(result.pageInfo !== undefined, "Paged result pageInfo must be present");
 }
 
-export function assertRepoFerryError(error: unknown): asserts error is RepoFerryError {
-  assert(error instanceof RepoFerryError, "Expected a RepoFerryError");
+export function assertSourceAxisError(error: unknown): asserts error is SourceAxisError {
+  assert(error instanceof SourceAxisError, "Expected a SourceAxisError");
 }
 
 export function assertCapabilityNotSupported(

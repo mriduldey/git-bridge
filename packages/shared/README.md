@@ -1,6 +1,6 @@
-# @repoferry/shared
+# @sourceaxis/shared
 
-Shared implementation utilities for RepoFerry packages.
+Shared implementation utilities for SourceAxis packages.
 
 ## Responsibilities
 
@@ -11,16 +11,16 @@ Shared implementation utilities for RepoFerry packages.
 ## Install
 
 ```sh
-pnpm add @repoferry/shared
+pnpm add @sourceaxis/shared
 ```
 
 Applications usually do not need this package directly. Prefer the public APIs exposed by
-`@repoferry/core`, provider packages, and `@repoferry/contracts`.
+`@sourceaxis/core`, provider packages, and `@sourceaxis/contracts`.
 
 ## Usage
 
 ```ts
-import { deepFreeze } from "@repoferry/shared";
+import { deepFreeze } from "@sourceaxis/shared";
 
 const value = deepFreeze({ stable: true });
 ```

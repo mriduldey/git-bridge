@@ -10,7 +10,7 @@ import type {
   RepositoryInfo,
   RepositoryLocator,
   SearchResult
-} from "@repoferry/contracts";
+} from "@sourceaxis/contracts";
 import {
   CapabilityNotSupportedError,
   ConfigurationError,
@@ -18,29 +18,29 @@ import {
   NotFoundError,
   RepositoryError,
   ValidationError
-} from "@repoferry/errors";
-import { createDiagnosticsService } from "@repoferry/observability";
+} from "@sourceaxis/errors";
+import { createDiagnosticsService } from "@sourceaxis/observability";
 import { describe, expect, expectTypeOf, it, vi } from "vitest";
 
 import {
-  RepoFerryClient,
+  SourceAxisClient,
   Repository,
   RepositoryFactory,
   RepositoryRef,
-  createRepoFerryClient,
+  createSourceAxisClient,
   createRepository,
   createRepositoryRef,
   resolveConfiguration,
-  resolveRepoFerryConfig,
+  resolveSourceAxisConfig,
   type CapabilityRegistryView,
-  type RepoFerryClientConfig,
-  type RepoFerryRuntimeContext,
+  type SourceAxisClientConfig,
+  type SourceAxisRuntimeContext,
   type ProviderRegistryView
 } from "../src/index.js";
 
-describe("RepoFerry client foundation", () => {
+describe("SourceAxis client foundation", () => {
   it("creates an isolated client with resolved default dependencies", () => {
-    const client = new RepoFerryClient();
+    const client = new SourceAxisClient();
 
     expect(client.state).toBe("active");
     expect(client.config.transport).toMatchObject({ execute: expect.any(Function) });
@@ -55,11 +55,11 @@ describe("RepoFerry client foundation", () => {
   });
 
   it("supports factory bootstrap without global mutable configuration", () => {
-    const first = createRepoFerryClient();
-    const second = createRepoFerryClient();
+    const first = createSourceAxisClient();
+    const second = createSourceAxisClient();
 
-    expect(first).toBeInstanceOf(RepoFerryClient);
-    expect(second).toBeInstanceOf(RepoFerryClient);
+    expect(first).toBeInstanceOf(SourceAxisClient);
+    expect(second).toBeInstanceOf(SourceAxisClient);
     expect(first.config.cache).not.toBe(second.config.cache);
   });
 
@@ -100,7 +100,7 @@ describe("RepoFerry client foundation", () => {
     const transport = {
       execute: vi.fn(async () => ({ status: 204 }))
     };
-    const client = new RepoFerryClient({
+    const client = new SourceAxisClient({
       authentication,
       cache,
       diagnostics,
@@ -121,7 +121,7 @@ describe("RepoFerry client foundation", () => {
   });
 
   it("disposes owned dependencies idempotently and rejects active checks after disposal", async () => {
-    const client = new RepoFerryClient();
+    const client = new SourceAxisClient();
 
     await client.dispose();
     await client.dispose();
@@ -133,7 +133,7 @@ describe("RepoFerry client foundation", () => {
 
 describe("provider registration", () => {
   it("registers providers deterministically by priority and id", () => {
-    const client = new RepoFerryClient({
+    const client = new SourceAxisClient({
       providers: [
         createProvider("gitlab", 10),
         createProvider("github", 1),
@@ -153,14 +153,15 @@ describe("provider registration", () => {
   });
 
   it("rejects invalid, duplicate, and missing providers through approved errors", () => {
-    expect(() => new RepoFerryClient({ providers: [createProvider(" ")] })).toThrow(
+    expect(() => new SourceAxisClient({ providers: [createProvider(" ")] })).toThrow(
       ValidationError
     );
     expect(
-      () => new RepoFerryClient({ providers: [createProvider("github"), createProvider("github")] })
+      () =>
+        new SourceAxisClient({ providers: [createProvider("github"), createProvider("github")] })
     ).toThrow(ConflictError);
 
-    const client = new RepoFerryClient();
+    const client = new SourceAxisClient();
 
     expect(() => client.providers.require("missing")).toThrow(NotFoundError);
   });
@@ -168,7 +169,7 @@ describe("provider registration", () => {
 
 describe("capability registration", () => {
   it("registers configured capabilities and provider-advertised capabilities", () => {
-    const client = new RepoFerryClient({
+    const client = new SourceAxisClient({
       capabilities: [{ name: "metadata", status: "supported" }],
       providers: [
         createProvider("github", 0, {
@@ -191,11 +192,11 @@ describe("capability registration", () => {
 
   it("rejects invalid, duplicate, and missing capabilities through approved errors", () => {
     expect(
-      () => new RepoFerryClient({ capabilities: [{ name: " ", status: "supported" }] })
+      () => new SourceAxisClient({ capabilities: [{ name: " ", status: "supported" }] })
     ).toThrow(ValidationError);
     expect(
       () =>
-        new RepoFerryClient({
+        new SourceAxisClient({
           capabilities: [
             { name: "files", status: "supported" },
             { name: "files", status: "partial" }
@@ -203,7 +204,7 @@ describe("capability registration", () => {
         })
     ).toThrow(ConflictError);
 
-    const client = new RepoFerryClient();
+    const client = new SourceAxisClient();
 
     expect(() => client.capabilities.require("files")).toThrow(NotFoundError);
   });
@@ -211,8 +212,8 @@ describe("capability registration", () => {
 
 describe("public exports", () => {
   it("exports foundation, repository model, and client orchestration contracts", () => {
-    expectTypeOf<RepoFerryClientConfig>().toHaveProperty("providers");
-    expectTypeOf<RepoFerryRuntimeContext>().toHaveProperty("providers");
+    expectTypeOf<SourceAxisClientConfig>().toHaveProperty("providers");
+    expectTypeOf<SourceAxisRuntimeContext>().toHaveProperty("providers");
     expectTypeOf<ProviderRegistryView>().toHaveProperty("ids");
     expectTypeOf<CapabilityRegistryView>().toHaveProperty("names");
     expectTypeOf<Repository>().toHaveProperty("ref");
@@ -221,7 +222,7 @@ describe("public exports", () => {
     expectTypeOf<RepositoryRef>().toHaveProperty("readme");
     expectTypeOf<RepositoryRef>().toHaveProperty("commits");
 
-    const client = new RepoFerryClient();
+    const client = new SourceAxisClient();
     const repository = createRepository({ info: createRepositoryInfo() });
 
     expect("open" in client).toBe(true);
@@ -229,7 +230,7 @@ describe("public exports", () => {
     expect(
       createRepositoryRef({ capabilities: {}, reference: "main", repository: repository.identity })
     ).toBeInstanceOf(RepositoryRef);
-    expect(resolveRepoFerryConfig()).toMatchObject({
+    expect(resolveSourceAxisConfig()).toMatchObject({
       capabilities: [],
       providers: []
     });
@@ -239,7 +240,7 @@ describe("public exports", () => {
 describe("core orchestration", () => {
   it("opens repositories by resolving a provider and creating a provider session", async () => {
     const provider = createMatchingProvider("github");
-    const client = new RepoFerryClient({ providers: [provider] });
+    const client = new SourceAxisClient({ providers: [provider] });
 
     const repository = await client.open("https://github.example.com/owner/repo", {
       correlationId: "corr-1",
@@ -274,7 +275,7 @@ describe("core orchestration", () => {
         type: "anonymous" as const
       }))
     };
-    const client = new RepoFerryClient({
+    const client = new SourceAxisClient({
       authentication,
       metadata: { extra: { client: true }, provider: "client" },
       providers: [provider]
@@ -299,35 +300,35 @@ describe("core orchestration", () => {
 
   it("rejects provider not found and multiple provider matches", async () => {
     await expect(
-      new RepoFerryClient().open("https://unknown.example.com/owner/repo")
+      new SourceAxisClient().open("https://unknown.example.com/owner/repo")
     ).rejects.toThrow(NotFoundError);
 
     await expect(
-      new RepoFerryClient({
+      new SourceAxisClient({
         providers: [createMatchingProvider("one"), createMatchingProvider("two")]
       }).open("https://example.com/owner/repo")
     ).rejects.toThrow(ConfigurationError);
   });
 
-  it("translates provider support and session failures through RepoFerry errors", async () => {
+  it("translates provider support and session failures through SourceAxis errors", async () => {
     const supportFailure = createMatchingProvider("github");
     supportFailure.supports.mockRejectedValueOnce(new Error("boom"));
 
     await expect(
-      new RepoFerryClient({ providers: [supportFailure] }).open("https://example.com/owner/repo")
+      new SourceAxisClient({ providers: [supportFailure] }).open("https://example.com/owner/repo")
     ).rejects.toThrow(RepositoryError);
 
     const sessionFailure = createMatchingProvider("github");
     sessionFailure.createSession.mockRejectedValueOnce(new Error("boom"));
 
     await expect(
-      new RepoFerryClient({ providers: [sessionFailure] }).open("https://example.com/owner/repo")
+      new SourceAxisClient({ providers: [sessionFailure] }).open("https://example.com/owner/repo")
     ).rejects.toThrow(RepositoryError);
   });
 
   it("coordinates repository and session disposal", async () => {
     const provider = createMatchingProvider("github");
-    const client = new RepoFerryClient({ providers: [provider] });
+    const client = new SourceAxisClient({ providers: [provider] });
     const repository = await client.open("https://github.example.com/owner/repo");
     const session = provider.lastSession;
 
@@ -364,7 +365,7 @@ describe("core orchestration", () => {
     });
 
     await expect(
-      new RepoFerryClient({ providers: [provider] }).open("https://github.example.com/owner/repo")
+      new SourceAxisClient({ providers: [provider] }).open("https://github.example.com/owner/repo")
     ).rejects.toThrow("capability failure");
     expect(dispose).toHaveBeenCalledTimes(1);
   });
@@ -378,7 +379,7 @@ describe("core orchestration", () => {
         throw new Error("observer failure");
       }
     });
-    const client = new RepoFerryClient({
+    const client = new SourceAxisClient({
       diagnostics,
       providers: [createMatchingProvider("github")]
     });
@@ -530,7 +531,7 @@ describe("RepositoryRef model", () => {
     ).toThrow(ValidationError);
   });
 
-  it("exposes capability services and defers execution through RepoFerry errors", async () => {
+  it("exposes capability services and defers execution through SourceAxis errors", async () => {
     const repository = new Repository({
       capabilities: {
         files: { name: "files", operations: ["readText"], status: "supported" }

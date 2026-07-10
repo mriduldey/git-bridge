@@ -1,5 +1,5 @@
-import type { AuthenticationContext, Credentials } from "@repoferry/contracts/authentication";
-import { isPlainObject, isString } from "@repoferry/shared/guards";
+import type { AuthenticationContext, Credentials } from "@sourceaxis/contracts/authentication";
+import { isPlainObject, isString } from "@sourceaxis/shared/guards";
 
 import type { AuthConfig, TokenBackedAuthConfig } from "./auth-config.js";
 

@@ -1,37 +1,37 @@
-# RepoFerry Architecture
+# SourceAxis Architecture
 
 This document is derived from ADR-001 through ADR-015. The ADRs remain the
 source of truth when this overview and an ADR differ.
 
 ## System Shape
 
-RepoFerry is a provider-neutral TypeScript SDK for working with hosted Git
-repositories. Applications use the public `repoferry` entry point and stable
+SourceAxis is a provider-neutral TypeScript SDK for working with hosted Git
+repositories. Applications use the public `sourceaxis` entry point and stable
 contracts. Provider SDKs and provider response models remain implementation
 details.
 
 The runtime flow is:
 
 ```text
-Application -> RepoFerry Client -> Provider -> Transport -> Repository host
+Application -> SourceAxis Client -> Provider -> Transport -> Repository host
 ```
 
 Core selects a provider, creates a provider session, constructs repository
 service objects, and manages lifecycle. Providers adapt host-specific behavior
-to RepoFerry contracts. Transport owns protocol execution and middleware.
+to SourceAxis contracts. Transport owns protocol execution and middleware.
 
 ## Package Boundaries
 
-- `repoferry` is the public convenience entry point.
-- `@repoferry/contracts` owns public provider-neutral contracts and domain
+- `sourceaxis` is the public convenience entry point.
+- `@sourceaxis/contracts` owns public provider-neutral contracts and domain
   value models.
-- `@repoferry/core` owns client lifecycle, provider resolution, repository
+- `@sourceaxis/core` owns client lifecycle, provider resolution, repository
   factories, and repository references.
-- `@repoferry/provider-github` adapts GitHub behavior through the provider
+- `@sourceaxis/provider-github` adapts GitHub behavior through the provider
   contract.
-- `@repoferry/auth`, `@repoferry/transport`, `@repoferry/cache`,
-  `@repoferry/errors`, `@repoferry/observability`, `@repoferry/testing`, and
-  `@repoferry/shared` provide foundation capabilities.
+- `@sourceaxis/auth`, `@sourceaxis/transport`, `@sourceaxis/cache`,
+  `@sourceaxis/errors`, `@sourceaxis/observability`, `@sourceaxis/testing`, and
+  `@sourceaxis/shared` provide foundation capabilities.
 
 Foundational packages must not depend on provider packages. Core must not import
 providers. Providers depend on contracts and foundation packages, not the other
@@ -41,7 +41,7 @@ way around.
 
 The public API is service-oriented:
 
-- `RepoFerryClient` owns configuration, providers, cache, transport, and
+- `SourceAxisClient` owns configuration, providers, cache, transport, and
   diagnostics.
 - `Repository` represents provider-neutral repository identity and metadata.
 - `RepositoryRef` binds operations to an explicit branch, tag, commit, or other
@@ -62,8 +62,8 @@ Providers must:
 
 - implement the public `Provider` and `ProviderSession` contracts,
 - expose provider-neutral capability services,
-- map provider responses to RepoFerry domain models,
-- translate provider failures into RepoFerry errors,
+- map provider responses to SourceAxis domain models,
+- translate provider failures into SourceAxis errors,
 - use Transport for outbound communication.
 
 Providers must not:
@@ -92,7 +92,7 @@ leak through errors, logs, or metadata.
 
 ## Errors
 
-All public failures are represented by `RepoFerryError` subclasses with stable
+All public failures are represented by `SourceAxisError` subclasses with stable
 codes, retryability, category, severity, diagnostics, and serialization.
 Provider and transport failures are translated at their respective boundaries.
 

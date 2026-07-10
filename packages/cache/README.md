@@ -1,6 +1,6 @@
-# @repoferry/cache
+# @sourceaxis/cache
 
-Cache primitives for RepoFerry.
+Cache primitives for SourceAxis.
 
 ## Responsibilities
 
@@ -12,13 +12,13 @@ Cache primitives for RepoFerry.
 ## Install
 
 ```sh
-pnpm add @repoferry/cache
+pnpm add @sourceaxis/cache
 ```
 
 ## Usage
 
 ```ts
-import { createCache, createCacheKey, createMemoryCacheAdapter } from "@repoferry/cache";
+import { createCache, createCacheKey, createMemoryCacheAdapter } from "@sourceaxis/cache";
 
 const cache = createCache({
   adapter: createMemoryCacheAdapter(),

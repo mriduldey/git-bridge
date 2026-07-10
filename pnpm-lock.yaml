@@ -38,16 +38,16 @@ importers:
 
   examples/basic-node:
     dependencies:
-      '@repoferry/auth':
+      '@sourceaxis/auth':
         specifier: workspace:*
         version: link:../../packages/auth
-      '@repoferry/core':
+      '@sourceaxis/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@repoferry/errors':
+      '@sourceaxis/errors':
         specifier: workspace:*
         version: link:../../packages/errors
-      '@repoferry/provider-github':
+      '@sourceaxis/provider-github':
         specifier: workspace:*
         version: link:../../packages/provider-github
     devDependencies:
@@ -60,16 +60,16 @@ importers:
 
   examples/branch-listing:
     dependencies:
-      '@repoferry/auth':
+      '@sourceaxis/auth':
         specifier: workspace:*
         version: link:../../packages/auth
-      '@repoferry/core':
+      '@sourceaxis/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@repoferry/errors':
+      '@sourceaxis/errors':
         specifier: workspace:*
         version: link:../../packages/errors
-      '@repoferry/provider-github':
+      '@sourceaxis/provider-github':
         specifier: workspace:*
         version: link:../../packages/provider-github
     devDependencies:
@@ -82,16 +82,16 @@ importers:
 
   examples/commit-history:
     dependencies:
-      '@repoferry/auth':
+      '@sourceaxis/auth':
         specifier: workspace:*
         version: link:../../packages/auth
-      '@repoferry/core':
+      '@sourceaxis/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@repoferry/errors':
+      '@sourceaxis/errors':
         specifier: workspace:*
         version: link:../../packages/errors
-      '@repoferry/provider-github':
+      '@sourceaxis/provider-github':
         specifier: workspace:*
         version: link:../../packages/provider-github
     devDependencies:
@@ -104,16 +104,16 @@ importers:
 
   examples/github-repository-info:
     dependencies:
-      '@repoferry/auth':
+      '@sourceaxis/auth':
         specifier: workspace:*
         version: link:../../packages/auth
-      '@repoferry/core':
+      '@sourceaxis/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@repoferry/errors':
+      '@sourceaxis/errors':
         specifier: workspace:*
         version: link:../../packages/errors
-      '@repoferry/provider-github':
+      '@sourceaxis/provider-github':
         specifier: workspace:*
         version: link:../../packages/provider-github
     devDependencies:
@@ -126,16 +126,16 @@ importers:
 
   examples/issue-listing:
     dependencies:
-      '@repoferry/auth':
+      '@sourceaxis/auth':
         specifier: workspace:*
         version: link:../../packages/auth
-      '@repoferry/core':
+      '@sourceaxis/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@repoferry/errors':
+      '@sourceaxis/errors':
         specifier: workspace:*
         version: link:../../packages/errors
-      '@repoferry/provider-github':
+      '@sourceaxis/provider-github':
         specifier: workspace:*
         version: link:../../packages/provider-github
     devDependencies:
@@ -148,16 +148,16 @@ importers:
 
   examples/pull-request-listing:
     dependencies:
-      '@repoferry/auth':
+      '@sourceaxis/auth':
         specifier: workspace:*
         version: link:../../packages/auth
-      '@repoferry/core':
+      '@sourceaxis/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@repoferry/errors':
+      '@sourceaxis/errors':
         specifier: workspace:*
         version: link:../../packages/errors
-      '@repoferry/provider-github':
+      '@sourceaxis/provider-github':
         specifier: workspace:*
         version: link:../../packages/provider-github
     devDependencies:
@@ -170,16 +170,16 @@ importers:
 
   examples/repository-file-reader:
     dependencies:
-      '@repoferry/auth':
+      '@sourceaxis/auth':
         specifier: workspace:*
         version: link:../../packages/auth
-      '@repoferry/core':
+      '@sourceaxis/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@repoferry/errors':
+      '@sourceaxis/errors':
         specifier: workspace:*
         version: link:../../packages/errors
-      '@repoferry/provider-github':
+      '@sourceaxis/provider-github':
         specifier: workspace:*
         version: link:../../packages/provider-github
     devDependencies:
@@ -192,16 +192,16 @@ importers:
 
   examples/search:
     dependencies:
-      '@repoferry/auth':
+      '@sourceaxis/auth':
         specifier: workspace:*
         version: link:../../packages/auth
-      '@repoferry/core':
+      '@sourceaxis/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@repoferry/errors':
+      '@sourceaxis/errors':
         specifier: workspace:*
         version: link:../../packages/errors
-      '@repoferry/provider-github':
+      '@sourceaxis/provider-github':
         specifier: workspace:*
         version: link:../../packages/provider-github
     devDependencies:
@@ -214,25 +214,25 @@ importers:
 
   packages/auth:
     dependencies:
-      '@repoferry/contracts':
+      '@sourceaxis/contracts':
         specifier: workspace:*
         version: link:../contracts
-      '@repoferry/errors':
+      '@sourceaxis/errors':
         specifier: workspace:*
         version: link:../errors
-      '@repoferry/shared':
+      '@sourceaxis/shared':
         specifier: workspace:*
         version: link:../shared
 
   packages/cache:
     dependencies:
-      '@repoferry/contracts':
+      '@sourceaxis/contracts':
         specifier: workspace:*
         version: link:../contracts
-      '@repoferry/errors':
+      '@sourceaxis/errors':
         specifier: workspace:*
         version: link:../errors
-      '@repoferry/shared':
+      '@sourceaxis/shared':
         specifier: workspace:*
         version: link:../shared
 
@@ -240,78 +240,78 @@ importers:
 
   packages/core:
     dependencies:
-      '@repoferry/auth':
+      '@sourceaxis/auth':
         specifier: workspace:*
         version: link:../auth
-      '@repoferry/cache':
+      '@sourceaxis/cache':
         specifier: workspace:*
         version: link:../cache
-      '@repoferry/contracts':
+      '@sourceaxis/contracts':
         specifier: workspace:*
         version: link:../contracts
-      '@repoferry/errors':
+      '@sourceaxis/errors':
         specifier: workspace:*
         version: link:../errors
-      '@repoferry/observability':
+      '@sourceaxis/observability':
         specifier: workspace:*
         version: link:../observability
-      '@repoferry/shared':
+      '@sourceaxis/shared':
         specifier: workspace:*
         version: link:../shared
-      '@repoferry/transport':
+      '@sourceaxis/transport':
         specifier: workspace:*
         version: link:../transport
 
   packages/errors: {}
 
-  packages/repoferry:
+  packages/sourceaxis:
     dependencies:
-      '@repoferry/auth':
+      '@sourceaxis/auth':
         specifier: workspace:*
         version: link:../auth
-      '@repoferry/core':
+      '@sourceaxis/core':
         specifier: workspace:*
         version: link:../core
-      '@repoferry/errors':
+      '@sourceaxis/errors':
         specifier: workspace:*
         version: link:../errors
 
   packages/observability:
     dependencies:
-      '@repoferry/contracts':
+      '@sourceaxis/contracts':
         specifier: workspace:*
         version: link:../contracts
-      '@repoferry/errors':
+      '@sourceaxis/errors':
         specifier: workspace:*
         version: link:../errors
-      '@repoferry/shared':
+      '@sourceaxis/shared':
         specifier: workspace:*
         version: link:../shared
 
   packages/provider-github:
     dependencies:
-      '@repoferry/auth':
+      '@sourceaxis/auth':
         specifier: workspace:*
         version: link:../auth
-      '@repoferry/cache':
+      '@sourceaxis/cache':
         specifier: workspace:*
         version: link:../cache
-      '@repoferry/contracts':
+      '@sourceaxis/contracts':
         specifier: workspace:*
         version: link:../contracts
-      '@repoferry/core':
+      '@sourceaxis/core':
         specifier: workspace:*
         version: link:../core
-      '@repoferry/errors':
+      '@sourceaxis/errors':
         specifier: workspace:*
         version: link:../errors
-      '@repoferry/observability':
+      '@sourceaxis/observability':
         specifier: workspace:*
         version: link:../observability
-      '@repoferry/shared':
+      '@sourceaxis/shared':
         specifier: workspace:*
         version: link:../shared
-      '@repoferry/transport':
+      '@sourceaxis/transport':
         specifier: workspace:*
         version: link:../transport
 
@@ -319,32 +319,32 @@ importers:
 
   packages/testing:
     dependencies:
-      '@repoferry/contracts':
+      '@sourceaxis/contracts':
         specifier: workspace:*
         version: link:../contracts
-      '@repoferry/core':
+      '@sourceaxis/core':
         specifier: workspace:*
         version: link:../core
-      '@repoferry/errors':
+      '@sourceaxis/errors':
         specifier: workspace:*
         version: link:../errors
-      '@repoferry/shared':
+      '@sourceaxis/shared':
         specifier: workspace:*
         version: link:../shared
     devDependencies:
-      '@repoferry/provider-github':
+      '@sourceaxis/provider-github':
         specifier: workspace:*
         version: link:../provider-github
 
   packages/transport:
     dependencies:
-      '@repoferry/contracts':
+      '@sourceaxis/contracts':
         specifier: workspace:*
         version: link:../contracts
-      '@repoferry/errors':
+      '@sourceaxis/errors':
         specifier: workspace:*
         version: link:../errors
-      '@repoferry/shared':
+      '@sourceaxis/shared':
         specifier: workspace:*
         version: link:../shared
 

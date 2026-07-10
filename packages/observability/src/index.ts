@@ -4,11 +4,11 @@ import type {
   DiagnosticEventKind,
   DiagnosticSubscriber,
   DiagnosticsService
-} from "@repoferry/contracts/diagnostics";
-import type { Metadata } from "@repoferry/contracts/metadata";
-import type { DeepReadonly, JsonValue } from "@repoferry/contracts/types";
-import { UnexpectedError, ValidationError, type ErrorDiagnostics } from "@repoferry/errors";
-import { deepFreeze } from "@repoferry/shared";
+} from "@sourceaxis/contracts/diagnostics";
+import type { Metadata } from "@sourceaxis/contracts/metadata";
+import type { DeepReadonly, JsonValue } from "@sourceaxis/contracts/types";
+import { UnexpectedError, ValidationError, type ErrorDiagnostics } from "@sourceaxis/errors";
+import { deepFreeze } from "@sourceaxis/shared";
 
 export type {
   DiagnosticContext,
@@ -16,8 +16,8 @@ export type {
   DiagnosticEventKind,
   DiagnosticSubscriber,
   DiagnosticsService
-} from "@repoferry/contracts/diagnostics";
-export type { ErrorDiagnostics } from "@repoferry/errors";
+} from "@sourceaxis/contracts/diagnostics";
+export type { ErrorDiagnostics } from "@sourceaxis/errors";
 
 export const ObservabilitySchemaVersion = "1.0";
 

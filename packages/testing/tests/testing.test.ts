@@ -1,5 +1,5 @@
-import type { CapabilityMap } from "@repoferry/contracts";
-import { CapabilityNotSupportedError, ProviderError } from "@repoferry/errors";
+import type { CapabilityMap } from "@sourceaxis/contracts";
+import { CapabilityNotSupportedError, ProviderError } from "@sourceaxis/errors";
 import { describe, expect, expectTypeOf, it } from "vitest";
 
 import {
@@ -8,7 +8,7 @@ import {
   assertCapabilityNotSupported,
   assertCommit,
   assertFileInfo,
-  assertRepoFerryError,
+  assertSourceAxisError,
   assertIssue,
   assertPagedResult,
   assertProviderInfo,
@@ -171,12 +171,12 @@ describe("fake provider utilities and assertions", () => {
     await expect(session.getCapabilities()).rejects.toThrow(ProviderError);
   });
 
-  it("asserts RepoFerry error families", () => {
+  it("asserts SourceAxis error families", () => {
     const error = new CapabilityNotSupportedError("Nope");
 
-    expect(() => assertRepoFerryError(error)).not.toThrow();
+    expect(() => assertSourceAxisError(error)).not.toThrow();
     expect(() => assertCapabilityNotSupported(error)).not.toThrow();
-    expect(() => assertRepoFerryError(new Error("plain"))).toThrow("Expected a RepoFerryError");
+    expect(() => assertSourceAxisError(new Error("plain"))).toThrow("Expected a SourceAxisError");
   });
 });
 

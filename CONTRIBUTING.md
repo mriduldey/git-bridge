@@ -1,6 +1,6 @@
 # Contributing
 
-RepoFerry implementation follows the accepted architecture documents exactly.
+SourceAxis implementation follows the accepted architecture documents exactly.
 
 Before contributing:
 

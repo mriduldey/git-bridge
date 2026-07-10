@@ -1,5 +1,5 @@
 {
-  "name": "repoferry-monorepo",
+  "name": "sourceaxis-monorepo",
   "version": "0.0.0",
   "private": true,
   "description": "Provider-neutral TypeScript SDK for interacting with Git repositories.",

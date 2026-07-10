@@ -1,6 +1,6 @@
 # ROADMAP.md
 
-> RepoFerry Product Roadmap
+> SourceAxis Product Roadmap
 >
 > **Status:** Living Document
 >
@@ -8,7 +8,7 @@
 >
 > **Planning:** Complete
 >
-> This roadmap communicates the intended direction of RepoFerry. It is not a release schedule or a contractual commitment. Priorities may evolve based on implementation experience and community feedback while remaining consistent with the accepted architecture.
+> This roadmap communicates the intended direction of SourceAxis. It is not a release schedule or a contractual commitment. Priorities may evolve based on implementation experience and community feedback while remaining consistent with the accepted architecture.
 
 ---
 
@@ -18,13 +18,13 @@
 
 Build the most reliable, provider-neutral TypeScript SDK for interacting with Git repositories through a single, consistent API.
 
-RepoFerry enables applications to work with multiple Git hosting platforms without being tightly coupled to any individual provider.
+SourceAxis enables applications to work with multiple Git hosting platforms without being tightly coupled to any individual provider.
 
 ---
 
 ## Scope
 
-RepoFerry focuses on:
+SourceAxis focuses on:
 
 - Repository access
 - Repository traversal
@@ -35,7 +35,7 @@ RepoFerry focuses on:
 - Transport
 - Extensibility
 
-RepoFerry is **not** intended to replace Git itself or become a full Git client.
+SourceAxis is **not** intended to replace Git itself or become a full Git client.
 
 ---
 
@@ -63,7 +63,7 @@ RepoFerry is **not** intended to replace Git itself or become a full Git client.
 
 ## Success Definition
 
-RepoFerry succeeds when developers can switch providers with minimal application changes while benefiting from a consistent, well-documented API.
+SourceAxis succeeds when developers can switch providers with minimal application changes while benefiting from a consistent, well-documented API.
 
 ---
 
@@ -105,7 +105,7 @@ Development follows these principles:
 
 # 4. Release Journey
 
-RepoFerry will mature through progressive release stages.
+SourceAxis will mature through progressive release stages.
 
 ```text
 Prototype
@@ -304,7 +304,7 @@ The goal is to enable sustainable community contributions without compromising a
 
 # 9. Quality Roadmap
 
-RepoFerry prioritizes quality over feature count.
+SourceAxis prioritizes quality over feature count.
 
 Areas of continuous improvement:
 
@@ -338,7 +338,7 @@ These ideas will be evaluated after the core platform reaches maturity.
 
 # 11. Success Metrics
 
-RepoFerry measures progress through objective indicators.
+SourceAxis measures progress through objective indicators.
 
 Engineering:
 
@@ -429,7 +429,7 @@ Long-Term Evolution
 
 ## Current Project Maturity
 
-RepoFerry has completed its architecture and engineering planning.
+SourceAxis has completed its architecture and engineering planning.
 
 Implementation has progressed to v0.1 alpha/developer-preview release preparation.
 
@@ -460,7 +460,7 @@ Goals:
 
 ## Looking Ahead
 
-RepoFerry is designed as a long-lived open-source project.
+SourceAxis is designed as a long-lived open-source project.
 
 The architecture provides a stable foundation.
 

@@ -3,9 +3,9 @@ import type {
   CredentialMetadata,
   Credentials,
   TokenCredentials
-} from "@repoferry/contracts/authentication";
-import { ConfigurationError } from "@repoferry/errors";
-import { deepFreeze } from "@repoferry/shared/objects";
+} from "@sourceaxis/contracts/authentication";
+import { ConfigurationError } from "@sourceaxis/errors";
+import { deepFreeze } from "@sourceaxis/shared/objects";
 
 import { authKindToCredentialKind } from "./auth-kind.js";
 import type {

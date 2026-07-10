@@ -1,5 +1,5 @@
-import type { AuthenticationContext } from "@repoferry/contracts/authentication";
-import { deepFreeze } from "@repoferry/shared/objects";
+import type { AuthenticationContext } from "@sourceaxis/contracts/authentication";
+import { deepFreeze } from "@sourceaxis/shared/objects";
 
 import { authKindToAuthenticationType } from "./auth-kind.js";
 import type { AuthConfig } from "./auth-config.js";
