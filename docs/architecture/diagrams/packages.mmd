@@ -1,19 +1,19 @@
 flowchart TD
-  RepoFerry["repoferry"]
-  Core["@repoferry/core"]
-  Contracts["@repoferry/contracts"]
-  Auth["@repoferry/auth"]
-  Cache["@repoferry/cache"]
-  Errors["@repoferry/errors"]
-  Observability["@repoferry/observability"]
-  Shared["@repoferry/shared"]
-  Testing["@repoferry/testing"]
-  Transport["@repoferry/transport"]
-  GitHub["@repoferry/provider-github"]
+  SourceAxis["sourceaxis"]
+  Core["@sourceaxis/core"]
+  Contracts["@sourceaxis/contracts"]
+  Auth["@sourceaxis/auth"]
+  Cache["@sourceaxis/cache"]
+  Errors["@sourceaxis/errors"]
+  Observability["@sourceaxis/observability"]
+  Shared["@sourceaxis/shared"]
+  Testing["@sourceaxis/testing"]
+  Transport["@sourceaxis/transport"]
+  GitHub["@sourceaxis/provider-github"]
 
-  RepoFerry --> Auth
-  RepoFerry --> Core
-  RepoFerry --> Errors
+  SourceAxis --> Auth
+  SourceAxis --> Core
+  SourceAxis --> Errors
 
   Core --> Auth
   Core --> Cache

@@ -4,17 +4,17 @@ import type {
   CacheNamespace,
   CachePolicy,
   CacheProvider
-} from "@repoferry/contracts/cache";
-import type { Metadata } from "@repoferry/contracts/metadata";
-import type { DeepReadonly, JsonValue } from "@repoferry/contracts/types";
+} from "@sourceaxis/contracts/cache";
+import type { Metadata } from "@sourceaxis/contracts/metadata";
+import type { DeepReadonly, JsonValue } from "@sourceaxis/contracts/types";
 import {
   ConfigurationError,
   ConflictError,
   NotFoundError,
   UnexpectedError,
   ValidationError
-} from "@repoferry/errors";
-import { deepFreeze } from "@repoferry/shared";
+} from "@sourceaxis/errors";
+import { deepFreeze } from "@sourceaxis/shared";
 
 export type {
   CacheEntry,
@@ -22,7 +22,7 @@ export type {
   CacheNamespace,
   CachePolicy,
   CacheProvider
-} from "@repoferry/contracts/cache";
+} from "@sourceaxis/contracts/cache";
 
 export type CachePolicyMode = "cache-aside" | "read-through" | "write-through" | "lazy-loading";
 

@@ -1,7 +1,7 @@
 # Architecture Index
 
 ADR-001 through ADR-015 are accepted and frozen. They form the Architecture
-Constitution for RepoFerry.
+Constitution for SourceAxis.
 
 ## Derived Guides
 

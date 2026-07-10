@@ -1,6 +1,6 @@
 # GitHub Project
 
-The v0.1.0 RepoFerry project board is complete for release-validation purposes.
+The v0.1.0 SourceAxis project board is complete for release-validation purposes.
 
 All planned work for ADR-001 through ADR-015, foundation packages, core runtime, GitHub provider,
 testing, examples, documentation, DX polish, and release preparation has been closed or validated

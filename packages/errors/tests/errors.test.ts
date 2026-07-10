@@ -7,7 +7,7 @@ import {
   ConfigurationError,
   ConflictError,
   ErrorCodes,
-  RepoFerryError,
+  SourceAxisError,
   NotFoundError,
   ProviderError,
   RateLimitError,
@@ -20,13 +20,13 @@ import {
   type ErrorCode,
   type ErrorRetryability,
   type ErrorSeverity,
-  type SerializedRepoFerryError
+  type SerializedSourceAxisError
 } from "../src/index.js";
 
 type ErrorConstructor = new (
   message: string,
-  options?: ConstructorParameters<typeof RepoFerryError>[1]
-) => RepoFerryError;
+  options?: ConstructorParameters<typeof SourceAxisError>[1]
+) => SourceAxisError;
 
 type Case = Readonly<{
   constructor: ErrorConstructor;
@@ -41,7 +41,7 @@ const cases: readonly Case[] = [
   {
     category: "unexpected",
     code: ErrorCodes.Unexpected,
-    constructor: RepoFerryError,
+    constructor: SourceAxisError,
     retryability: "Never",
     severity: "error"
   },
@@ -152,7 +152,7 @@ const cases: readonly Case[] = [
   }
 ];
 
-describe("RepoFerry error hierarchy", () => {
+describe("SourceAxis error hierarchy", () => {
   it.each(cases)("constructs $constructor.name with stable metadata", (entry) => {
     const error = new entry.constructor("failed", {
       diagnostics: {
@@ -184,7 +184,7 @@ describe("RepoFerry error hierarchy", () => {
     });
 
     expect(error).toBeInstanceOf(Error);
-    expect(error).toBeInstanceOf(RepoFerryError);
+    expect(error).toBeInstanceOf(SourceAxisError);
     expect(error).toBeInstanceOf(entry.constructor);
     expect(error.name).toBe(entry.constructor.name);
     expect(error.message).toBe("failed");
@@ -219,8 +219,8 @@ describe("RepoFerry error hierarchy", () => {
   });
 });
 
-describe("RepoFerry error behavior", () => {
-  it("preserves cause without leaking non-RepoFerry cause details in serialization", () => {
+describe("SourceAxis error behavior", () => {
+  it("preserves cause without leaking non-SourceAxis cause details in serialization", () => {
     const sdkCause = new Error("provider token leaked from SDK");
     const error = new ProviderError("provider failed", { cause: sdkCause });
 
@@ -228,7 +228,7 @@ describe("RepoFerry error behavior", () => {
     expect(error.toJSON().cause).toEqual({ name: "Error" });
   });
 
-  it("serializes RepoFerry causes recursively", () => {
+  it("serializes SourceAxis causes recursively", () => {
     const cause = new TimeoutError("timed out", {
       timestamp: "2026-07-02T00:00:00.000Z"
     });
@@ -268,7 +268,7 @@ describe("RepoFerry error behavior", () => {
 
     expect(first.serialize()).toEqual(second.serialize());
     expect(JSON.stringify(first)).toBe(JSON.stringify(second));
-    expectTypeOf(first.serialize()).toEqualTypeOf<SerializedRepoFerryError>();
+    expectTypeOf(first.serialize()).toEqualTypeOf<SerializedSourceAxisError>();
   });
 
   it("freezes errors and nested public metadata where practical", () => {

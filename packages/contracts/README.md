@@ -1,6 +1,6 @@
-# @repoferry/contracts
+# @sourceaxis/contracts
 
-Stable provider-neutral TypeScript contracts for RepoFerry.
+Stable provider-neutral TypeScript contracts for SourceAxis.
 
 ## Responsibilities
 
@@ -13,16 +13,16 @@ Stable provider-neutral TypeScript contracts for RepoFerry.
 ## Install
 
 ```sh
-pnpm add @repoferry/contracts
+pnpm add @sourceaxis/contracts
 ```
 
-Most applications consume these types transitively through `@repoferry/core` and provider packages.
+Most applications consume these types transitively through `@sourceaxis/core` and provider packages.
 Provider authors import this package directly.
 
 ## Usage
 
 ```ts
-import type { RepositoryInfo } from "@repoferry/contracts";
+import type { RepositoryInfo } from "@sourceaxis/contracts";
 
 function printRepository(info: RepositoryInfo): string {
   return `${info.fullName} (${info.visibility})`;

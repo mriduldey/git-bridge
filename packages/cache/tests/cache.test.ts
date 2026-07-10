@@ -4,7 +4,7 @@ import {
   NotFoundError,
   UnexpectedError,
   ValidationError
-} from "@repoferry/errors";
+} from "@sourceaxis/errors";
 import { describe, expect, expectTypeOf, it, vi } from "vitest";
 
 import {

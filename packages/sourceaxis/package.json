@@ -1,5 +1,5 @@
 {
-  "name": "repoferry",
+  "name": "sourceaxis",
   "version": "0.1.0",
   "description": "Provider-neutral TypeScript SDK entry point for Git repositories.",
   "license": "MIT",
@@ -25,13 +25,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mriduldey/repo-ferry.git",
-    "directory": "packages/repoferry"
+    "url": "git+https://github.com/mriduldey/source-axis.git",
+    "directory": "packages/sourceaxis"
   },
   "bugs": {
-    "url": "https://github.com/mriduldey/repo-ferry/issues"
+    "url": "https://github.com/mriduldey/source-axis/issues"
   },
-  "homepage": "https://github.com/mriduldey/repo-ferry#readme",
+  "homepage": "https://github.com/mriduldey/source-axis#readme",
   "keywords": [
     "git",
     "github",
@@ -49,8 +49,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@repoferry/auth": "workspace:*",
-    "@repoferry/core": "workspace:*",
-    "@repoferry/errors": "workspace:*"
+    "@sourceaxis/auth": "workspace:*",
+    "@sourceaxis/core": "workspace:*",
+    "@sourceaxis/errors": "workspace:*"
   }
 }

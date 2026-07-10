@@ -1,24 +1,24 @@
-# @repoferry/testing
+# @sourceaxis/testing
 
-Testing helpers and provider certification utilities for RepoFerry.
+Testing helpers and provider certification utilities for SourceAxis.
 
 ## Responsibilities
 
 - Provide deterministic fake transport, fake provider, and fake repository fixtures.
 - Capture diagnostics in tests.
-- Assert RepoFerry error shapes.
+- Assert SourceAxis error shapes.
 - Run provider certification suites against provider implementations.
 
 ## Install
 
 ```sh
-pnpm add -D @repoferry/testing
+pnpm add -D @sourceaxis/testing
 ```
 
 ## Usage
 
 ```ts
-import { createDiagnosticCapture, createFakeProvider } from "@repoferry/testing";
+import { createDiagnosticCapture, createFakeProvider } from "@sourceaxis/testing";
 
 const diagnostics = createDiagnosticCapture();
 const provider = createFakeProvider();

@@ -2,8 +2,8 @@ import type {
   AuthenticationContext,
   AuthenticationRequest,
   AuthenticationStrategy
-} from "@repoferry/auth";
-import { createCacheRegistry, type CacheRegistry } from "@repoferry/cache";
+} from "@sourceaxis/auth";
+import { createCacheRegistry, type CacheRegistry } from "@sourceaxis/cache";
 import type {
   Blob,
   BranchesCapability,
@@ -57,9 +57,16 @@ import type {
   TreeListOptions,
   TreeNode,
   TreeWalkOptions
-} from "@repoferry/contracts";
-import type { Branch, Commit, Issue, PullRequest, Release, Tag } from "@repoferry/contracts/domain";
-import type { PagedResult } from "@repoferry/contracts/pagination";
+} from "@sourceaxis/contracts";
+import type {
+  Branch,
+  Commit,
+  Issue,
+  PullRequest,
+  Release,
+  Tag
+} from "@sourceaxis/contracts/domain";
+import type { PagedResult } from "@sourceaxis/contracts/pagination";
 import {
   CapabilityNotSupportedError,
   ConfigurationError,
@@ -68,16 +75,16 @@ import {
   RepositoryError,
   ValidationError,
   type ErrorDiagnostics
-} from "@repoferry/errors";
+} from "@sourceaxis/errors";
 import {
   createNoopDiagnosticsService,
   createNoopMetricCollector,
   createNoopTracer,
   type MetricCollector,
   type Tracer
-} from "@repoferry/observability";
-import { deepFreeze } from "@repoferry/shared";
-import { createNoopTransport } from "@repoferry/transport";
+} from "@sourceaxis/observability";
+import { deepFreeze } from "@sourceaxis/shared";
+import { createNoopTransport } from "@sourceaxis/transport";
 
 export type {
   AuthenticationStrategy,
@@ -101,10 +108,10 @@ export type {
   Transport
 };
 
-export type RepoFerryLifecycleState = "active" | "disposed";
+export type SourceAxisLifecycleState = "active" | "disposed";
 export type RepositoryLifecycleState = "active" | "disposed";
 
-export type RepoFerryClientConfig = Readonly<{
+export type SourceAxisClientConfig = Readonly<{
   authentication?: AuthenticationStrategy | undefined;
   cache?: CacheRegistry;
   capabilities?: readonly CapabilityDescriptor[];
@@ -116,7 +123,7 @@ export type RepoFerryClientConfig = Readonly<{
   transport?: Transport;
 }>;
 
-export type RepoFerryResolvedConfig = Readonly<{
+export type SourceAxisResolvedConfig = Readonly<{
   authentication?: AuthenticationStrategy | undefined;
   cache: CacheRegistry;
   capabilities: readonly CapabilityDescriptor[];
@@ -128,7 +135,7 @@ export type RepoFerryResolvedConfig = Readonly<{
   transport: Transport;
 }>;
 
-export type ConfigurationLayer<TConfig extends object = RepoFerryClientConfig> = Readonly<{
+export type ConfigurationLayer<TConfig extends object = SourceAxisClientConfig> = Readonly<{
   defaults?: Partial<TConfig>;
   client?: Partial<TConfig>;
   repository?: Partial<TConfig>;
@@ -151,7 +158,7 @@ export interface CapabilityRegistryView {
   require(name: string): CapabilityDescriptor;
 }
 
-export type RepoFerryRuntimeContext = Readonly<{
+export type SourceAxisRuntimeContext = Readonly<{
   authentication?: AuthenticationStrategy | undefined;
   cache: CacheRegistry;
   capabilities: CapabilityRegistryView;
@@ -194,18 +201,18 @@ export type RepositoryRefOptions = Readonly<{
 export type OpenRepositoryOptions = OperationOptions;
 
 /**
- * Creates an isolated RepoFerry client with explicit, instance-scoped configuration.
+ * Creates an isolated SourceAxis client with explicit, instance-scoped configuration.
  */
-export function createRepoFerryClient(config: RepoFerryClientConfig = {}): RepoFerryClient {
-  return new RepoFerryClient(config);
+export function createSourceAxisClient(config: SourceAxisClientConfig = {}): SourceAxisClient {
+  return new SourceAxisClient(config);
 }
 
 /**
  * Resolves client configuration by applying library defaults to caller-provided dependencies.
  */
-export function resolveRepoFerryConfig(
-  config: RepoFerryClientConfig = {}
-): RepoFerryResolvedConfig {
+export function resolveSourceAxisConfig(
+  config: SourceAxisClientConfig = {}
+): SourceAxisResolvedConfig {
   return freezeResolvedConfig({
     ...createDefaultConfiguration(),
     ...config
@@ -403,22 +410,22 @@ export class RepositoryRef implements RepositoryRefContract {
   }
 }
 
-export class RepoFerryClient {
+export class SourceAxisClient {
   readonly #capabilityRegistry: CapabilityRegistry;
-  readonly #config: RepoFerryResolvedConfig;
-  readonly #context: RepoFerryRuntimeContext;
+  readonly #config: SourceAxisResolvedConfig;
+  readonly #context: SourceAxisRuntimeContext;
   #diagnosticSequence = 0;
   readonly #ownsCache: boolean;
   readonly #providerRegistry: ProviderRegistry;
   readonly #providerResolver: ProviderResolver;
   readonly #repositoryFactory = new RepositoryFactory();
   readonly #repositories = new Set<Repository>();
-  #state: RepoFerryLifecycleState = "active";
+  #state: SourceAxisLifecycleState = "active";
 
-  public constructor(config: RepoFerryClientConfig = {}) {
+  public constructor(config: SourceAxisClientConfig = {}) {
     validateClientConfig(config);
 
-    const resolved = resolveRepoFerryConfig(config);
+    const resolved = resolveSourceAxisConfig(config);
     this.#ownsCache = config.cache === undefined;
     this.#providerRegistry = new ProviderRegistry(resolved.providers);
     this.#providerResolver = new ProviderResolver(this.#providerRegistry);
@@ -452,11 +459,11 @@ export class RepoFerryClient {
     return this.#capabilityRegistry.view;
   }
 
-  public get config(): RepoFerryResolvedConfig {
+  public get config(): SourceAxisResolvedConfig {
     return this.#config;
   }
 
-  public get context(): RepoFerryRuntimeContext {
+  public get context(): SourceAxisRuntimeContext {
     return this.#context;
   }
 
@@ -468,7 +475,7 @@ export class RepoFerryClient {
     return this.#providerRegistry.view;
   }
 
-  public get state(): RepoFerryLifecycleState {
+  public get state(): SourceAxisLifecycleState {
     return this.#state;
   }
 
@@ -491,7 +498,7 @@ export class RepoFerryClient {
 
   public ensureActive(): void {
     if (this.#state === "disposed") {
-      throw new ConfigurationError("RepoFerry client has been disposed", {
+      throw new ConfigurationError("SourceAxis client has been disposed", {
         diagnostics: { operation: { operation: "client.lifecycle" } },
         retryability: "Never"
       });
@@ -1459,7 +1466,7 @@ class CapabilityRegistry {
   }
 }
 
-function createDefaultConfiguration(): RepoFerryResolvedConfig {
+function createDefaultConfiguration(): SourceAxisResolvedConfig {
   return {
     cache: createCacheRegistry(),
     capabilities: [],
@@ -1471,16 +1478,16 @@ function createDefaultConfiguration(): RepoFerryResolvedConfig {
   };
 }
 
-function freezeResolvedConfig(config: RepoFerryResolvedConfig): RepoFerryResolvedConfig {
+function freezeResolvedConfig(config: SourceAxisResolvedConfig): SourceAxisResolvedConfig {
   return Object.freeze({
     ...config,
     capabilities: Object.freeze([...config.capabilities]),
     providers: Object.freeze([...config.providers])
-  }) as RepoFerryResolvedConfig;
+  }) as SourceAxisResolvedConfig;
 }
 
-function freezeRuntimeContext(context: RepoFerryRuntimeContext): RepoFerryRuntimeContext {
-  return Object.freeze(context) as RepoFerryRuntimeContext;
+function freezeRuntimeContext(context: SourceAxisRuntimeContext): SourceAxisRuntimeContext {
+  return Object.freeze(context) as SourceAxisRuntimeContext;
 }
 
 function capabilityMapToDescriptors(capabilities: CapabilityMap): readonly CapabilityDescriptor[] {
@@ -1503,7 +1510,7 @@ function dedupeCapabilityDescriptors(
   return Object.freeze([...byName.values()]);
 }
 
-function validateClientConfig(config: RepoFerryClientConfig): void {
+function validateClientConfig(config: SourceAxisClientConfig): void {
   for (const provider of config.providers ?? []) {
     validateProvider(provider);
   }

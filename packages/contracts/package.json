@@ -1,7 +1,7 @@
 {
-  "name": "@repoferry/contracts",
+  "name": "@sourceaxis/contracts",
   "version": "0.1.0",
-  "description": "Provider-neutral public contracts and immutable domain models for RepoFerry.",
+  "description": "Provider-neutral public contracts and immutable domain models for SourceAxis.",
   "license": "MIT",
   "type": "module",
   "sideEffects": false,
@@ -90,13 +90,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mriduldey/repo-ferry.git",
+    "url": "git+https://github.com/mriduldey/source-axis.git",
     "directory": "packages/contracts"
   },
   "bugs": {
-    "url": "https://github.com/mriduldey/repo-ferry/issues"
+    "url": "https://github.com/mriduldey/source-axis/issues"
   },
-  "homepage": "https://github.com/mriduldey/repo-ferry#readme",
+  "homepage": "https://github.com/mriduldey/source-axis#readme",
   "keywords": [
     "git",
     "github",

@@ -1,8 +1,8 @@
-import { RepoFerryError } from "@repoferry/errors";
-import { createGitHubClient } from "@repoferry/provider-github";
+import { SourceAxisError } from "@sourceaxis/errors";
+import { createGitHubClient } from "@sourceaxis/provider-github";
 
-const repositoryUrl = process.env.REPOFERRY_REPOSITORY_URL ?? "https://github.com/octokit/rest.js";
-const token = process.env.REPOFERRY_GITHUB_TOKEN;
+const repositoryUrl = process.env.SOURCEAXIS_REPOSITORY_URL ?? "https://github.com/octokit/rest.js";
+const token = process.env.SOURCEAXIS_GITHUB_TOKEN;
 
 const client = createGitHubClient(token === undefined ? {} : { token });
 
@@ -12,7 +12,7 @@ try {
   const issues = await reference.issues?.list({ limit: 10 });
 
   if (issues === undefined) {
-    throw new RepoFerryError("Repository does not expose the issues capability");
+    throw new SourceAxisError("Repository does not expose the issues capability");
   }
 
   for (const issue of issues.items) {
@@ -21,7 +21,7 @@ try {
 
   await repository.dispose();
 } catch (error: unknown) {
-  if (error instanceof RepoFerryError) {
+  if (error instanceof SourceAxisError) {
     console.error(`${error.code}: ${error.message}`);
     process.exitCode = 1;
   } else {

@@ -1,7 +1,7 @@
 {
-  "name": "@repoferry/provider-github",
+  "name": "@sourceaxis/provider-github",
   "version": "0.1.0",
-  "description": "GitHub provider foundation for RepoFerry.",
+  "description": "GitHub provider foundation for SourceAxis.",
   "license": "MIT",
   "type": "module",
   "sideEffects": false,
@@ -24,14 +24,14 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@repoferry/auth": "workspace:*",
-    "@repoferry/cache": "workspace:*",
-    "@repoferry/contracts": "workspace:*",
-    "@repoferry/core": "workspace:*",
-    "@repoferry/errors": "workspace:*",
-    "@repoferry/observability": "workspace:*",
-    "@repoferry/shared": "workspace:*",
-    "@repoferry/transport": "workspace:*"
+    "@sourceaxis/auth": "workspace:*",
+    "@sourceaxis/cache": "workspace:*",
+    "@sourceaxis/contracts": "workspace:*",
+    "@sourceaxis/core": "workspace:*",
+    "@sourceaxis/errors": "workspace:*",
+    "@sourceaxis/observability": "workspace:*",
+    "@sourceaxis/shared": "workspace:*",
+    "@sourceaxis/transport": "workspace:*"
   },
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
@@ -40,13 +40,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mriduldey/repo-ferry.git",
+    "url": "git+https://github.com/mriduldey/source-axis.git",
     "directory": "packages/provider-github"
   },
   "bugs": {
-    "url": "https://github.com/mriduldey/repo-ferry/issues"
+    "url": "https://github.com/mriduldey/source-axis/issues"
   },
-  "homepage": "https://github.com/mriduldey/repo-ferry#readme",
+  "homepage": "https://github.com/mriduldey/source-axis#readme",
   "keywords": [
     "git",
     "github",

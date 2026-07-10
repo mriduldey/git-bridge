@@ -3,7 +3,7 @@ import type {
   CredentialMetadata,
   Credentials,
   TokenCredentials
-} from "@repoferry/contracts/authentication";
+} from "@sourceaxis/contracts/authentication";
 
 export type SafeCredentialSummary = Readonly<{
   kind: Credentials["kind"];

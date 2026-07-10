@@ -4,9 +4,14 @@ import type {
   TransportContext,
   TransportRequest,
   TransportResponse
-} from "@repoferry/contracts";
-import { CancellationError, RepoFerryError, TimeoutError, TransportError } from "@repoferry/errors";
-import { deepFreeze, sleep } from "@repoferry/shared";
+} from "@sourceaxis/contracts";
+import {
+  CancellationError,
+  SourceAxisError,
+  TimeoutError,
+  TransportError
+} from "@sourceaxis/errors";
+import { deepFreeze, sleep } from "@sourceaxis/shared";
 
 export type {
   Transport,
@@ -15,7 +20,7 @@ export type {
   TransportMethod,
   TransportRequest,
   TransportResponse
-} from "@repoferry/contracts/transport";
+} from "@sourceaxis/contracts/transport";
 
 export type TransportExecutor = <TBody = unknown>(
   request: TransportRequest,
@@ -44,12 +49,12 @@ export type RetryDecision = boolean | Readonly<{ retry: boolean; delayMs?: numbe
 
 export type RetryDelayStrategy = (
   attempt: number,
-  error: RepoFerryError,
+  error: SourceAxisError,
   request: TransportRequest
 ) => number;
 
 export type RetryPredicate = (
-  error: RepoFerryError,
+  error: SourceAxisError,
   request: TransportRequest,
   attempt: number
 ) => RetryDecision;
@@ -342,8 +347,8 @@ export function throwIfAborted(signal?: AbortSignal): void {
   }
 }
 
-export function mapTransportError(error: unknown): RepoFerryError {
-  if (error instanceof RepoFerryError) {
+export function mapTransportError(error: unknown): SourceAxisError {
+  if (error instanceof SourceAxisError) {
     return error;
   }
 
@@ -384,7 +389,7 @@ function resolveRetryPolicy(policy: Partial<RetryPolicy>): RetryPolicy {
 }
 
 function shouldRetryAttempt(
-  error: RepoFerryError,
+  error: SourceAxisError,
   request: TransportRequest,
   attempt: number,
   policy: RetryPolicy
@@ -416,7 +421,7 @@ function shouldRetryAttempt(
 
 function getRetryDelayMs(
   attempt: number,
-  error: RepoFerryError,
+  error: SourceAxisError,
   request: TransportRequest,
   policy: RetryPolicy
 ): number {
@@ -474,7 +479,7 @@ function createCancellationError(reason: unknown): CancellationError {
   });
 }
 
-function mapTimeoutAbort(error: unknown, timeoutMs: number): RepoFerryError {
+function mapTimeoutAbort(error: unknown, timeoutMs: number): SourceAxisError {
   if (error instanceof TimeoutError) {
     return error;
   }
@@ -500,7 +505,7 @@ function mapAbortSignalError(
   signal: AbortSignal,
   error: unknown,
   timeoutMs: number
-): RepoFerryError {
+): SourceAxisError {
   if (signal.reason instanceof TimeoutError) {
     return mapTimeoutAbort(error, timeoutMs);
   }

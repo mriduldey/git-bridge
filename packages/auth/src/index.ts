@@ -10,7 +10,7 @@ export type {
   Credentials,
   TokenCredentials,
   TokenProvider
-} from "@repoferry/contracts/authentication";
+} from "@sourceaxis/contracts/authentication";
 
 export * from "./auth-config.js";
 export * from "./auth-context.js";

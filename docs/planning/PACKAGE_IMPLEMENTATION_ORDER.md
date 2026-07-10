@@ -1,6 +1,6 @@
 # PACKAGE_IMPLEMENTATION_ORDER.md
 
-> Canonical Package Execution Order for RepoFerry
+> Canonical Package Execution Order for SourceAxis
 >
 > **Status:** Accepted
 >
@@ -16,7 +16,7 @@
 
 ## Purpose
 
-This document defines the **exact implementation sequence** for every package in the RepoFerry monorepo.
+This document defines the **exact implementation sequence** for every package in the SourceAxis monorepo.
 
 It translates the architectural dependency graph into a practical engineering roadmap.
 
@@ -138,7 +138,7 @@ core
 provider-github
     │
     ▼
-repoferry
+sourceaxis
     │
     ▼
 testing
@@ -154,7 +154,7 @@ Examples and documentation consume only public packages and therefore are implem
 
 | Package | Responsibility |
 |----------|----------------|
-| `@repoferry/shared` | Common reusable utilities |
+| `@sourceaxis/shared` | Common reusable utilities |
 
 ---
 
@@ -162,9 +162,9 @@ Examples and documentation consume only public packages and therefore are implem
 
 | Package | Responsibility |
 |----------|----------------|
-| `@repoferry/contracts` | Public contracts |
-| `@repoferry/errors` | Error model |
-| `@repoferry/observability` | Observability infrastructure, including diagnostics |
+| `@sourceaxis/contracts` | Public contracts |
+| `@sourceaxis/errors` | Error model |
+| `@sourceaxis/observability` | Observability infrastructure, including diagnostics |
 
 ---
 
@@ -172,9 +172,9 @@ Examples and documentation consume only public packages and therefore are implem
 
 | Package | Responsibility |
 |----------|----------------|
-| `@repoferry/auth` | Authentication abstractions |
-| `@repoferry/transport` | Transport pipeline |
-| `@repoferry/cache` | Cache infrastructure |
+| `@sourceaxis/auth` | Authentication abstractions |
+| `@sourceaxis/transport` | Transport pipeline |
+| `@sourceaxis/cache` | Cache infrastructure |
 
 ---
 
@@ -182,7 +182,7 @@ Examples and documentation consume only public packages and therefore are implem
 
 | Package | Responsibility |
 |----------|----------------|
-| `@repoferry/core` | Repository runtime |
+| `@sourceaxis/core` | Repository runtime |
 
 ---
 
@@ -190,11 +190,11 @@ Examples and documentation consume only public packages and therefore are implem
 
 | Package | Responsibility |
 |----------|----------------|
-| `@repoferry/provider-github` | GitHub provider |
-| `@repoferry/provider-gitlab` | Future |
-| `@repoferry/provider-bitbucket` | Future |
-| `@repoferry/provider-azure` | Future |
-| `@repoferry/provider-gitea` | Future |
+| `@sourceaxis/provider-github` | GitHub provider |
+| `@sourceaxis/provider-gitlab` | Future |
+| `@sourceaxis/provider-bitbucket` | Future |
+| `@sourceaxis/provider-azure` | Future |
+| `@sourceaxis/provider-gitea` | Future |
 
 ---
 
@@ -202,7 +202,7 @@ Examples and documentation consume only public packages and therefore are implem
 
 | Package | Responsibility |
 |----------|----------------|
-| `repoferry` | Public entry point |
+| `sourceaxis` | Public entry point |
 
 ---
 
@@ -210,7 +210,7 @@ Examples and documentation consume only public packages and therefore are implem
 
 | Package | Responsibility |
 |----------|----------------|
-| `@repoferry/testing` | Contract Test Kit & testing utilities |
+| `@sourceaxis/testing` | Contract Test Kit & testing utilities |
 
 ---
 
@@ -242,7 +242,7 @@ Deliverables:
 Package:
 
 ```text
-@repoferry/shared
+@sourceaxis/shared
 ```
 
 Purpose:
@@ -258,7 +258,7 @@ Produces the lowest layer of the dependency graph.
 Package:
 
 ```text
-@repoferry/contracts
+@sourceaxis/contracts
 ```
 
 Purpose:
@@ -274,7 +274,7 @@ All higher packages depend on these contracts.
 Package:
 
 ```text
-@repoferry/errors
+@sourceaxis/errors
 ```
 
 Purpose:
@@ -288,7 +288,7 @@ Stable public error model.
 Package:
 
 ```text
-@repoferry/observability
+@sourceaxis/observability
 ```
 
 Purpose:
@@ -302,7 +302,7 @@ Events, metrics, tracing contracts.
 Package:
 
 ```text
-@repoferry/auth
+@sourceaxis/auth
 ```
 
 Purpose:
@@ -316,7 +316,7 @@ Authentication abstractions.
 Package:
 
 ```text
-@repoferry/transport
+@sourceaxis/transport
 ```
 
 Purpose:
@@ -330,7 +330,7 @@ Transport abstraction and middleware pipeline.
 Package:
 
 ```text
-@repoferry/cache
+@sourceaxis/cache
 ```
 
 Purpose:
@@ -344,7 +344,7 @@ Caching infrastructure.
 Package:
 
 ```text
-@repoferry/core
+@sourceaxis/core
 ```
 
 Purpose:
@@ -358,7 +358,7 @@ Client, Repository, RepositoryRef, Provider Registry, Repository Factory.
 Package:
 
 ```text
-@repoferry/provider-github
+@sourceaxis/provider-github
 ```
 
 Purpose:
@@ -374,7 +374,7 @@ Validates the provider architecture.
 Package:
 
 ```text
-repoferry
+sourceaxis
 ```
 
 Purpose:
@@ -388,7 +388,7 @@ Stable public entry point.
 Package:
 
 ```text
-@repoferry/testing
+@sourceaxis/testing
 ```
 
 Purpose:
@@ -880,7 +880,7 @@ Observability coupling.
 
 Mitigation
 
-Keep diagnostics, as provided through `@repoferry/observability`, framework-neutral.
+Keep diagnostics, as provided through `@sourceaxis/observability`, framework-neutral.
 
 ---
 

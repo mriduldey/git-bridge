@@ -1,7 +1,7 @@
 {
-  "name": "@repoferry/errors",
+  "name": "@sourceaxis/errors",
   "version": "0.1.0",
-  "description": "Canonical RepoFerry public error hierarchy and serialization model.",
+  "description": "Canonical SourceAxis public error hierarchy and serialization model.",
   "license": "MIT",
   "type": "module",
   "sideEffects": false,
@@ -30,13 +30,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mriduldey/repo-ferry.git",
+    "url": "git+https://github.com/mriduldey/source-axis.git",
     "directory": "packages/errors"
   },
   "bugs": {
-    "url": "https://github.com/mriduldey/repo-ferry/issues"
+    "url": "https://github.com/mriduldey/source-axis/issues"
   },
-  "homepage": "https://github.com/mriduldey/repo-ferry#readme",
+  "homepage": "https://github.com/mriduldey/source-axis#readme",
   "keywords": [
     "git",
     "github",

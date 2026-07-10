@@ -1,6 +1,6 @@
 # PROJECT_STRUCTURE.md
 
-> Canonical Repository Blueprint for RepoFerry
+> Canonical Repository Blueprint for SourceAxis
 >
 > **Status:** Accepted
 >
@@ -14,7 +14,7 @@
 
 ## Purpose
 
-This document defines the physical organization of the RepoFerry repository.
+This document defines the physical organization of the SourceAxis repository.
 
 It specifies:
 
@@ -110,7 +110,7 @@ A contributor should quickly determine:
 # 2. High-Level Repository Layout
 
 ```text
-repoferry/
+sourceaxis/
 
 ├── .changeset/
 ├── .github/
@@ -251,7 +251,7 @@ Examples:
 ```text
 packages/
 
-├── repoferry/
+├── sourceaxis/
 ├── shared/
 ├── contracts/
 ├── errors/
@@ -272,7 +272,7 @@ Each package owns exactly one architectural responsibility.
 
 ---
 
-## repoferry
+## sourceaxis
 
 ### Purpose
 
@@ -286,7 +286,7 @@ Acts as the canonical entry point.
 
 ### Public Exports
 
-- RepoFerryClient
+- SourceAxisClient
 - public contracts
 - public errors
 
@@ -503,7 +503,7 @@ Contains:
 
 Minimal.
 
-Consumers interact through `repoferry`.
+Consumers interact through `sourceaxis`.
 
 ---
 
@@ -870,7 +870,7 @@ testing
 
 ↓
 
-repoferry
+sourceaxis
 ```
 
 ---
@@ -966,7 +966,7 @@ Never imports package internals.
 
 ---
 
-### repoferry
+### sourceaxis
 
 Public aggregation package.
 
@@ -1023,15 +1023,15 @@ Consistency is preferred over brevity.
 Use:
 
 ```text
-@repoferry/<name>
+@sourceaxis/<name>
 ```
 
 Examples:
 
 ```text
-@repoferry/core
-@repoferry/provider-github
-@repoferry/testing
+@sourceaxis/core
+@sourceaxis/provider-github
+@sourceaxis/testing
 ```
 
 ---

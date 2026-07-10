@@ -1,9 +1,10 @@
-# RepoFerry
+# SourceAxis
 
-RepoFerry is a provider-neutral TypeScript SDK for opening repositories and working with files,
-branches, commits, issues, pull requests, releases, and tags through stable public contracts.
+SourceAxis is a provider-neutral TypeScript SDK for opening source-code repositories and working
+with files, branches, commits, issues, pull requests, releases, and tags through stable public
+contracts.
 
-One API across repository providers.
+One API across source providers.
 
 ## Installation
 
@@ -13,21 +14,21 @@ usage. Until packages are published, use the repository source/tag directly.
 For GitHub-first applications:
 
 ```sh
-pnpm add @repoferry/provider-github
+pnpm add @sourceaxis/provider-github
 ```
 
 For provider-neutral applications that register providers explicitly:
 
 ```sh
-pnpm add repoferry @repoferry/provider-github
+pnpm add sourceaxis @sourceaxis/provider-github
 ```
 
-RepoFerry requires Node.js `>=20.19.0` and pnpm `>=10.0.0` in this repository.
+SourceAxis requires Node.js `>=20.19.0` and pnpm `>=10.0.0` in this repository.
 
 ## 30-Second Quick Start
 
 ```ts
-import { createGitHubClient } from "@repoferry/provider-github";
+import { createGitHubClient } from "@sourceaxis/provider-github";
 
 const client = createGitHubClient();
 
@@ -46,12 +47,12 @@ try {
 
 ## GitHub Example
 
-Use `REPOFERRY_GITHUB_TOKEN` for private repositories or higher API limits:
+Use `SOURCEAXIS_GITHUB_TOKEN` for private repositories or higher API limits:
 
 ```ts
-import { createGitHubClient } from "@repoferry/provider-github";
+import { createGitHubClient } from "@sourceaxis/provider-github";
 
-const token = process.env.REPOFERRY_GITHUB_TOKEN;
+const token = process.env.SOURCEAXIS_GITHUB_TOKEN;
 const client = createGitHubClient(token === undefined ? {} : { token });
 
 const repository = await client.open("https://github.com/microsoft/TypeScript");
@@ -82,16 +83,16 @@ await ref.pullRequests?.list({ limit: 10 });
 
 ## Error Handling
 
-All public RepoFerry errors extend `RepoFerryError` and expose stable `code`, `retryability`,
+All public SourceAxis errors extend `SourceAxisError` and expose stable `code`, `retryability`,
 `category`, `severity`, `diagnostics`, and `serialize()` fields.
 
 ```ts
-import { RepoFerryError } from "repoferry";
+import { SourceAxisError } from "sourceaxis";
 
 try {
   await repository.readText("missing.txt");
 } catch (error) {
-  if (error instanceof RepoFerryError) {
+  if (error instanceof SourceAxisError) {
     console.error(error.code, error.retryability, error.diagnostics);
   } else {
     throw error;
@@ -101,15 +102,15 @@ try {
 
 ## Advanced Configuration
 
-Use `repoferry` when your app should stay provider-neutral and register providers explicitly:
+Use `sourceaxis` when your app should stay provider-neutral and register providers explicitly:
 
 ```ts
-import { createRepoFerryClient } from "repoferry";
-import { createGitHubProviderConfig, githubTokenAuth } from "@repoferry/provider-github";
+import { createSourceAxisClient } from "sourceaxis";
+import { createGitHubProviderConfig, githubTokenAuth } from "@sourceaxis/provider-github";
 
-const token = process.env.REPOFERRY_GITHUB_TOKEN;
+const token = process.env.SOURCEAXIS_GITHUB_TOKEN;
 
-const client = createRepoFerryClient({
+const client = createSourceAxisClient({
   ...createGitHubProviderConfig(),
   authentication: token === undefined ? undefined : githubTokenAuth(token)
 });
@@ -120,16 +121,16 @@ and authentication dependencies.
 
 ## SDK Map
 
-| Use case                                          | Import from                  |
-| ------------------------------------------------- | ---------------------------- |
-| GitHub-first application setup                    | `@repoferry/provider-github` |
-| Provider-neutral client, errors, and auth helpers | `repoferry`                  |
-| Direct core orchestration APIs                    | `@repoferry/core`            |
-| Provider-neutral contracts and domain types       | `@repoferry/contracts`       |
-| Provider certification and test doubles           | `@repoferry/testing`         |
+| Use case                                          | Import from                   |
+| ------------------------------------------------- | ----------------------------- |
+| GitHub-first application setup                    | `@sourceaxis/provider-github` |
+| Provider-neutral client, errors, and auth helpers | `sourceaxis`                  |
+| Direct core orchestration APIs                    | `@sourceaxis/core`            |
+| Provider-neutral contracts and domain types       | `@sourceaxis/contracts`       |
+| Provider certification and test doubles           | `@sourceaxis/testing`         |
 
-Most applications should start with `@repoferry/provider-github`. Use `repoferry` when you want the
-provider-neutral entry point. Use `@repoferry/testing` when building or certifying providers.
+Most applications should start with `@sourceaxis/provider-github`. Use `sourceaxis` when you want
+the provider-neutral entry point. Use `@sourceaxis/testing` when building or certifying providers.
 
 ## Examples
 
@@ -153,7 +154,7 @@ pnpm build
 Run an example with:
 
 ```sh
-pnpm --filter @repoferry/example-basic-node start
+pnpm --filter @sourceaxis/example-basic-node start
 ```
 
 ## Architecture
@@ -161,15 +162,15 @@ pnpm --filter @repoferry/example-basic-node start
 ADR-001 through ADR-015 are accepted and authoritative. The architecture is frozen; runtime changes
 must preserve those decisions.
 
-RepoFerry is organized around explicit package boundaries:
+SourceAxis is organized around explicit package boundaries:
 
-- `repoferry` is the provider-neutral public entry point.
-- `@repoferry/contracts` defines public provider-neutral contracts and domain types.
-- `@repoferry/core` owns client lifecycle, provider registration, provider resolution, repository
+- `sourceaxis` is the provider-neutral public entry point.
+- `@sourceaxis/contracts` defines public provider-neutral contracts and domain types.
+- `@sourceaxis/core` owns client lifecycle, provider registration, provider resolution, repository
   factories, repository references, and capability dispatch.
-- `@repoferry/provider-github` adapts GitHub behavior to the provider contracts and includes
+- `@sourceaxis/provider-github` adapts GitHub behavior to the provider contracts and includes
   GitHub-first DX helpers.
-- `@repoferry/testing` supports provider certification and deterministic tests.
+- `@sourceaxis/testing` supports provider certification and deterministic tests.
 
 See [docs/architecture/INDEX.md](docs/architecture/INDEX.md) for ADRs, diagrams, and terminology.
 

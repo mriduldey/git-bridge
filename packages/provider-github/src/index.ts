@@ -5,8 +5,8 @@ import {
   type AuthenticationRequest,
   type AuthenticationStrategy,
   type StaticTokenAuthConfig
-} from "@repoferry/auth";
-import type { CacheProvider } from "@repoferry/cache";
+} from "@sourceaxis/auth";
+import type { CacheProvider } from "@sourceaxis/cache";
 import type {
   AuthenticationContext,
   Blob,
@@ -54,20 +54,20 @@ import type {
   TransportResponse,
   Tree,
   TreeCapability
-} from "@repoferry/contracts";
-import type { FilesCapability } from "@repoferry/contracts/capabilities";
-import type { PagedResult } from "@repoferry/contracts/pagination";
+} from "@sourceaxis/contracts";
+import type { FilesCapability } from "@sourceaxis/contracts/capabilities";
+import type { PagedResult } from "@sourceaxis/contracts/pagination";
 import {
-  createRepoFerryClient,
-  type RepoFerryClient,
-  type RepoFerryClientConfig
-} from "@repoferry/core";
+  createSourceAxisClient,
+  type SourceAxisClient,
+  type SourceAxisClientConfig
+} from "@sourceaxis/core";
 import {
   AuthenticationError,
   AuthorizationError,
   CapabilityNotSupportedError,
   ConflictError,
-  RepoFerryError,
+  SourceAxisError,
   NotFoundError,
   ProviderError,
   RateLimitError,
@@ -75,10 +75,10 @@ import {
   ValidationError,
   type ErrorDiagnostics,
   type ErrorRetryability
-} from "@repoferry/errors";
-import type { DiagnosticsService } from "@repoferry/observability";
-import { deepFreeze } from "@repoferry/shared";
-import { createTransportResponse } from "@repoferry/transport";
+} from "@sourceaxis/errors";
+import type { DiagnosticsService } from "@sourceaxis/observability";
+import { deepFreeze } from "@sourceaxis/shared";
+import { createTransportResponse } from "@sourceaxis/transport";
 
 import type {
   GitHubBlobModel,
@@ -258,18 +258,18 @@ export function githubProvider(config: GitHubProviderConfig = {}): GitHubProvide
 }
 
 /**
- * Creates a RepoFerry client config fragment containing the GitHub provider.
+ * Creates a SourceAxis client config fragment containing the GitHub provider.
  */
 export function createGitHubProviderConfig(
   config: GitHubProviderConfig = {}
-): RepoFerryClientConfig {
+): SourceAxisClientConfig {
   return {
     providers: [createGitHubProvider(config)]
   };
 }
 
 /**
- * Creates a GitHub-scoped token authentication strategy for RepoFerry clients.
+ * Creates a GitHub-scoped token authentication strategy for SourceAxis clients.
  */
 export function githubTokenAuth(
   token: string,
@@ -288,16 +288,16 @@ export function githubTokenAuth(
 }
 
 /**
- * Creates a RepoFerry client with the GitHub provider registered.
+ * Creates a SourceAxis client with the GitHub provider registered.
  */
-export function createGitHubClient(config: GitHubClientConfig = {}): RepoFerryClient {
+export function createGitHubClient(config: GitHubClientConfig = {}): SourceAxisClient {
   const { authentication, token, ...providerConfig } = config;
   const resolvedProviderConfig: GitHubProviderConfig = {
     ...providerConfig,
     transport: providerConfig.transport ?? createGitHubHttpTransport()
   };
 
-  return createRepoFerryClient({
+  return createSourceAxisClient({
     ...createGitHubProviderConfig(resolvedProviderConfig),
     authentication: authentication ?? (token === undefined ? undefined : githubTokenAuth(token))
   });
@@ -574,8 +574,8 @@ async function requestGitHubResponse<TBody>(
   }
 }
 
-export function mapGitHubError(error: unknown, operation = "github.provider"): RepoFerryError {
-  if (error instanceof RepoFerryError) {
+export function mapGitHubError(error: unknown, operation = "github.provider"): SourceAxisError {
+  if (error instanceof SourceAxisError) {
     return error;
   }
 
@@ -1429,7 +1429,7 @@ function createGitHubStatusError(
   status: number,
   operation: string,
   headers?: Readonly<Record<string, string>>
-): RepoFerryError {
+): SourceAxisError {
   if (status === 401) {
     return new AuthenticationError("GitHub authentication failed", {
       diagnostics: {

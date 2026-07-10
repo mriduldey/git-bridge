@@ -1,6 +1,6 @@
-# @repoferry/observability
+# @sourceaxis/observability
 
-Diagnostics, logging, metrics, tracing, and metadata sanitization for RepoFerry.
+Diagnostics, logging, metrics, tracing, and metadata sanitization for SourceAxis.
 
 ## Responsibilities
 
@@ -12,13 +12,13 @@ Diagnostics, logging, metrics, tracing, and metadata sanitization for RepoFerry.
 ## Install
 
 ```sh
-pnpm add @repoferry/observability
+pnpm add @sourceaxis/observability
 ```
 
 ## Usage
 
 ```ts
-import { createDiagnosticsService } from "@repoferry/observability";
+import { createDiagnosticsService } from "@sourceaxis/observability";
 
 const diagnostics = createDiagnosticsService();
 await diagnostics.subscribe((event) => {

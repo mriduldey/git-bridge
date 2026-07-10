@@ -5,8 +5,8 @@ Lists recent commits from the default branch.
 ## Run
 
 ```sh
-pnpm --filter @repoferry/example-commit-history build
-pnpm --filter @repoferry/example-commit-history start
+pnpm --filter @sourceaxis/example-commit-history build
+pnpm --filter @sourceaxis/example-commit-history start
 ```
 
-Set `REPOFERRY_GITHUB_TOKEN` and `REPOFERRY_REPOSITORY_URL` as needed.
+Set `SOURCEAXIS_GITHUB_TOKEN` and `SOURCEAXIS_REPOSITORY_URL` as needed.

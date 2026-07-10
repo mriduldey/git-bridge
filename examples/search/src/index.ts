@@ -1,12 +1,12 @@
-import { RepoFerryError } from "@repoferry/errors";
-import { createGitHubClient } from "@repoferry/provider-github";
+import { SourceAxisError } from "@sourceaxis/errors";
+import { createGitHubClient } from "@sourceaxis/provider-github";
 
-const repositoryUrl = process.env.REPOFERRY_REPOSITORY_URL ?? "https://github.com/octokit/rest.js";
-const query = process.env.REPOFERRY_SEARCH_QUERY ?? "Octokit";
-const token = process.env.REPOFERRY_GITHUB_TOKEN;
+const repositoryUrl = process.env.SOURCEAXIS_REPOSITORY_URL ?? "https://github.com/octokit/rest.js";
+const query = process.env.SOURCEAXIS_SEARCH_QUERY ?? "Octokit";
+const token = process.env.SOURCEAXIS_GITHUB_TOKEN;
 
 if (token === undefined) {
-  console.error("REPOFERRY_GITHUB_TOKEN is required for the search example.");
+  console.error("SOURCEAXIS_GITHUB_TOKEN is required for the search example.");
   process.exit(1);
 }
 
@@ -23,7 +23,7 @@ try {
 
   await repository.dispose();
 } catch (error: unknown) {
-  if (error instanceof RepoFerryError) {
+  if (error instanceof SourceAxisError) {
     console.error(`${error.code}: ${error.message}`);
     process.exitCode = 1;
   } else {

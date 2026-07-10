@@ -1,7 +1,7 @@
 {
-  "name": "@repoferry/testing",
+  "name": "@sourceaxis/testing",
   "version": "0.1.0",
-  "description": "Reusable provider contract testing and certification utilities for RepoFerry providers.",
+  "description": "Reusable provider contract testing and certification utilities for SourceAxis providers.",
   "license": "MIT",
   "type": "module",
   "sideEffects": false,
@@ -24,13 +24,13 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@repoferry/contracts": "workspace:*",
-    "@repoferry/core": "workspace:*",
-    "@repoferry/errors": "workspace:*",
-    "@repoferry/shared": "workspace:*"
+    "@sourceaxis/contracts": "workspace:*",
+    "@sourceaxis/core": "workspace:*",
+    "@sourceaxis/errors": "workspace:*",
+    "@sourceaxis/shared": "workspace:*"
   },
   "devDependencies": {
-    "@repoferry/provider-github": "workspace:*"
+    "@sourceaxis/provider-github": "workspace:*"
   },
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
@@ -39,13 +39,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mriduldey/repo-ferry.git",
+    "url": "git+https://github.com/mriduldey/source-axis.git",
     "directory": "packages/testing"
   },
   "bugs": {
-    "url": "https://github.com/mriduldey/repo-ferry/issues"
+    "url": "https://github.com/mriduldey/source-axis/issues"
   },
-  "homepage": "https://github.com/mriduldey/repo-ferry#readme",
+  "homepage": "https://github.com/mriduldey/source-axis#readme",
   "keywords": [
     "git",
     "github",

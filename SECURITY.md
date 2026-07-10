@@ -2,7 +2,7 @@
 
 ## Supported Versions
 
-RepoFerry has not published a stable release yet. Security fixes are prepared for the next public
+SourceAxis has not published a stable release yet. Security fixes are prepared for the next public
 release line until `0.1.0` is published.
 
 ## Reporting a Vulnerability
